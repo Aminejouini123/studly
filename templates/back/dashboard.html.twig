@@ -1,0 +1,91 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Admin Dashboard - StudentHub{% endblock %}
+
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <h1 class="page-title">Dataset Overview</h1>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-value">1,245</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green"><i class="fas fa-book-open"></i></div>
+                </div>
+                <div class="stat-value">48</div>
+                <div class="stat-label">Active Courses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+                <div class="stat-value">5</div>
+                <div class="stat-label">Pending Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple"><i class="fas fa-server"></i></div>
+                </div>
+                <div class="stat-value">98%</div>
+                <div class="stat-label">System Load</div>
+            </div>
+        </div>
+
+        <!-- Recent Table -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3>Recent Registrations</h3>
+                <button class="btn-action"><i class="fas fa-plus"></i> Add User</button>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#1024</td>
+                            <td>John Doe</td>
+                            <td>Student</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>Oct 24, 2023</td>
+                            <td><i class="fas fa-ellipsis-h" style="cursor: pointer; color: var(--admin-text-muted);"></i></td>
+                        </tr>
+                        <tr>
+                            <td>#1023</td>
+                            <td>Sarah Smith</td>
+                            <td>Teacher</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>Oct 23, 2023</td>
+                            <td><i class="fas fa-ellipsis-h" style="cursor: pointer; color: var(--admin-text-muted);"></i></td>
+                        </tr>
+                        <tr>
+                            <td>#1022</td>
+                            <td>Michael Brown</td>
+                            <td>Student</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>Oct 22, 2023</td>
+                            <td><i class="fas fa-ellipsis-h" style="cursor: pointer; color: var(--admin-text-muted);"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

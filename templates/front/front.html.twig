@@ -1,0 +1,46 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Dashboard - Student Hub{% endblock %}
+
+{% block content %}
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h1>Welcome back, Sami! 👋</h1>
+        <p>You have 3 upcoming exams and 2 tasks pending.</p>
+    </div>
+
+    <!-- Modules Grid -->
+    <div class="dashboard-grid">
+        <!-- Courses Card -->
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-book"></i></div>
+            <h3>My Courses</h3>
+            <p>Access your current courses and materials.</p>
+            <a href="{{ path('app_courses') }}" class="card-action">View Courses <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Time Management Card -->
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-clock"></i></div>
+            <h3>Planning</h3>
+            <p>Manage your study schedule and deadlines.</p>
+            <a href="{{ path('app_temps') }}" class="card-action">Check Schedule <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Objectives Card -->
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-tasks"></i></div>
+            <h3>Objectives</h3>
+            <p>Track your study goals and progress.</p>
+            <a href="{{ path('app_objectives') }}" class="card-action">Track Progress <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Groups Card -->
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-user-friends"></i></div>
+            <h3>Study Groups</h3>
+            <p>Collaborate with your peers on projects.</p>
+            <a href="{{ path('app_groups') }}" class="card-action">Find Groups <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+{% endblock %}

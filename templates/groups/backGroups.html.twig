@@ -1,0 +1,35 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Groups Management{% endblock %}
+
+{% block breadcrumb %}Groups Management{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <h1 class="page-title">Groups Management</h1>
+        <div class="content-card">
+            <div class="card-header">
+                <h3>All Groups</h3>
+                <button class="btn-action"><i class="fas fa-plus"></i> Add Group</button>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Members</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" style="text-align: center;">No groups found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

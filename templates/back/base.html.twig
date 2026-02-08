@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Admin Dashboard{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+            :root {
+                --admin-sidebar-bg: #1e293b; /* Dark Slate */
+                --admin-sidebar-hover: #334155;
+                --admin-bg: #f1f5f9; /* Light Gray Blue */
+                --admin-card-bg: #ffffff;
+                --admin-text-main: #0f172a;
+                --admin-text-muted: #64748b;
+                --admin-accent: #2563eb; /* Royal Blue */
+                --admin-border: #e2e8f0;
+                --sidebar-width: 250px;
+                --header-height: 64px;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Inter', sans-serif;
+            }
+
+            body {
+                background-color: var(--admin-bg);
+                color: var(--admin-text-main);
+                min-height: 100vh;
+                display: flex;
+            }
+
+            /* Sidebar - Technical & Flat */
+            .admin-sidebar {
+                width: var(--sidebar-width);
+                background-color: var(--admin-sidebar-bg);
+                color: #fff;
+                height: 100vh;
+                position: fixed;
+                left: 0;
+                top: 0;
+                display: flex;
+                flex-direction: column;
+                z-index: 1000;
+            }
+
+            .sidebar-header {
+                height: var(--header-height);
+                display: flex;
+                align-items: center;
+                padding: 0 24px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                font-weight: 700;
+                font-size: 1.1rem;
+                letter-spacing: 0.5px;
+                gap: 10px;
+            }
+            
+            .sidebar-header i { color: var(--admin-accent); }
+
+            .sidebar-menu {
+                padding: 24px 0;
+                list-style: none;
+                flex: 1;
+            }
+
+            .menu-label {
+                color: #94a3b8;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 0 24px 12px;
+                font-weight: 600;
+            }
+
+            .menu-item a {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 24px;
+                color: #cbd5e1;
+                text-decoration: none;
+                transition: all 0.2s;
+                font-size: 0.9rem;
+                border-left: 3px solid transparent;
+            }
+
+            .menu-item a:hover, .menu-item a.active {
+                background-color: var(--admin-sidebar-hover);
+                color: #fff;
+                border-left-color: var(--admin-accent);
+            }
+
+            .menu-item i { width: 20px; text-align: center; }
+
+            /* Main Content Area */
+            .admin-main {
+                margin-left: var(--sidebar-width);
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0; /* Prevent flex overflow */
+            }
+
+            /* Header */
+            .admin-header {
+                height: var(--header-height);
+                background: var(--admin-card-bg);
+                border-bottom: 1px solid var(--admin-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 32px;
+                position: sticky;
+                top: 0;
+                z-index: 900;
+            }
+
+            .breadcrumb {
+                font-size: 0.9rem;
+                color: var(--admin-text-muted);
+            }
+            .breadcrumb span { color: var(--admin-text-main); font-weight: 600; }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .admin-profile {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+
+            .admin-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: var(--admin-accent);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+            }
+
+            /* Dashboard Content */
+            .dashboard-content {
+                padding: 32px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-bottom: 24px;
+                color: var(--admin-text-main);
+            }
+
+            /* Common Components */
+            .btn-action {
+                padding: 8px 16px;
+                background: var(--admin-accent);
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: 0.2s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-action:hover { background: #1d4ed8; }
+
+            .content-card {
+                background: var(--admin-card-bg);
+                border-radius: 8px;
+                border: 1px solid var(--admin-border);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                overflow: hidden;
+            }
+
+            .card-header {
+                padding: 20px 24px;
+                border-bottom: 1px solid var(--admin-border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .card-header h3 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+
+            .table-responsive { width: 100%; overflow-x: auto; }
+
+            .admin-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.9rem;
+            }
+
+            .admin-table th {
+                text-align: left;
+                padding: 12px 24px;
+                background: #f8fafc;
+                color: var(--admin-text-muted);
+                font-weight: 600;
+                border-bottom: 1px solid var(--admin-border);
+            }
+
+            .admin-table td {
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--admin-border);
+                color: var(--admin-text-main);
+            }
+
+            .admin-table tr:last-child td { border-bottom: none; }
+            .admin-table tr:hover { background: #f8fafc; }
+
+            .status-badge {
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+
+            .status-active { background: #dcfce7; color: #166534; }
+            .status-pending { background: #fef9c3; color: #854d0e; }
+
+            /* Stats Grid */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
+                margin-bottom: 32px;
+            }
+
+            .stat-card {
+                background: var(--admin-card-bg);
+                padding: 24px;
+                border-radius: 8px;
+                border: 1px solid var(--admin-border);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .stat-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 16px;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+            }
+
+            .stat-icon.blue { background: #eff6ff; color: #2563eb; }
+            .stat-icon.green { background: #f0fdf4; color: #16a34a; }
+            .stat-icon.purple { background: #faf5ff; color: #9333ea; }
+            .stat-icon.orange { background: #fff7ed; color: #ea580c; }
+
+            .stat-value { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+            .stat-label { color: var(--admin-text-muted); font-size: 0.9rem; }
+
+            @media (max-width: 900px) {
+                .admin-sidebar { width: 70px; }
+                .menu-label, .menu-item span, .sidebar-header span { display: none; }
+                .sidebar-header { justify-content: center; padding: 0; }
+                .menu-item a { justify-content: center; padding: 12px; }
+                .admin-main { margin-left: 70px; }
+            }
+            
+            /* Modal Styles */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 10, 0.4);
+                backdrop-filter: blur(4px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .modal-overlay.active {
+                display: flex;
+                opacity: 1;
+            }
+
+            .modal-card {
+                background: white;
+                width: 100%;
+                max-width: 600px; /* Wider for side-by-side fields */
+                border-radius: 12px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                transform: translateY(-20px);
+                transition: transform 0.3s ease;
+                overflow: hidden;
+            }
+
+            .modal-overlay.active .modal-card {
+                transform: translateY(0);
+            }
+
+            .modal-header {
+                padding: 16px 24px; /* Reduced vertical padding */
+                border-bottom: 1px solid var(--admin-border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #f8fafc;
+            }
+
+            .modal-header h2 {
+                font-size: 1.15rem; /* Slightly smaller */
+                font-weight: 700;
+                margin: 0;
+                color: var(--admin-text-main);
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 1.25rem;
+                color: var(--admin-text-muted);
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+
+            .modal-close:hover {
+                color: #ef4444;
+            }
+
+            .modal-body {
+                padding: 20px 24px; /* Reduced vertical padding */
+            }
+
+            .form-group {
+                margin-bottom: 1rem; /* Reduced margin */
+            }
+
+            .form-label {
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 500;
+                color: var(--admin-text-main);
+                margin-bottom: 0.35rem; /* Reduced margin */
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 0.5rem 0.75rem; /* Thinner inputs */
+                font-size: 0.875rem;
+                border: 1px solid var(--admin-border);
+                border-radius: 6px;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            .form-control:focus {
+                outline: none;
+                border-color: var(--admin-accent);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+
+            .modal-footer {
+                padding: 12px 24px; /* Reduced padding */
+                background: #f8fafc;
+                border-top: 1px solid var(--admin-border);
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+            }
+
+            .btn-secondary {
+                padding: 6px 14px; /* Slightly smaller buttons */
+                background: white;
+                border: 1px solid var(--admin-border);
+                border-radius: 6px;
+                color: var(--admin-text-main);
+                font-size: 0.85rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .btn-secondary:hover {
+                background: #f1f5f9;
+            }
+        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body class="admin-body">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-shield-alt"></i>
+                <span>AdminPanel</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-label">Main</li>
+                <li class="menu-item">
+                    <a href="{{ path('app_back') }}" class="{{ app.current_route == 'app_back' ? 'active' : '' }}">
+                        <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="menu-label">Management</li>
+                <li class="menu-item">
+                <li class="menu-item">
+                    <a href="{{ path('app_admin_user_index') }}" class="{{ app.current_route starts with 'app_admin_user' ? 'active' : '' }}">
+                        <i class="fas fa-users"></i> <span>Users</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ path('app_admin_groups') }}" class="{{ app.current_route starts with 'app_admin_groups' ? 'active' : '' }}">
+                        <i class="fas fa-users-cog"></i> <span>Groups</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ path('app_admin_temps') }}" class="{{ app.current_route == 'app_admin_temps' ? 'active' : '' }}">
+                        <i class="fas fa-clock"></i> <span>Temps</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ path('app_admin_objectives') }}" class="{{ app.current_route == 'app_admin_objectives' ? 'active' : '' }}">
+                        <i class="fas fa-bullseye"></i> <span>Objectives</span>
+                    </a>
+                </li>
+                <li class="menu-item"><a href="{{ path('app_admin_courses') }}"><i class="fas fa-book"></i> <span>Courses</span></a></li>
+                
+                
+                <li class="menu-label">System</li>
+                <li class="menu-item"><a href="#"><i class="fas fa-cogs"></i> <span>Settings</span></a></li>
+                <li class="menu-item"><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </aside>
+        
+        <div class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="breadcrumb">Admin / <span>{% block breadcrumb %}Dashboard{% endblock %}</span></div>
+                <div class="header-actions">
+                    <i class="fas fa-bell" style="color: var(--admin-text-muted); cursor: pointer;"></i>
+                    <div class="admin-profile">
+                        <div class="admin-avatar">AD</div>
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            {% block content %}{% endblock %}
+        </div>
+        
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
