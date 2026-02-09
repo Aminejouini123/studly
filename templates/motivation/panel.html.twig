@@ -1,0 +1,43 @@
+{# Motivation panel — card-style, intended to be injected into the Time Management page #}
+<div class="motivation-panel" style="max-width:420px;">
+    <div class="form-card" style="padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+                <strong>Motivation for</strong>
+                <div style="font-weight:700;">{{ event.title }}</div>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">Event #{{ event.id }}</div>
+        </div>
+
+        <div style="margin-bottom:8px;">
+            {% if motivation %}
+                <div style="font-weight:700;">Current motivation</div>
+                <div style="color:var(--text-muted);">Level: {{ motivation.motivationLevel }}</div>
+                <div style="color:var(--text-muted);">Emotion: {{ motivation.emotion }}</div>
+            {% else %}
+                <div style="color:var(--text-muted);">No motivation yet — create one.</div>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom:8px;">
+            {{ form_start(form, {'action': path('app_motivation_save', {id: event.id}), 'attr': {'class': 'motivation-form'}}) }}
+            <div style="display:grid; gap:8px;">
+                {{ form_row(form.motivationLevel, {'attr': {'class':'form-control'}}) }}
+                {{ form_row(form.emotion, {'attr': {'class':'form-control'}}) }}
+                {{ form_row(form.preparation, {'attr': {'class':'form-control'}}) }}
+                {{ form_row(form.reward, {'attr': {'class':'form-control'}}) }}
+                {# event and user are set server-side from route and current user; hide them if present #}
+                {% if form.event is defined %}{{ form_row(form.event, {'attr': {'class':'d-none'}}) }}{% endif %}
+                {% if form.user is defined %}{{ form_row(form.user, {'attr': {'class':'d-none'}}) }}{% endif %}
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+                <button class="btn-primary" type="submit">Save</button>
+                {% if motivation %}
+                    <button data-delete-motivation="{{ event.id }}" data-csrf="{{ csrf_token('delete_motivation' ~ event.id) }}" type="button" class="btn-secondary" style="background:#fff;border:1px solid #f5c6cb;color:#ff4757;">Delete</button>
+                {% endif %}
+                <button data-close-motivation type="button" class="btn-secondary">Close</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
