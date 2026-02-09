@@ -79,6 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_ETUDIANT']; // Default role
+        $this->courses = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -260,6 +261,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatut(?string $statut): static
     {
         $this->statut = $statut;
+
+        return $this;
+    }
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Course::class)]
+    private Collection $courses;
+
+    public function getCourses(): Collection
+    {
+        return $this->courses;
+    }
+
+    public function addCourse(Course $course): static
+    {
+        if (!$this->courses->contains($course)) {
+            $this->courses->add($course);
+            $course->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCourse(Course $course): static
+    {
+        if ($this->courses->removeElement($course)) {
+            // set the owning side to null (unless already changed)
+            if ($course->getUser() === $this) {
+                $course->setUser(null);
+            }
+        }
 
         return $this;
     }
