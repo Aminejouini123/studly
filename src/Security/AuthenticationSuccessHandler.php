@@ -22,7 +22,7 @@ class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterf
         $roles = $token->getRoleNames();
 
         if (in_array('ROLE_ADMIN', $roles, true)) {
-            return new Response(null, 302, ['Location' => $this->router->generate('app_back')]);
+            return new Response(null, 302, ['Location' => $this->router->generate('app_admin_user_index')]);
         }
 
         if (in_array('ROLE_ETUDIANT', $roles, true)) {

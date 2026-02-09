@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -33,32 +34,22 @@ class UserType extends AbstractType
             ->add('plainPassword', PasswordType::class, [
                 // instead of being set onto the object directly,
                 // this is read and encoded in the controller
-                'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'required' => false, // Allow empty for edit
-                'constraints' => [
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        'max' => 4096,
-                    ]),
-                ],
             ])
             ->add('firstName', TextType::class)
             ->add('lastName', TextType::class)
             ->add('dateOfBirth', DateType::class, [
                 'widget' => 'single_text',
-                'required' => false,
             ])
-            ->add('phoneNumber', TextType::class, ['required' => false])
-            ->add('address', TextareaType::class, ['required' => false])
+            ->add('phoneNumber', TextType::class)
+            ->add('address', TextareaType::class)
             ->add('statut', ChoiceType::class, [
                 'choices' => [
                     'Active' => 'Active',
                     'Inactive' => 'Inactive',
                     'Pending' => 'Pending'
                 ],
-                'required' => false,
             ])
         ;
     }
@@ -67,6 +58,13 @@ class UserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'validation_groups' => function (FormInterface $form) {
+                $data = $form->getData();
+                if ($data && is_null($data->getId())) {
+                    return ['Default', 'create'];
+                }
+                return ['Default'];
+            },
         ]);
     }
 }

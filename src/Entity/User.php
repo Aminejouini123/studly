@@ -7,11 +7,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -20,6 +23,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -31,19 +36,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[Assert\Length(min: 6, minMessage: "Le mot de passe doit faire au moins {{ limit }} caractères.")]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire", groups: ['create'])]
+    private ?string $plainPassword = null;
+
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\Length(min: 2, minMessage: "Le prénom doit faire au moins {{ limit }} caractères.")]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(min: 2, minMessage: "Le nom doit faire au moins {{ limit }} caractères.")]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: "La date de naissance est obligatoire")]
+    #[Assert\LessThanOrEqual("today", message: "La date de naissance ne peut pas être dans le futur.")]
     private ?\DateTimeInterface $dateOfBirth = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire")]
+    #[Assert\Regex(pattern: "/^[2459][0-9]{7}$/", message: "Le numéro de téléphone doit être un numéro tunisien valide (8 chiffres commençant par 2, 4, 5 ou 9).")]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     private ?string $address = null;
 
     #[ORM\Column]
@@ -54,6 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // Legacy fields kept for compatibility or future removal if needed, made nullable
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
 
     public function __construct()
@@ -129,13 +148,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
     /**
      * @see UserInterface
      */
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
     public function getFirstName(): ?string

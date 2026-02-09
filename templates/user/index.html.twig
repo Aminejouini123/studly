@@ -13,7 +13,213 @@
             </button>
         </div>
 
-        
+        <!-- Create/Edit User Modal -->
+        <div class="modal-overlay" id="userModal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Create New User</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="modal-body">
+                    <div class="form-group">
+                        {{ form_label(form.email, 'Email Address', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'name@example.com', 'id': 'user_email'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            {{ form_label(form.firstName, 'First Name', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'form-control', 'id': 'user_firstName'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.lastName, 'Last Name', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'form-control', 'id': 'user_lastName'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.roles, 'User Role', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.roles, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.roles) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.plainPassword, 'Password', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Min 6 characters', 'id': 'user_plainPassword'}}) }}
+                        {{ form_errors(form.plainPassword) }}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            {{ form_label(form.dateOfBirth, 'Date of Birth', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.dateOfBirth, {'attr': {'class': 'form-control', 'id': 'user_dateOfBirth'}}) }}
+                            {{ form_errors(form.dateOfBirth) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.phoneNumber, 'Phone Number', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.phoneNumber, {'attr': {'class': 'form-control', 'id': 'user_phoneNumber'}}) }}
+                            {{ form_errors(form.phoneNumber) }}
+                        </div>
+                    </div>
+
+                    <!-- Address & Status Side-by-Side -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            {{ form_label(form.address, 'Address', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.address, {'attr': {'class': 'form-control', 'rows': '1', 'id': 'user_address', 'style': 'resize: none; height: 38px;'}}) }}
+                            {{ form_errors(form.address) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.statut, 'Status', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.statut, {'attr': {'class': 'form-control', 'id': 'user_statut'}}) }}
+                            {{ form_errors(form.statut) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-action">Create User</button>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Roles</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.firstName }} {{ user.lastName }}</td>
+                            <td>
+                                {% for role in user.roles %}
+                                    <span class="status-badge" style="background: #e2e8f0; color: #475569;">{{ role }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ user.statut }}</td>
+                            <td style="display: flex; gap: 8px;">
+                                <button class="btn" style="background: none; border: none; padding: 0; color: var(--admin-accent); cursor: pointer;" 
+                                    onclick='openEditModal({
+                                        id: {{ user.id }},
+                                        email: "{{ user.email|e("js") }}",
+                                        firstName: "{{ user.firstName|e("js") }}",
+                                        lastName: "{{ user.lastName|e("js") }}",
+                                        roles: {{ user.roles|json_encode|raw }},
+                                        dateOfBirth: "{{ user.dateOfBirth ? user.dateOfBirth|date('Y-m-d') : '' }}",
+                                        phoneNumber: "{{ user.phoneNumber|default('')|e("js") }}",
+                                        address: "{{ user.address|default('')|e("js")|replace({"\n": "\\n", "\r": ""}) }}",
+                                        statut: "{{ user.statut|default('Pending')|e("js") }}"
+                                    })'>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Are you sure?');" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                    <button class="btn" style="background: none; border: none; padding: 0; color: #ef4444; cursor: pointer; margin: 0;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No records found</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
+{% block javascripts %}
+    <script>
+        const modal = document.getElementById('userModal');
+        const modalTitle = modal.querySelector('.modal-header h2');
+        const modalBtn = modal.querySelector('.modal-footer .btn-action');
+        const form = modal.querySelector('form');
+        
+        // Store default action for "Create" mode
+        const createAction = "{{ path('app_admin_user_index') }}";
+
+        function openModal() {
+            // Reset to Create Mode
+            modalTitle.innerText = 'Create New User';
+            modalBtn.innerText = 'Create User';
+            form.action = createAction;
+            form.reset();
+            
+            // Clear role checkboxes
+            document.querySelectorAll('input[name="user[roles][]"]').forEach(cb => cb.checked = false);
+
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function openEditModal(user) {
+            // Switch to Edit Mode
+            modalTitle.innerText = 'Edit User';
+            modalBtn.innerText = 'Update User';
+            
+            // Update Form Action (Correctly handles routing)
+            form.action = "/admin/user/" + user.id + "/edit";
+            
+            // Populate Fields
+            document.getElementById('user_email').value = user.email;
+            document.getElementById('user_firstName').value = user.firstName;
+            document.getElementById('user_lastName').value = user.lastName;
+            document.getElementById('user_dateOfBirth').value = user.dateOfBirth;
+            document.getElementById('user_phoneNumber').value = user.phoneNumber;
+            document.getElementById('user_address').value = user.address;
+            
+            // Handle Status Select
+            const statusSelect = document.getElementById('user_statut');
+            if(statusSelect) statusSelect.value = user.statut;
+            
+            // Handle Roles
+            document.querySelectorAll('input[name="user[roles][]"]').forEach(cb => {
+                cb.checked = user.roles.includes(cb.value);
+            });
+
+            // Make Password Optional visual cue (optional)
+            document.getElementById('user_plainPassword').placeholder = "Leave blank to keep current";
+
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // Auto-open if there are form errors (keeps current mode, server renders form with errors)
+        {% if not form.vars.valid %}
+            window.onload = function() {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        {% endif %}
+
+        // Close on overlay click
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+{% endblock %}

@@ -30,7 +30,7 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Handle plain password
-            $plainPassword = $form->get('plainPassword')->getData();
+            $plainPassword = $user->getPlainPassword();
             if ($plainPassword) {
                 $user->setPassword(
                     $userPasswordHasher->hashPassword(
@@ -52,4 +52,76 @@ final class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    {
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Handle plain password
+            $plainPassword = $user->getPlainPassword();
+            if ($plainPassword) {
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword(
+                        $user,
+                        $plainPassword
+                    )
+                );
+            }
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('user/new.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_admin_user_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, UserRepository $userRepository): Response
+    {
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Handle plain password if changed
+            $plainPassword = $user->getPlainPassword();
+            if ($plainPassword) {
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword(
+                        $user,
+                        $plainPassword
+                    )
+                );
+            }
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Return to index with form errors
+        return $this->render('user/index.html.twig', [
+            'users' => $userRepository->findAll(),
+            'form' => $form,
+            'editMode' => true // Optional: could use this to auto-open modal in template if needed
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_admin_user_delete', methods: ['POST'])]
+    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($user);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
 }
