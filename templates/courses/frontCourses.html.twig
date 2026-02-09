@@ -1,20 +1,721 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Hello CoursesController!{% endblock %}
+{% block title %}Mes Cours{% endblock %}
 
 {% block content %}
+<div class="courses-container">
+    <!-- En-tête -->
+    <div class="courses-header">
+        <div class="header-content">
+            <h1 class="page-title"> Mes Cours</h1>
+            <p class="page-subtitle">Gérez et suivez tous vos cours en un seul endroit</p>
+        </div>
+        <a href="{{ path('app_course_new') }}" class="btn-primary btn-lg">
+            <i class="icon">➕</i> Ajouter un Cours
+        </a>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="stats-banner">
+        <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|length }}</div>
+            <div class="stat-label">Cours Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'en cours')|length }}</div>
+            <div class="stat-label">En Cours</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'terminé')|length }}</div>
+            <div class="stat-label">Terminés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'en attente')|length }}</div>
+            <div class="stat-label">En Attente</div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Tableau des cours -->
+    <div class="courses-section">
+        <div class="section-header">
+            <h2> Liste des Cours</h2>
+            <div class="search-filter">
+                <input type="text" id="searchInput" class="search-box" placeholder=" Rechercher un cours...">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="en cours">En Cours</option>
+                    <option value="terminé">Terminé</option>
+                    <option value="en attente">En Attente</option>
+                </select>
+            </div>
+        </div>
+
+        {% if courses|length > 0 %}
+            <div class="courses-grid">
+                {% for course in courses %}
+                    <div class="course-card" data-status="{{ course.status }}">
+                        <div class="card-header-top">
+                            <h3 class="course-name">{{ course.name }}</h3>
+                            <span class="badge badge-status {{ 'status-' ~ course.status|lower|replace({' ': '-'}) }}">{{ course.status }}</span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="course-teacher" title="Enseignant">
+                                <i class="fas fa-chalkboard-teacher"></i> {{ course.teacherEmail }}
+                            </div>
+                            
+                            <div class="course-meta-grid">
+                                <div class="meta-item" title="Durée">
+                                    <i class="fas fa-clock"></i> <span>{{ course.duration }}h</span>
+                                </div>
+                                <div class="meta-item" title="Semestre">
+                                    <i class="fas fa-calendar-alt"></i> <span>{{ course.semester }}</span>
+                                </div>
+                                <div class="meta-item" title="Coefficient">
+                                    <i class="fas fa-weight-hanging"></i> <span>Coef: {{ course.coefficient }}</span>
+                                </div>
+                            </div>
+
+                            <div class="course-badges">
+                                <span class="badge badge-difficulty {{ 'difficulty-' ~ course.difficultyLevel|lower }}">{{ course.difficultyLevel }}</span>
+                                <span class="badge badge-type">{{ course.type }}</span>
+                                <span class="badge badge-priority {{ 'priority-' ~ course.priority|lower }}">{{ course.priority }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn-view-course">
+                                Voir les détails <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <div class="card-secondary-actions">
+                                <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-action btn-edit" title="Modifier le cours">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <form method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                                    <button type="submit" class="btn-action btn-delete" title="Supprimer le cours">
+                                        <i class="fas fa-trash-alt"></i> Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"></div>
+                <h3>Aucun cours trouvé</h3>
+                <p>Vous n'avez pas encore ajouté de cours. Commencez dès maintenant!</p>
+                <a href="{{ path('app_course_new') }}" class="btn-primary">Ajouter mon premier cours</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --sidebar-blue: #0059A9;
+        --sidebar-dark: #01304f; /* slightly lighter than before */
+        --sidebar-accent: #00B4D8;
+        --card-dark: #eaf6ff; /* soft, professional card background */
+        --card-light: #ffffff; /* page card */
+        --muted: #6c757d;
+        --text-on-dark: rgba(255,255,255,0.92);
+    }
+
+    .courses-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f9fd 0%, #eef4f9 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .courses-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--card-light);
+        color: #1F1F1F;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 6px 24px rgba(10, 45, 80, 0.06);
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        color: #0b2e4a;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #0059A9; /* sidebar blue */
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #001F3F; /* darker sidebar navy */
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 89, 169, 0.3);
+    }
+
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.9rem 2rem;
+    }
+
+    /* Statistiques - dark banner */
+    .stats-banner {
+        background: linear-gradient(90deg, rgba(6,40,80,1) 0%, var(--sidebar-blue) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: inset 0 -6px 20px rgba(0,0,0,0.12);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stat-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        padding: 1.25rem 1rem;
+        border-radius: 10px;
+        text-align: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        color: rgba(255,255,255,0.95);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+    }
+
+    .stat-number {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #d2f0ea; /* soft mint for numbers */
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: rgba(255,255,255,0.75);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Section Courses */
+    .courses-section {
+        background: var(--card-light);
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(10, 45, 80, 0.04);
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h2 {
+        color: #1F1F1F;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .search-filter {
+        display: flex;
+        gap: 1rem;
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .search-box, .filter-select {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box:focus, .filter-select:focus {
+        outline: none;
+        border-color: #0059A9;
+        box-shadow: 0 0 0 3px rgba(0, 89, 169, 0.06);
+    }
+
+    /* Tableau */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .courses-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .courses-table thead {
+        background: rgba(0,89,169,0.03);
+    }
+
+    .courses-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #1F1F1F;
+        border-bottom: 2px solid #e9ecef;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .courses-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        color: #555555;
+    }
+
+    /* Grid Layout */
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .course-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        border-color: rgba(0, 89, 169, 0.2);
+    }
+
+    .card-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1.25rem 1.25rem 0.5rem;
+        background: #ffffff;
+        border-bottom: none;
+        gap: 1rem;
+    }
+
+    .course-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0b2e4a;
+        margin: 0;
+        line-height: 1.4;
+        flex: 1;
+    }
+
+    /* Status badge in header */
+    .card-header-top .badge-status {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        white-space: nowrap;
+        align-self: flex-start;
+    }
+
+    .card-body {
+        padding: 0 1.25rem 1.25rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .course-teacher {
+        color: #64748b;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
+    .course-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 columns for metadata */
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .meta-item i {
+        font-size: 1rem;
+        color: #0059A9;
+        opacity: 0.8;
+    }
+
+    .card-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #f0f4f8;
+        background: #ffffff;
+    }
+
+    .btn-view-course {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem;
+        background: #0059A9; /* Sidebar Blue */
+        color: white;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 89, 169, 0.2);
+    }
+
+    .btn-view-course:hover {
+        background: #004481;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 89, 169, 0.3);
+    }
+
+    .card-secondary-actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem; /* Increased gap for better touch target separation */
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f4f8; /* visual separation from main content */
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.1rem; /* Comfortable hit area */
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        cursor: pointer;
+        background: transparent;
+    }
+
+    /* Edit Button - Soft Blue Theme */
+    .btn-edit {
+        background-color: #f0f9ff;
+        color: #0059A9;
+        border-color: rgba(0, 89, 169, 0.15);
+    }
+
+    .btn-edit:hover {
+        background-color: #0059A9;
+        color: white;
+        border-color: #0059A9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 89, 169, 0.2);
+    }
+
+    /* Delete Button - Soft Red Theme */
+    .btn-delete {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border-color: rgba(220, 38, 38, 0.15);
+    }
+
+    .btn-delete:hover {
+        background-color: #dc2626;
+        color: white;
+        border-color: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    .course-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: auto; /* Push to bottom of body if flex space exists */
+    }
+
+    /* Badges */
+    /* Badges - Unified Professional Theme */
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        
+        /* Default Style: Light Blue Background, Dark Blue Text (Matches Sidebar) */
+        background: #e6f0fa; 
+        color: #004080;
+        border: 1px solid rgba(0, 89, 169, 0.1);
+    }
+
+    /* Remove distinctive colors for non-status items to clean up UI */
+    .badge-difficulty, 
+    .badge-type, 
+    .badge-priority,
+    .badge-duration {
+        /* Inherits default style */
+    }
+
+    /* Difficulty modifiers - subtle variations or just keep uniform */
+    .difficulty-facile, .difficulty-moyen, .difficulty-difficile {
+        /* Uniform style to reduce "fruit salad" effect */
+        background: #f0f7ff;
+        color: #0059A9;
+        border-color: #dbeafe;
+    }
+
+    /* Priority modifiers */
+    .priority-élevée, .priority-normale, .priority-basse {
+         background: #f8fafc;
+         color: #475569;
+         border-color: #e2e8f0;
+    }
+
+    /* Status - Keep semantic but make it professional (Pastel) */
+    .badge-status {
+        border: 1px solid transparent;
+    }
+
+    .status-en-cours {
+        background: #fff7ed;
+        color: #c2410c; /* Muted Orange */
+        border-color: #ffedd5;
+    }
+
+    .status-terminé {
+        background: #eff6ff;
+        color: #1e40af; /* Professional Blue */
+        border-color: #dbeafe;
+    }
+
+    .status-en-attente {
+        background: #fef2f2;
+        color: #b91c1c; /* Muted Red */
+        border-color: #fee2e2;
+    }
+
+    .coefficient-value {
+        font-weight: 700;
+        color: #0059A9;
+        font-size: 1.1rem;
+    }
+
+    /* Actions */
+    .actions-cell {
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-icon {
+        width: 35px;
+        height: 35px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-view {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .btn-view:hover {
+        background: #1976d2;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .btn-edit {
+        background: #f3e5f5;
+        color: #6a1b9a;
+    }
+
+    .btn-edit:hover {
+        background: #6a1b9a;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .btn-delete {
+        background: #ffcdd2;
+        color: #c62828;
+    }
+
+    .btn-delete:hover {
+        background: #c62828;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #1F1F1F;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        color: #555555;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .courses-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-filter {
+            flex-direction: column;
+            min-width: auto;
+        }
+
+        .courses-table {
+            font-size: 0.9rem;
+        }
+
+        .courses-table th,
+        .courses-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .action-buttons {
+            gap: 0.25rem;
+        }
+
+        .btn-icon {
+            width: 30px;
+            height: 30px;
+            font-size: 0.9rem;
+        }
+    }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<script>
+    // Recherche en temps réel
+    document.getElementById('searchInput')?.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.course-card');
+        
+        rows.forEach(row => {
+            const text = row.querySelector('.course-name').textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/jouin/Project_PI/src/Controller/CoursesController.php</code></li>
-        <li>Your template at <code>C:/Users/jouin/Project_PI/templates/courses/index.html.twig</code></li>
-    </ul>
-</div>
+    // Filtre par statut
+    document.getElementById('statusFilter')?.addEventListener('change', function() {
+        const status = this.value;
+        const rows = document.querySelectorAll('.course-card');
+        
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            row.style.display = (!status || rowStatus === status) ? '' : 'none';
+        });
+    });
+
+
+</script>
 {% endblock %}
