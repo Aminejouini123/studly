@@ -46,45 +46,156 @@
 
 .form-error-message { color:#ff4757; font-size:0.85rem; margin-top:6px; display:flex; gap:8px; align-items:center; }
 
-.events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; margin-top:18px; }
-.event-card { background:#fff; border:1px solid var(--border-color); border-radius:12px; padding:18px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px; }
-.event-actions { display:flex; gap:8px; margin-top:auto; }
-.event-action { padding:8px 10px; border-radius:8px; text-decoration:none; text-align:center; font-weight:600; }
-.btn-edit { background:rgba(0,51,102,0.06); color:var(--primary-dark); border:1px solid var(--border-color); }
-.btn-delete { background:rgba(255,71,87,0.06); color:#ff4757; border:1px solid transparent; }
-
-/* Hierarchy: make labels slightly bolder, primary inputs subtle, and group headings clear */
-.form-card .section-title { font-size:0.98rem; font-weight:700; color:var(--primary-dark); margin-bottom:10px; }
-
-@media (max-width:900px) {
-    .form-grid { grid-template-columns: 1fr; gap:10px; }
-    .row { flex-direction:column; align-items:stretch; }
-    .form-card { padding:14px; }
+/* Modern Event Card Design */
+.events-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 24px; 
+    margin-top: 24px; 
 }
 
-/* Horizontal layout when Add Event is opened: form left, preview right */
-.form-body { display:block; }
-.form-card.horizontal .form-body { display:flex; gap:20px; align-items:flex-start; }
-.form-card.horizontal .form-grid { flex:1; min-width:0; }
-.preview { width:320px; border-left:1px solid var(--border-color); padding-left:16px; }
-.preview .preview-title { font-weight:700; margin:0 0 8px 0; }
-.preview .preview-card { background:linear-gradient(180deg,#fff,#fbfbfb); border-radius:10px; padding:12px; box-shadow:var(--shadow-xs); }
-.preview .preview-card-title { font-weight:700; font-size:1rem; margin-bottom:6px; }
-.preview .preview-card-meta { font-size:0.9rem; color:var(--text-muted); margin-bottom:8px; }
-.preview .preview-card-desc { font-size:0.9rem; color:var(--text-muted); }
-
-@media (max-width:900px) {
-    .form-card.horizontal { flex-direction:column; }
-    .preview { width:100%; border-left:none; padding-left:0; margin-top:12px; }
-    .form-body { display:block; }
+.event-card { 
+    background: #fff; 
+    border: 1px solid transparent; 
+    border-radius: 16px; 
+    padding: 24px; 
+    box-shadow: var(--shadow-sm); 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    transition: all 0.3s ease; 
+    position: relative; 
+    overflow: hidden; 
 }
 
-/* Parent container expanded state: push events list to the right */
-#temps-main { display:block; }
-#temps-main.expanded { display:grid; grid-template-columns: 1fr 420px; gap:20px; align-items:start; }
+.event-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: var(--shadow-md); 
+    border-color: rgba(0,0,0,0.05); 
+}
 
-@media (max-width:900px) {
-    #temps-main.expanded { display:block; }
+.event-card::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; left: 0; width: 100%; height: 4px; 
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light)); 
+    opacity: 0; 
+    transition: opacity 0.3s; 
+}
+
+.event-card:hover::before { opacity: 1; }
+
+.event-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    gap: 12px; 
+}
+
+.event-title { 
+    font-size: 1.25rem; 
+    font-weight: 700; 
+    color: var(--text-dark); 
+    margin: 0; 
+    line-height: 1.3; 
+}
+
+.event-date { 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    font-size: 0.85rem; 
+    color: var(--text-muted); 
+    background: #f8f9fa; 
+    padding: 6px 10px; 
+    border-radius: 8px; 
+    white-space: nowrap; 
+}
+
+.event-description { 
+    font-size: 0.95rem; 
+    color: var(--text-muted); 
+    line-height: 1.5; 
+    flex-grow: 1; /* Pushes footer down */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.event-badges { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; 
+    margin-top: auto; /* Ensure badges sit just above actions or at bottom of content */ 
+}
+
+.badge { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 5px; 
+    padding: 5px 10px; 
+    border-radius: 6px; 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+}
+
+.badge.priority { background: rgba(255, 193, 7, 0.15); color: #b4890a; }
+.badge.status { background: rgba(0, 198, 255, 0.1); color: #009ec3; }
+.badge.duration { background: rgba(108, 117, 125, 0.1); color: var(--text-muted); }
+
+.event-actions { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; /* Space out primary action from secondary ones */
+    margin-top: 20px; 
+    padding-top: 16px; 
+    border-top: 1px solid var(--border-color); 
+}
+
+.actions-group { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.btn-icon { 
+    width: 36px; 
+    height: 36px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 8px; 
+    transition: 0.2s; 
+    border: none; 
+    font-size: 0.95rem; 
+    cursor: pointer; 
+}
+
+.btn-icon.edit { background: rgba(0, 86, 179, 0.08); color: var(--accent-blue); }
+.btn-icon.edit:hover { background: var(--accent-blue); color: #fff; }
+
+.btn-icon.delete { background: rgba(255, 71, 87, 0.08); color: #ff4757; }
+.btn-icon.delete:hover { background: #ff4757; color: #fff; }
+
+.btn-motivation { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); 
+    color: #fff; 
+    font-weight: 600; 
+    font-size: 0.9rem; 
+    text-decoration: none; 
+    box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2); 
+    transition: transform 0.2s, box-shadow 0.2s; 
+}
+
+.btn-motivation:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(0, 51, 102, 0.3); 
+    color: #fff; 
 }
 
 </style>
@@ -239,29 +350,52 @@
         <div class="events-grid">
             {% for event in events %}
                 <div class="event-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                        <div style="font-weight:700;">{{ event.title }}</div>
-                        <div style="font-size:0.85rem; color:var(--text-muted);">{{ event.date ? event.date|date('M d, Y') }}</div>
+                    <div class="event-header">
+                        <h3 class="event-title">{{ event.title }}</h3>
+                        {% if event.date %}
+                            <div class="event-date">
+                                <i class="fas fa-calendar-day"></i> {{ event.date|date('M d, Y') }}
+                            </div>
+                        {% endif %}
                     </div>
 
-                    <div style="color:var(--text-muted);">{{ event.description|default('No description') }}</div>
+                    <div class="event-description">
+                        {{ event.description|default('No description provided.') }}
+                    </div>
 
-                    <div class="event-details" style="display:flex; gap:8px; flex-wrap:wrap; color:var(--text-muted);">
-                        {% if event.duration %}<div><i class="fas fa-hourglass-end"></i> {{ event.duration }}m</div>{% endif %}
-                        {% if event.priority %}<div><i class="fas fa-bolt"></i> {{ event.priority }}</div>{% endif %}
-                        {% if event.status %}<div><i class="fas fa-info-circle"></i> {{ event.status }}</div>{% endif %}
+                    <div class="event-badges">
+                        {% if event.duration %}
+                            <span class="badge duration"><i class="fas fa-clock"></i> {{ event.duration }}m</span>
+                        {% endif %}
+                        {% if event.priority %}
+                            <span class="badge priority"><i class="fas fa-bolt"></i> {{ event.priority }}</span>
+                        {% endif %}
+                        {% if event.status %}
+                            <span class="badge status"><i class="fas fa-info-circle"></i> {{ event.status }}</span>
+                        {% endif %}
                     </div>
 
                     <div class="event-actions">
                         {% if app.user and event.user and event.user.id == app.user.id %}
-                            <a href="{{ path('app_temps_edit', {id: event.id}) }}" class="event-action btn-edit"> <i class="fas fa-edit"></i> Edit</a>
-                            <form method="POST" action="{{ path('app_temps_delete', {id: event.id}) }}" style="flex:1; margin:0;" onsubmit="return confirm('Delete this event?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
-                                <button type="submit" class="event-action btn-delete"> <i class="fas fa-trash"></i> Delete</button>
-                            </form>
-                            <button data-motivation-event="{{ event.id }}" class="event-action btn-primary" style="margin-left:8px; background:linear-gradient(90deg,#2d9cdb,#20c0ff);"> <i class="fas fa-lightbulb"></i> Motivation</button>
+                            <a href="{{ path('app_motivation_panel', {id: event.id}) }}" class="btn-motivation">
+                                <i class="fas fa-lightbulb"></i> Motivation
+                            </a>
+
+                            <div class="actions-group">
+                                <a href="{{ path('app_temps_edit', {id: event.id}) }}" class="btn-icon edit" title="Edit Event">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form method="POST" action="{{ path('app_temps_delete', {id: event.id}) }}" style="margin:0;" onsubmit="return confirm('Delete this event?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                    <button type="submit" class="btn-icon delete" title="Delete Event">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
                         {% else %}
-                            <div style="color:var(--text-muted); font-size:0.9rem;">Not editable</div>
+                            <div style="width:100%; text-align:center; color:var(--text-muted); font-size:0.9rem;">
+                                <i class="fas fa-lock"></i> Read Only
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -368,78 +502,7 @@
 })();
 </script>
 
-<script>
-// Motivation button: delegate clicks, load motivation panel and inject into the right column
-(function(){
-    document.addEventListener('DOMContentLoaded', function(){
-        var container = document.getElementById('event-form-container');
-        var tempsMain = document.getElementById('temps-main');
 
-        function showError(msg){ console.error(msg); alert(msg); }
-
-        function loadPanel(eventId, triggerBtn){
-            if(triggerBtn) triggerBtn.disabled = true;
-            fetch('/temps/' + eventId + '/motivations', {headers:{'X-Requested-With':'XMLHttpRequest'}})
-                .then(function(r){ if(!r.ok) throw new Error('Fetch failed ' + r.status); return r.text(); })
-                .then(function(html){
-                    if(container) container.innerHTML = html;
-                    if(tempsMain) tempsMain.classList.add('expanded');
-                    bindPanelActions(container, eventId);
-                })
-                .catch(function(err){
-                    console.error('Failed to load motivation panel', err);
-                    showError('Impossible de charger le panneau Motivation.');
-                })
-                .finally(function(){ if(triggerBtn) triggerBtn.disabled = false; });
-        }
-
-        function bindPanelActions(containerEl, eventId){
-            if(!containerEl) return;
-            // close
-            var close = containerEl.querySelector('[data-close-motivation]');
-            if(close) close.addEventListener('click', function(){ containerEl.innerHTML=''; if(tempsMain) tempsMain.classList.remove('expanded'); });
-
-            // delete
-            containerEl.querySelectorAll('[data-delete-motivation]').forEach(function(del){
-                del.addEventListener('click', function(){
-                    if(!confirm('Delete motivation?')) return;
-                    var token = del.getAttribute('data-csrf') || '';
-                    fetch('/temps/' + eventId + '/motivations/delete', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest','Content-Type':'application/json'}, body: JSON.stringify({'_token': token})})
-                        .then(function(r){ if(!r.ok) throw new Error('Delete failed ' + r.status); return r.json(); })
-                        .then(function(json){ if(json.success){ containerEl.innerHTML=''; if(tempsMain) tempsMain.classList.remove('expanded'); } else { showError('Delete failed'); } })
-                        .catch(function(e){ console.error(e); showError('Suppression impossible.'); });
-                });
-            });
-
-            // save form via AJAX
-            var form = containerEl.querySelector('form.motivation-form');
-            if(form){
-                form.addEventListener('submit', function(e){
-                    e.preventDefault();
-                    var btn = form.querySelector('button[type="submit"]');
-                    if(btn) btn.disabled = true;
-                    var data = new FormData(form);
-                    fetch(form.getAttribute('action') || ('/temps/' + eventId + '/motivations/save'), {method:'POST', body:data, headers:{'X-Requested-With':'XMLHttpRequest'}})
-                        .then(function(r){ if(!r.ok) throw new Error('Save failed ' + r.status); return r.text(); })
-                        .then(function(html){ if(containerEl) containerEl.innerHTML = html; bindPanelActions(containerEl, eventId); })
-                        .catch(function(err){ console.error('Save failed', err); showError('Impossible de sauvegarder.'); })
-                        .finally(function(){ if(btn) btn.disabled = false; });
-                });
-            }
-        }
-
-        // Delegate clicks on motivation buttons anywhere in the document
-        document.body.addEventListener('click', function(e){
-            var btn = e.target.closest('[data-motivation-event]');
-            if(!btn) return;
-            e.preventDefault();
-            var id = btn.getAttribute('data-motivation-event');
-            if(!id) return;
-            loadPanel(id, btn);
-        });
-    });
-})();
-</script>
 
 <script>
 // Ensure edit links and delete buttons work even if CSS overlays interfere

@@ -41,7 +41,7 @@ class Event
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
-    #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]

@@ -25,7 +25,7 @@ class Motivation
     #[ORM\Column(length: 255)]
     private ?string $reward = null;
 
-    #[ORM\OneToOne(mappedBy: 'motivation', targetEntity: Event::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'motivation', targetEntity: Event::class)]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(inversedBy: 'motivations')]
@@ -91,16 +91,6 @@ class Motivation
 
     public function setEvent(?Event $event): static
     {
-        // unset the owning side of the relation if necessary
-        if ($event === null && $this->event !== null) {
-            $this->event->setMotivation(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($event !== null && $event->getMotivation() !== $this) {
-            $event->setMotivation($this);
-        }
-
         $this->event = $event;
 
         return $this;

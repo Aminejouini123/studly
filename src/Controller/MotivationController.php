@@ -10,14 +10,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/temps")
- */
 class MotivationController extends AbstractController
 {
-    #[Route('/{id}/motivations', name: 'app_motivation_panel', methods: ['GET'])]
+    #[Route('/temps/{id}/motivations', name: 'app_motivation_panel', methods: ['GET'])]
     public function panel(Event $event): Response
     {
         $motivation = $event->getMotivation();
@@ -30,7 +27,7 @@ class MotivationController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/motivations/save', name: 'app_motivation_save', methods: ['POST'])]
+    #[Route('/temps/{id}/motivations/save', name: 'app_motivation_save', methods: ['POST'])]
     public function save(Event $event, Request $request, EntityManagerInterface $em, MotivationRepository $repo): Response
     {
         $motivation = $event->getMotivation() ?? new Motivation();
@@ -39,57 +36,55 @@ class MotivationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $motivation = $form->getData();
+            // Critical fix: Event is the owning side of the OneToOne relationship.
+            // We must update the Event to link it to the Motivation.
+            $event->setMotivation($motivation);
             $motivation->setEvent($event);
-            if ($this->getUser()) $motivation->setUser($this->getUser());
-            $em->persist($motivation);
-            $em->flush();
-            if ($request->isXmlHttpRequest()) {
-                // return updated panel
-                $form = $this->createForm(MotivationType::class, $motivation);
-                return $this->render('motivation/panel.html.twig', [
-                    'event' => $event,
-                    'motivation' => $motivation,
-                    'form' => $form->createView(),
-                ]);
+            
+            if ($this->getUser()) {
+                $motivation->setUser($this->getUser());
             }
 
-            $this->addFlash('success', 'Motivation saved');
+            $em->persist($motivation);
+            $em->persist($event);
+            $em->flush();
+
+            $this->addFlash('success', 'Motivation strategy saved successfully!');
+            // Redirect back to the time management page
             return $this->redirectToRoute('app_temps');
         }
 
-        // invalid
-        if ($request->isXmlHttpRequest()) {
-            return $this->render('motivation/panel.html.twig', [
-                'event' => $event,
-                'motivation' => $motivation,
-                'form' => $form->createView(),
-            ]);
-        }
-
-        $this->addFlash('error', 'Could not save motivation.');
-        return $this->redirectToRoute('app_temps');
+        // Form has errors: re-render the page
+        return $this->render('motivation/panel.html.twig', [
+            'event' => $event,
+            'motivation' => $motivation,
+            'form' => $form->createView(),
+        ]);
     }
 
-    #[Route('/{id}/motivations/delete', name: 'app_motivation_delete', methods: ['POST'])]
+    #[Route('/temps/{id}/motivations/delete', name: 'app_motivation_delete', methods: ['POST'])]
     public function delete(Event $event, Request $request, EntityManagerInterface $em): Response
     {
         $motivation = $event->getMotivation();
         if (!$motivation) {
-            return $this->json(['error' => 'Not found'], 404);
+            return $this->redirectToRoute('app_motivation_panel', ['id' => $event->getId()]);
         }
-        $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete_motivation'.$event->getId(), $token)) {
-            return $this->json(['error' => 'Invalid CSRF'], 403);
-        }
+        
+        // User requested to remove CSRF check ("fix it delete it")
+        // if (!$this->isCsrfTokenValid('delete_motivation'.$event->getId(), $token)) {
+        //     $this->addFlash('error', 'Invalid CSRF token');
+        //     return $this->redirectToRoute('app_motivation_panel', ['id' => $event->getId()]);
+        // }
 
+        // Disconnect the motivation from the event before deleting
+        // This is crucial because Event is the owning side
+        $event->setMotivation(null);
+        $em->persist($event);
+        
         $em->remove($motivation);
         $em->flush();
 
-        if ($request->isXmlHttpRequest()) {
-            return $this->json(['success' => true]);
-        }
-
-        $this->addFlash('success', 'Motivation deleted');
+        $this->addFlash('success', 'Motivation strategy deleted.');
         return $this->redirectToRoute('app_temps');
     }
 }

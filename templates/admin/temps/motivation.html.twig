@@ -1,0 +1,70 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Manage Motivation{% endblock %}
+
+{% block breadcrumb %}Time Management / Motivation{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <h1 class="page-title">Manage Motivation</h1>
+        
+         {% for message in app.flashes('success') %}
+            <div class="alert alert-success" style="padding: 1rem; background-color: #dcfce7; color: #166534; border-radius: 6px; margin-bottom: 1rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="content-card" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-header">
+                <h3>Motivation Strategy for: {{ event.title }}</h3>
+                 <div style="display: flex; gap: 10px;">
+                    <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                      {% if motivation.id %}
+                        <form method="post" action="{{ path('app_admin_temps_motivation_delete', {'id': event.id}) }}" onsubmit="return confirm('Delete motivation strategy?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_motivation' ~ event.id) }}">
+                             <button class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;">Delete Strategy</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="padding: 24px;">
+                {{ form_start(form) }}
+                     {% if not form.vars.valid %}
+                    <div class="alert alert-danger" style="margin-bottom: 20px; color: #dc2626;">
+                        {{ form_errors(form) }}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label class="form-label">Motivation Level (1-10)</label>
+                        {{ form_widget(form.motivationLevel) }}
+                         <small style="color: #dc2626;">{{ form_errors(form.motivationLevel) }}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Emotion</label>
+                        {{ form_widget(form.emotion) }}
+                         <small style="color: #dc2626;">{{ form_errors(form.emotion) }}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Preparation</label>
+                        {{ form_widget(form.preparation) }}
+                         <small style="color: #dc2626;">{{ form_errors(form.preparation) }}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reward</label>
+                        {{ form_widget(form.reward) }}
+                         <small style="color: #dc2626;">{{ form_errors(form.reward) }}</small>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: right;">
+                        <button class="btn-action">Save Strategy</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

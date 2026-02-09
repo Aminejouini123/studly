@@ -106,9 +106,5 @@ final class TempsController extends AbstractController
         return $this->redirectToRoute('app_temps');
     }
 
-    #[Route('/admin/temps', name: 'app_admin_temps')]
-    public function adminIndex(): Response
-    {
-        return $this->render('temps/backTemps.html.twig');
-    }
+
 }

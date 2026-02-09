@@ -1,0 +1,82 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Time Management (Admin){% endblock %}
+
+{% block breadcrumb %}Time Management{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <h1 class="page-title">Time Management</h1>
+        
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success" style="padding: 1rem; background-color: #dcfce7; color: #166534; border-radius: 6px; margin-bottom: 1rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3>Schedule</h3>
+                <a href="{{ path('app_admin_temps_new') }}" class="btn-action"><i class="fas fa-plus"></i> Add Event</a>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Duration</th>
+                            <th>Status/Priority</th>
+                            <th>Motivation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>{{ event.id }}</td>
+                            <td>{{ event.title }}</td>
+                            <td>{{ event.date ? event.date|date('Y-m-d') : '' }}</td>
+                            <td>{{ event.type }}</td>
+                            <td>{{ event.duration }} min</td>
+                             <td>
+                                <span class="status-badge {{ event.status == 'Completed' ? 'status-active' : 'status-pending' }}">{{ event.status }}</span>
+                                <span class="status-badge" style="background: #e2e8f0; color: #475569;">{{ event.priority }}</span>
+                            </td>
+                            <td>
+                                {% if event.motivation %}
+                                    <span class="status-badge status-active">Set</span>
+                                {% else %}
+                                    <span class="status-badge" style="background: #fee2e2; color: #991b1b;">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ path('app_admin_temps_motivation', {'id': event.id}) }}" class="btn-secondary" title="Manage Motivation">
+                                        <i class="fas fa-brain"></i>
+                                    </a>
+                                    <a href="{{ path('app_admin_temps_edit', {'id': event.id}) }}" class="btn-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_admin_temps_delete', {'id': event.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');" style="display: inline-block;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                        <button class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center;">No schedule entries found.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
