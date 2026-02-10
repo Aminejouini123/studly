@@ -1,0 +1,372 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Modifier le Cours{% endblock %}
+
+{% block content %}
+<div class="course-form-container">
+    <!-- En-tête -->
+    <div class="form-header">
+        <div class="header-content">
+            <h1 class="page-title">Modifier le Cours</h1>
+            <p class="page-subtitle">Mettez à jour les informations du cours: {{ course.name }}</p>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'class': 'course-form', 'novalidate': true}, 'multipart': true}) }}
+
+        <div class="form-grid">
+            <!-- Première ligne -->
+            <div class="form-group">
+                {{ form_label(form.name, 'Nom du Cours') }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.teacherEmail, 'Email du Professeur') }}
+                {{ form_widget(form.teacherEmail, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.teacherEmail) }}
+            </div>
+
+            <!-- Deuxième ligne -->
+            <div class="form-group">
+                {{ form_label(form.semester, 'Semestre') }}
+                {{ form_widget(form.semester, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.semester) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.difficultyLevel, 'Niveau de Difficulté') }}
+                {{ form_widget(form.difficultyLevel, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.difficultyLevel) }}
+            </div>
+
+            <!-- Troisième ligne -->
+            <div class="form-group">
+                {{ form_label(form.type, 'Type de Cours') }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.priority, 'Priorité') }}
+                {{ form_widget(form.priority, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.priority) }}
+            </div>
+
+            <!-- Quatrième ligne -->
+            <div class="form-group">
+                {{ form_label(form.status, 'Statut') }}
+                {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.status) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.coefficient, 'Coefficient') }}
+                {{ form_widget(form.coefficient, {'attr': {'class': 'form-input', 'step': '0.5'}}) }}
+                {{ form_errors(form.coefficient) }}
+            </div>
+
+            <!-- Cinquième ligne -->
+            <div class="form-group">
+                {{ form_label(form.duration, 'Durée (en heures)') }}
+                {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'min': '1'}}) }}
+                {{ form_errors(form.duration) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.courseFile, 'Fichier du Cours') }}
+                {{ form_widget(form.courseFile, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.courseFile) }}
+            </div>
+
+            <!-- Sixième ligne -->
+            <div class="form-group full-width">
+                {{ form_label(form.courseLink, 'Lien du Cours') }}
+                {{ form_widget(form.courseLink, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.courseLink) }}
+            </div>
+
+            <!-- Commentaires -->
+            <div class="form-group full-width">
+                {{ form_label(form.comment, 'Commentaires') }}
+                {{ form_widget(form.comment, {'attr': {'class': 'form-input form-textarea', 'rows': '4'}}) }}
+                {{ form_errors(form.comment) }}
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="icon">💾</i> Enregistrer les Modifications
+            </button>
+            <a href="{{ path('app_courses') }}" class="btn-cancel">
+                <i class="icon">❌</i> Annuler
+            </a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .course-form-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f9fd 0%, #eef4f9 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #FFFFFF;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        color: #1F1F1F;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #555555;
+        font-size: 1rem;
+    }
+
+    /* Carte du formulaire */
+    .form-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .course-form {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Grille du formulaire */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #1F1F1F;
+        font-size: 0.95rem;
+    }
+
+    /* Inputs et Selects */
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        background: #FFFFFF;
+        color: #333;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #00B4D8;
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
+    }
+
+    .form-input:invalid {
+        border-color: #d84315;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Erreurs de validation */
+    .form-group .form-error,
+    .form-group ul {
+        color: #d84315;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-group ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .form-group li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Boutons d'action */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-submit,
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit {
+        background: #00B4D8;
+        color: white;
+    }
+
+    .btn-submit:hover {
+        background: #0077B6;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 180, 216, 0.4);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .btn-cancel {
+        background: #f0f0f0;
+        color: #1F1F1F;
+    }
+
+    .btn-cancel:hover {
+        background: #e0e0e0;
+    }
+
+    /* Messages d'erreur globaux */
+    .form-errors {
+        background: #ffebee;
+        border: 1px solid #ffcdd2;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: #c62828;
+    }
+
+    .form-errors h4 {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .form-errors ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .form-errors li {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .course-form-container {
+            padding: 1rem;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit,
+        .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .course-form-container {
+            padding: 0.5rem;
+        }
+
+        .form-card {
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .header-content h1 {
+            font-size: 1.25rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit,
+        .btn-cancel {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+{% endblock %}

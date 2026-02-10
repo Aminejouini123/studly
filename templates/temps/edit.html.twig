@@ -1,0 +1,152 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Edit Event - Student Hub{% endblock %}
+
+{% block content %}
+<style>
+    .edit-header { margin-bottom: 20px; }
+    .edit-header h1 { font-size: 1.8rem; color: #1a1a1a; margin: 0 0 6px; font-weight:700; }
+    .edit-header p { color: var(--text-muted); margin:0; }
+
+    .edit-container { display:grid; grid-template-columns: 1fr 360px; gap:28px; align-items:start; max-width:1100px; }
+    .edit-card { background:#fff; border:1px solid var(--border-color); border-radius:12px; padding:22px; box-shadow:var(--shadow-sm); }
+    .edit-card h2 { margin-top:0; font-size:1.2rem; color:#1a1a1a; font-weight:600; }
+
+    .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+    .form-group label { font-weight:600; color:var(--text-dark); font-size:0.95rem; }
+
+    .form-control { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border-color); background:#fff; font-size:0.95rem; transition:0.15s; }
+    .form-control:focus { outline:none; border-color:var(--primary-dark); box-shadow:0 0 0 4px rgba(0,51,102,0.06); }
+
+    textarea.form-control { min-height:120px; resize:vertical; }
+
+    /* Error states */
+    .has-error .form-control { border-color:#ff4757; background:rgba(255,71,87,0.03); }
+    .form-error-message { color:#ff4757; font-size:0.85rem; margin-top:6px; display:flex; gap:8px; align-items:center; }
+
+    .form-actions { display:flex; gap:10px; margin-top:18px; }
+    .btn-primary { padding:10px 14px; border-radius:10px; background:linear-gradient(135deg,var(--primary-dark),var(--primary-light)); color:#fff; border:none; }
+    .btn-secondary { padding:10px 14px; border-radius:10px; border:1px solid var(--border-color); background:transparent; color:var(--primary-dark); }
+
+    .event-preview { background:#fff; border:1px solid var(--border-color); border-radius:12px; padding:18px; box-shadow:var(--shadow-sm); position:sticky; top:20px; }
+    .event-preview h3 { margin-top:0; font-size:1.1rem; color:#1a1a1a; font-weight:600; border-bottom:1px solid var(--border-color); padding-bottom:12px; }
+
+    @media (max-width:900px) { .edit-container { grid-template-columns:1fr; } .event-preview { position:relative; top:auto; } }
+</style>
+
+<div class="edit-header">
+    <h1>✏️ Edit Event</h1>
+    <p>Update the event details below</p>
+</div>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h2>Event Details</h2>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
+            <div class="form-group">
+                {{ form_label(form.title, 'Event Title *') }}
+                {{ form_widget(form.title, {'attr': {'placeholder': 'Enter event title', 'class': 'form-control'}}) }}
+                {% for error in form.title.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.date, 'Date *') }}
+                {{ form_widget(form.date, {'attr': {'type': 'date', 'class': 'form-control'}}) }}
+                {% for error in form.date.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.duration, 'Duration (minutes)') }}
+                {{ form_widget(form.duration, {'attr': {'type': 'number', 'class': 'form-control', 'min': 1, 'max': 1440}}) }}
+                {% for error in form.duration.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.location, 'Location') }}
+                {{ form_widget(form.location, {'attr': {'placeholder': 'Event location', 'class': 'form-control'}}) }}
+                {% for error in form.location.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.status, 'Status *') }}
+                {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.status.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.priority, 'Priority *') }}
+                {{ form_widget(form.priority, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.priority.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.difficulty, 'Difficulty Level (1-5)') }}
+                {{ form_widget(form.difficulty, {'attr': {'type': 'number', 'min': 1, 'max': 5, 'class': 'form-control'}}) }}
+                {% for error in form.difficulty.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group" style="grid-column:1 / -1;">
+                {{ form_label(form.description, 'Description') }}
+                {{ form_widget(form.description, {'attr': {'rows': 4, 'class': 'form-control'}}) }}
+                {% for error in form.description.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group" style="grid-column:1 / -1;">
+                {{ form_label(form.type, 'Type') }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-control', 'placeholder': 'e.g., Exam, Project'}}) }}
+                {% for error in form.type.vars.errors %}
+                    <div class="form-error-message">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            <a href="{{ path('app_temps') }}" class="btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+    <div class="event-preview">
+        <h3>Event Preview</h3>
+
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Title</div><div style="font-weight:600;">{{ event.title ?? 'Not set' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Date</div><div>{{ event.date ? event.date|date('F d, Y') : 'Not set' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Priority</div><div>{{ event.priority ?? 'Not set' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Status</div><div>{{ event.status ?? 'Not set' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Duration</div><div>{{ event.duration ?? 'Not set' }} minutes</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Location</div><div>{{ event.location ?? 'Not set' }}</div></div>
+        {% if event.description %}
+            <div><div style="font-size:0.85rem;color:var(--text-muted);">Description</div><div>{{ event.description }}</div></div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var d = new Date();
+    var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    document.querySelectorAll('input[type="date"]').forEach(function(i){ i.setAttribute('min', iso); });
+});
+</script>
+{% endblock %}

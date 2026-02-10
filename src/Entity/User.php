@@ -84,6 +84,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
 
+
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -91,6 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->events = new ArrayCollection();
         $this->motivations = new ArrayCollection();
         $this->groups = new ArrayCollection();
+        $this->courses = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -288,7 +291,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->events->contains($event)) {
             $this->events->add($event);
+
             $event->setUser($this);
+        }
+
+        return $this;
+    }
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Course::class)]
+    private Collection $courses;
+
+    public function getCourses(): Collection
+    {
+        return $this->courses;
+    }
+
+    public function addCourse(Course $course): static
+    {
+        if (!$this->courses->contains($course)) {
+            $this->courses->add($course);
+            $course->setUser($this);
+
         }
 
         return $this;
@@ -336,6 +359,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
     /**
      * @return Collection<int, Group>
      */
@@ -360,6 +384,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($group->getCreator() === $this) {
                 $group->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeCourse(Course $course): static
+    {
+        if ($this->courses->removeElement($course)) {
+            // set the owning side to null (unless already changed)
+            if ($course->getUser() === $this) {
+                $course->setUser(null);
+
             }
         }
 

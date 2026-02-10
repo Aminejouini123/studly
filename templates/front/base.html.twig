@@ -330,6 +330,18 @@
         color: var(--primary-dark);
     }
 
+    /* Neutralize browser default :invalid red styling inside front area */
+    input:required:invalid,
+    select:required:invalid,
+    textarea:required:invalid,
+    input:invalid,
+    select:invalid,
+    textarea:invalid {
+        border-color: var(--border-color) !important;
+        box-shadow: none !important;
+        background-color: #fff !important;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
         .sidebar {
@@ -405,7 +417,7 @@
         <header class="topbar">
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search for courses...">
+                <input type="text" id="event-search-input" placeholder="Search for events...">
             </div>
             <div class="user-actions">
                 <div class="icon-btn">
