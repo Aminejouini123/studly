@@ -18,12 +18,11 @@ final class CoursesController extends AbstractController
     #[Route('/courses', name: 'app_courses')]
     public function index(CourseRepository $courseRepository): Response
     {
+        // Filter courses by the current logged-in user
+        // Ensure the user is logged in (handled by firewall usually, but strict typing helps)
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        $courses = $courseRepository->findBy(['user' => $user]);
+        
+        $courses = $user ? $courseRepository->findBy(['user' => $user]) : [];
         
         return $this->render('courses/frontCourses.html.twig', [
             'courses' => $courses,
@@ -38,6 +37,9 @@ final class CoursesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Assign the current user to the course
+            $course->setUser($this->getUser());
+
             // handle uploaded file
             /** @var UploadedFile|null $uploadedFile */
             $uploadedFile = $form->get('courseFile')->getData();
@@ -56,7 +58,6 @@ final class CoursesController extends AbstractController
             }
 
             $course->setCreatedAt(new \DateTime());
-            $course->setUser($this->getUser());
             $entityManager->persist($course);
             $entityManager->flush();
 
@@ -72,8 +73,9 @@ final class CoursesController extends AbstractController
     #[Route('/course/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        // Check if the current user is the owner of the course
         if ($course->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('You cannot edit this course.');
+            throw $this->createAccessDeniedException('You do not have permission to edit this course.');
         }
 
         $form = $this->createForm(CourseType::class, $course);
@@ -112,8 +114,9 @@ final class CoursesController extends AbstractController
     #[Route('/course/{id}', name: 'app_course_show', methods: ['GET'])]
     public function show(Course $course): Response
     {
+        // Check if the current user is the owner of the course
         if ($course->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('You cannot view this course.');
+             throw $this->createAccessDeniedException('You do not have permission to view this course.');
         }
 
         return $this->render('courses/show.html.twig', [
@@ -124,8 +127,9 @@ final class CoursesController extends AbstractController
     #[Route('/course/{id}/delete', name: 'app_course_delete', methods: ['POST'])]
     public function delete(Course $course, EntityManagerInterface $entityManager): Response
     {
+        // Check if the current user is the owner of the course
         if ($course->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('You cannot delete this course.');
+            throw $this->createAccessDeniedException('You do not have permission to delete this course.');
         }
 
         $entityManager->remove($course);

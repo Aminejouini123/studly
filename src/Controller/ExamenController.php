@@ -11,7 +11,7 @@ final class ExamenController extends AbstractController
     #[Route('/examen', name: 'app_examen')]
     public function index(): Response
     {
-        return $this->render('examen/index.html.twig', [
+        return $this->render('examen/frontExamen.html.twig', [
             'controller_name' => 'ExamenController',
         ]);
     }

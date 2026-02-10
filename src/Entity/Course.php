@@ -282,7 +282,7 @@ class Course
         return $this;
     }
 
-    #[ORM\ManyToOne(inversedBy: 'courses')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 
