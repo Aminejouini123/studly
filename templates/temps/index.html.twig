@@ -10,8 +10,8 @@
 .row { display:flex; gap:12px; align-items:center; justify-content:space-between; }
 
 /* Add Event toggle button */
-.form-toggle-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:linear-gradient(90deg,var(--primary-dark),var(--primary-light)); color:#fff; border:none; cursor:pointer; font-weight:700; box-shadow:0 8px 22px rgba(0,51,102,0.08); transition:transform .12s ease, box-shadow .12s ease, opacity .12s; }
-.form-toggle-btn i { font-size:1rem; }
+.form-toggle-btn { display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:999px; background:linear-gradient(90deg,var(--primary-dark),var(--primary-light)); color:#fff; border:none; cursor:pointer; font-weight:700; font-size:0.98rem; box-shadow:0 10px 26px rgba(0,51,102,0.15); transition:transform .14s ease, box-shadow .14s ease, opacity .12s; }
+.form-toggle-btn i { font-size:1.05rem; }
 .form-toggle-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,51,102,0.12); }
 .form-toggle-btn:active { transform:translateY(0); }
 .form-toggle-btn:focus { outline:3px solid rgba(0,51,102,0.12); outline-offset:2px; }
@@ -47,31 +47,34 @@
 .form-error-message { color:#ff4757; font-size:0.85rem; margin-top:6px; display:flex; gap:8px; align-items:center; }
 
 /* Modern Event Card Design */
+/* Events layout */
 .events-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 24px; 
-    margin-top: 24px; 
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+    gap: 26px; 
+    margin-top: 26px; 
 }
 
+/* Event card – refined spacing, hierarchy and visual polish */
 .event-card { 
-    background: #fff; 
-    border: 1px solid transparent; 
-    border-radius: 16px; 
-    padding: 24px; 
+    background: #ffffff; 
+    border: 1px solid rgba(233, 236, 239, 0.9); 
+    border-radius: 18px; 
+    padding: 22px 22px 20px; 
     box-shadow: var(--shadow-sm); 
     display: flex; 
     flex-direction: column; 
-    gap: 16px; 
-    transition: all 0.3s ease; 
+    gap: 14px; 
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease; 
     position: relative; 
     overflow: hidden; 
 }
 
 .event-card:hover { 
-    transform: translateY(-5px); 
+    transform: translateY(-4px); 
     box-shadow: var(--shadow-md); 
-    border-color: rgba(0,0,0,0.05); 
+    border-color: rgba(0, 123, 255, 0.18); 
+    background-color: #fbfdff;
 }
 
 .event-card::before { 
@@ -89,11 +92,11 @@
     display: flex; 
     justify-content: space-between; 
     align-items: flex-start; 
-    gap: 12px; 
+    gap: 14px; 
 }
 
 .event-title { 
-    font-size: 1.25rem; 
+    font-size: 1.2rem; 
     font-weight: 700; 
     color: var(--text-dark); 
     margin: 0; 
@@ -104,11 +107,11 @@
     display: flex; 
     align-items: center; 
     gap: 6px; 
-    font-size: 0.85rem; 
+    font-size: 0.82rem; 
     color: var(--text-muted); 
-    background: #f8f9fa; 
-    padding: 6px 10px; 
-    border-radius: 8px; 
+    background: #f8f9fb; 
+    padding: 6px 11px; 
+    border-radius: 999px; 
     white-space: nowrap; 
 }
 
@@ -127,15 +130,15 @@
     display: flex; 
     flex-wrap: wrap; 
     gap: 8px; 
-    margin-top: auto; /* Ensure badges sit just above actions or at bottom of content */ 
+    margin-top: 4px; 
 }
 
 .badge { 
     display: inline-flex; 
     align-items: center; 
     gap: 5px; 
-    padding: 5px 10px; 
-    border-radius: 6px; 
+    padding: 4px 10px; 
+    border-radius: 999px; 
     font-size: 0.8rem; 
     font-weight: 600; 
 }
@@ -144,45 +147,81 @@
 .badge.status { background: rgba(0, 198, 255, 0.1); color: #009ec3; }
 .badge.duration { background: rgba(108, 117, 125, 0.1); color: var(--text-muted); }
 
+/* Footer actions – clearer hierarchy, spacing and responsive layout */
 .event-actions { 
     display: flex; 
     align-items: center; 
-    justify-content: space-between; /* Space out primary action from secondary ones */
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 16px;
     margin-top: 20px; 
     padding-top: 16px; 
     border-top: 1px solid var(--border-color); 
 }
 
-.actions-group { 
-    display: flex; 
-    gap: 10px; 
+.event-actions-main,
+.event-actions-secondary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.event-actions-secondary {
+    margin-left: auto;
 }
 
 .btn-icon { 
-    width: 36px; 
-    height: 36px; 
-    display: flex; 
+    display: inline-flex; 
     align-items: center; 
     justify-content: center; 
-    border-radius: 8px; 
-    transition: 0.2s; 
+    gap: 8px;
+    padding: 9px 18px;
+    min-height: 40px;
+    border-radius: 999px; 
     border: none; 
-    font-size: 0.95rem; 
+    font-size: 0.9rem; 
+    font-weight: 600;
     cursor: pointer; 
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
 }
 
-.btn-icon.edit { background: rgba(0, 86, 179, 0.08); color: var(--accent-blue); }
-.btn-icon.edit:hover { background: var(--accent-blue); color: #fff; }
+.btn-icon i {
+    font-size: 0.9rem;
+}
 
-.btn-icon.delete { background: rgba(255, 71, 87, 0.08); color: #ff4757; }
-.btn-icon.delete:hover { background: #ff4757; color: #fff; }
+.btn-icon-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.btn-icon.edit { 
+    background: linear-gradient(135deg, #e4f0ff, #c7ddff); 
+    color: var(--accent-blue); 
+}
+.btn-icon.edit:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 86, 179, 0.25);
+}
+
+.btn-icon.delete { 
+    background: linear-gradient(135deg, #ffe1e6, #ffb3c0); 
+    color: #b3263a; 
+}
+.btn-icon.delete:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 71, 87, 0.25);
+}
 
 .btn-motivation { 
     display: inline-flex; 
     align-items: center; 
+    justify-content: center;
     gap: 8px; 
-    padding: 8px 16px; 
-    border-radius: 8px; 
+    padding: 9px 18px; 
+    border-radius: 999px; 
     background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); 
     color: #fff; 
     font-weight: 600; 
@@ -198,6 +237,165 @@
     color: #fff; 
 }
 
+.btn-motivation.focus {
+    background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+}
+
+/* Weekly stats card – API visualisation */
+.weekly-stats-card {
+    margin-top: 18px;
+}
+
+.weekly-stats-header {
+    margin-bottom: 10px;
+}
+
+.weekly-stats-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.weekly-stats-subtitle {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.weekly-stats-body {
+    margin-top: 6px;
+}
+
+.weekly-stats-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.weekly-stats-empty,
+.weekly-stats-loading,
+.weekly-stats-error {
+    font-size: 0.9rem;
+}
+
+.weekly-stats-empty,
+.weekly-stats-loading {
+    color: var(--text-muted);
+}
+
+.weekly-stats-error {
+    color: #ff4757;
+}
+
+.weekly-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.weekly-stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(233, 236, 239, 0.8);
+}
+
+.weekly-stats-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weekly-stats-week {
+    font-weight: 600;
+}
+
+.weekly-stats-range {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.weekly-stats-hours {
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+    text-align: right;
+}
+
+.weekly-stats-bar {
+    width: 110px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(0, 123, 255, 0.08);
+    overflow: hidden;
+}
+
+.weekly-stats-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+    width: 0;
+    transition: width 0.4s ease;
+}
+
+.weekly-stats-chart {
+    min-height: 180px;
+}
+
+.weekly-stats-chart canvas {
+    width: 100%;
+    max-height: 230px;
+}
+
+@media (max-width: 768px) {
+    .event-card {
+        padding: 18px 16px;
+        gap: 14px;
+    }
+
+    .event-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .event-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .event-actions-main,
+    .event-actions-secondary {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .event-actions-secondary {
+        justify-content: flex-end;
+    }
+
+    .btn-motivation {
+        flex: 1;
+    }
+}
+
+@keyframes pulse-highlight {
+    0% { transform: scale(1); box-shadow: var(--shadow-sm); border-color: transparent; }
+    50% { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0, 198, 255, 0.3); border-color: var(--primary-light); }
+    100% { transform: scale(1); box-shadow: var(--shadow-sm); border-color: transparent; }
+}
+
+.event-card {
+    transition: transform 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.event-card.search-match {
+    border: 2px solid var(--primary-light);
+    box-shadow: 0 8px 24px rgba(0, 198, 255, 0.15);
+    background-color: #fbfdff;
+    position: relative;
+    z-index: 10;
+}
 </style>
 
 <div class="time-management-header">
@@ -338,7 +536,17 @@
     {# Events list #}
     <div id="events-list">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h2 style="margin:0;">Your Events</h2>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <h2 style="margin:0;">Your Events</h2>
+            <div class="sort-controls" style="display:flex; gap:8px;">
+                <a href="{{ path('app_temps') }}" class="badge {{ app.request.query.get('sort') != 'priority' ? 'priority' : 'duration' }}" style="text-decoration:none; cursor:pointer; padding:6px 12px; font-size:0.85rem;">
+                    <i class="fas fa-calendar"></i> Date
+                </a>
+                <a href="{{ path('app_temps', {'sort': 'priority'}) }}" class="badge {{ app.request.query.get('sort') == 'priority' ? 'priority' : 'duration' }}" style="text-decoration:none; cursor:pointer; padding:6px 12px; font-size:0.85rem;">
+                    <i class="fas fa-layer-group"></i> Priority
+                </a>
+            </div>
+        </div>
         {% if events %}
             <div class="events-count">{{ events|length }} event{{ events|length > 1 ? 's' : '' }}</div>
         {% endif %}
@@ -373,21 +581,47 @@
                         {% if event.status %}
                             <span class="badge status"><i class="fas fa-info-circle"></i> {{ event.status }}</span>
                         {% endif %}
+                        {% if event.pomodoroSessions|length > 0 %}
+                            <div class="pomodoro-summary" style="margin-top:10px;">
+                                <details>
+                                    <summary style="cursor:pointer; font-size:0.85rem; color:#ff5722; font-weight:600;">
+                                        <i class="fas fa-stopwatch"></i> {{ event.pomodoroSessions|length }} Sessions Plan
+                                    </summary>
+                                    <ul style="list-style:none; padding:10px; margin:5px 0 0; background:#fff5f2; border-radius:8px; font-size:0.8rem;">
+                                        {% for session in event.pomodoroSessions %}
+                                            <li style="display:flex; justify-content:space-between; margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid rgba(255,87,34,0.1);">
+                                                <span>
+                                                    {% if session.type == 'WORK' %}🍅 Work{% elseif session.type == 'SHORT_BREAK' %}☕ Short Break{% else %}🛌 Long Break{% endif %}
+                                                </span>
+                                                <strong>{{ session.duration }}m</strong>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="event-actions">
                         {% if app.user and event.user and event.user.id == app.user.id %}
-                            <a href="{{ path('app_motivation_panel', {id: event.id}) }}" class="btn-motivation">
-                                <i class="fas fa-lightbulb"></i> Motivation
-                            </a>
+                            <div class="event-actions-main">
+                                <a href="{{ path('app_motivation_panel', {id: event.id}) }}" class="btn-motivation">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>Motivation</span>
+                                </a>
+                                <a href="{{ path('app_event_pomodoro', {id: event.id}) }}" class="btn-motivation focus">
+                                    <i class="fas fa-stopwatch"></i>
+                                    <span>Focus</span>
+                                </a>
+                            </div>
 
-                            <div class="actions-group">
-                                <a href="{{ path('app_temps_edit', {id: event.id}) }}" class="btn-icon edit" title="Edit Event">
+                            <div class="event-actions-secondary">
+                                <a href="{{ path('app_temps_edit', {id: event.id}) }}" class="btn-icon edit" title="Edit Event" aria-label="Edit Event">
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form method="POST" action="{{ path('app_temps_delete', {id: event.id}) }}" style="margin:0;" onsubmit="return confirm('Delete this event?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
-                                    <button type="submit" class="btn-icon delete" title="Delete Event">
+                                    <button type="submit" class="btn-icon delete" title="Delete Event" aria-label="Delete Event">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
@@ -403,7 +637,25 @@
         </div>
     {% endif %}
     </div>
+
+    {# Weekly time statistics (API-backed) #}
+    <div class="form-card weekly-stats-card">
+        <div class="card-header weekly-stats-header">
+            <div>
+                <h2>Weekly Time Overview</h2>
+                <p class="lead weekly-stats-subtitle">Total hours worked per week, based on your events.</p>
+            </div>
+        </div>
+        <div class="weekly-stats-layout">
+            <div id="weekly-time-stats" class="weekly-stats-body"></div>
+            <div class="weekly-stats-chart">
+                <canvas id="weekly-time-chart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 // Dynamic form injection, toggle behavior, client validation and live preview
@@ -503,6 +755,200 @@
 </script>
 
 
+<script>
+// Load weekly time statistics from the REST API and render them on the Time Management page
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var container = document.getElementById('weekly-time-stats');
+        var chartCanvas = document.getElementById('weekly-time-chart');
+        if (!container) {
+            return;
+        }
+
+        function renderEmpty() {
+            container.innerHTML = '<div class="weekly-stats-empty">No time data yet. Create events with a duration to see weekly stats.</div>';
+        }
+
+        function formatDateLabel(iso) {
+            if (!iso) {
+                return '';
+            }
+            // Expecting "YYYY-MM-DD" from API
+            var parts = String(iso).split('-');
+            if (parts.length !== 3) {
+                return iso;
+            }
+            var year = parts[0];
+            var monthIndex = parseInt(parts[1], 10) - 1;
+            var day = parts[2];
+
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var monthLabel = months[monthIndex] || parts[1];
+
+            // Example: "07 Dec 2026"
+            return day + ' ' + monthLabel + ' ' + year;
+        }
+
+        container.innerHTML = '<div class="weekly-stats-loading">Loading weekly stats...</div>';
+
+        fetch('/api/events/stats', {
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function (payload) {
+                var data = payload && payload.data ? payload.data : [];
+                if (!data.length) {
+                    renderEmpty();
+                    return;
+                }
+
+                var maxHours = 0;
+                data.forEach(function (item) {
+                    var h = parseFloat(item.totalHours) || 0;
+                    if (h > maxHours) {
+                        maxHours = h;
+                    }
+                });
+
+                var list = document.createElement('div');
+                list.className = 'weekly-stats-list';
+
+                data.forEach(function (item) {
+                    var row = document.createElement('div');
+                    row.className = 'weekly-stats-row';
+
+                    var info = document.createElement('div');
+                    info.className = 'weekly-stats-info';
+
+                    var weekLabel = document.createElement('span');
+                    weekLabel.className = 'weekly-stats-week';
+                    weekLabel.textContent = item.week || '';
+
+                    var dateRange = document.createElement('span');
+                    dateRange.className = 'weekly-stats-range';
+                    dateRange.textContent = formatDateLabel(item.startDate) + ' → ' + formatDateLabel(item.endDate);
+
+                    info.appendChild(weekLabel);
+                    info.appendChild(dateRange);
+
+                    var right = document.createElement('div');
+                    right.style.display = 'flex';
+                    right.style.flexDirection = 'column';
+                    right.style.alignItems = 'flex-end';
+
+                    var hours = parseFloat(item.totalHours) || 0;
+                    var hoursLabel = document.createElement('span');
+                    hoursLabel.className = 'weekly-stats-hours';
+                    hoursLabel.textContent = (Math.round(hours * 10) / 10) + ' h';
+
+                    var bar = document.createElement('div');
+                    bar.className = 'weekly-stats-bar';
+                    var barFill = document.createElement('div');
+                    barFill.className = 'weekly-stats-bar-fill';
+                    var percent = maxHours > 0 ? (hours / maxHours) * 100 : 0;
+                    barFill.style.width = percent + '%';
+                    bar.appendChild(barFill);
+
+                    right.appendChild(hoursLabel);
+                    right.appendChild(bar);
+
+                    row.appendChild(info);
+                    row.appendChild(right);
+                    list.appendChild(row);
+                });
+
+                container.innerHTML = '';
+                container.appendChild(list);
+
+                // Build chart if Chart.js is available and canvas is present
+                if (chartCanvas && typeof Chart !== 'undefined') {
+                    var ctx = chartCanvas.getContext('2d');
+                    if (chartCanvas._chartInstance) {
+                        chartCanvas._chartInstance.destroy();
+                    }
+
+                    var labels = data.map(function (item) { return item.week; });
+                    var hoursData = data.map(function (item) {
+                        return parseFloat(item.totalHours) || 0;
+                    });
+
+                    var gradient = ctx.createLinearGradient(0, 0, 0, 220);
+                    gradient.addColorStop(0, 'rgba(0, 198, 255, 0.9)');
+                    gradient.addColorStop(1, 'rgba(0, 51, 102, 0.2)');
+
+                    chartCanvas._chartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Hours per week',
+                                data: hoursData,
+                                backgroundColor: gradient,
+                                borderRadius: 8,
+                                borderWidth: 0,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (ctx) {
+                                            return (ctx.parsed.y || 0) + ' h';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            size: 11
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        font: {
+                                            size: 11
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(230, 236, 241, 0.8)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(function () {
+                container.innerHTML = '<div class="weekly-stats-error">Unable to load weekly stats right now.</div>';
+            });
+    });
+})();
+</script>
+
+
 
 <script>
 // Ensure edit links and delete buttons work even if CSS overlays interfere
@@ -536,6 +982,110 @@
                     }
                 }
             });
+        });
+    });
+})();
+</script>
+
+<script>
+// Search highlighting with FLIP animation for smooth reordering
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('event-search-input');
+        if (!searchInput) return;
+
+        const container = document.querySelector('.events-grid');
+        // We'll query cards dynamically inside the input event or update the list if cards are added/removed.
+        // For now, assuming static list after load.
+        let cards = Array.from(document.querySelectorAll('.event-card'));
+        
+        let debounceTimer;
+
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const term = e.target.value.toLowerCase().trim();
+                
+                // Refresh list in case DOM changed
+                cards = Array.from(document.querySelectorAll('.event-card'));
+
+                // 1. First: Record initial positions
+                const firstRects = new Map();
+                cards.forEach(card => {
+                    firstRects.set(card, card.getBoundingClientRect());
+                });
+
+                // 2. Identify best match
+                let bestCard = null;
+                let maxScore = 0;
+
+                if (term.length > 0) {
+                    cards.forEach(card => {
+                        const title = card.querySelector('.event-title') ? card.querySelector('.event-title').textContent.toLowerCase() : '';
+                        const desc = card.querySelector('.event-description') ? card.querySelector('.event-description').textContent.toLowerCase() : '';
+                        
+                        let score = 0;
+                        if (title.startsWith(term)) score = 100;
+                        else if (title.includes(term)) score = 50;
+                        else if (desc.includes(term)) score = 10;
+                        
+                        // We strictly want only one, so we pick the first highest score we see, 
+                        // or we could collect all and sort, but first-highest is usually fine for "best match".
+                        // Logic: Update if strictly greater to keep first occurrence of high score,
+                        // or update if >= to get last. Let's keep first occurrence of best score.
+                        if (score > maxScore) {
+                            maxScore = score;
+                            bestCard = card;
+                        }
+                    });
+                }
+
+                // 3. Apply state changes
+                cards.forEach(card => {
+                    if (card === bestCard) {
+                        card.classList.add('search-match');
+                        card.style.order = "-1"; // Move to top
+                    } else {
+                        card.classList.remove('search-match');
+                        card.style.order = "0"; // Reset order
+                    }
+                });
+
+                // 4. Last: Record final positions
+                const lastRects = new Map();
+                cards.forEach(card => {
+                    lastRects.set(card, card.getBoundingClientRect());
+                });
+
+                // 5. Invert: Calculate delta and apply transform
+                cards.forEach(card => {
+                    const first = firstRects.get(card);
+                    const last = lastRects.get(card);
+                    
+                    if (!first || !last) return;
+
+                    const deltaX = first.left - last.left;
+                    const deltaY = first.top - last.top;
+
+                    // Only animate if position changed significantly
+                    if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
+                        card.style.transition = 'none';
+                        card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    }
+                });
+
+                // Force reflow
+                document.body.offsetHeight; 
+
+                // 6. Play: Remove transform to animate to final position
+                cards.forEach(card => {
+                    if (card.style.transform && card.style.transform !== '') {
+                        card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        card.style.transform = '';
+                    }
+                });
+
+            }, 50); // Debounce delay
         });
     });
 })();

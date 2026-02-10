@@ -44,8 +44,47 @@ class Event
     #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'])]
+    private $pomodoroSessions;
+
     #[ORM\ManyToOne(inversedBy: 'events')]
     private ?User $user = null;
+
+    public function __construct()
+    {
+        $this->pomodoroSessions = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, PomodoroSession>
+     */
+    public function getPomodoroSessions(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->pomodoroSessions;
+    }
+
+    public function addPomodoroSession(PomodoroSession $pomodoroSession): static
+    {
+        if (!$this->pomodoroSessions->contains($pomodoroSession)) {
+            $this->pomodoroSessions->add($pomodoroSession);
+            $pomodoroSession->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removePomodoroSession(PomodoroSession $pomodoroSession): static
+    {
+        if ($this->pomodoroSessions->removeElement($pomodoroSession)) {
+            // set the owning side to null (unless already changed)
+            if ($pomodoroSession->getEvent() === $this) {
+                $pomodoroSession->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
 
     public function getId(): ?int
     {
