@@ -198,6 +198,23 @@
     color: #fff; 
 }
 
+@keyframes pulse-highlight {
+    0% { transform: scale(1); box-shadow: var(--shadow-sm); border-color: transparent; }
+    50% { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0, 198, 255, 0.3); border-color: var(--primary-light); }
+    100% { transform: scale(1); box-shadow: var(--shadow-sm); border-color: transparent; }
+}
+
+.event-card {
+    transition: transform 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.event-card.search-match {
+    border: 2px solid var(--primary-light);
+    box-shadow: 0 8px 24px rgba(0, 198, 255, 0.15);
+    background-color: #fbfdff;
+    position: relative;
+    z-index: 10;
+}
 </style>
 
 <div class="time-management-header">
@@ -338,7 +355,17 @@
     {# Events list #}
     <div id="events-list">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h2 style="margin:0;">Your Events</h2>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <h2 style="margin:0;">Your Events</h2>
+            <div class="sort-controls" style="display:flex; gap:8px;">
+                <a href="{{ path('app_temps') }}" class="badge {{ app.request.query.get('sort') != 'priority' ? 'priority' : 'duration' }}" style="text-decoration:none; cursor:pointer; padding:6px 12px; font-size:0.85rem;">
+                    <i class="fas fa-calendar"></i> Date
+                </a>
+                <a href="{{ path('app_temps', {'sort': 'priority'}) }}" class="badge {{ app.request.query.get('sort') == 'priority' ? 'priority' : 'duration' }}" style="text-decoration:none; cursor:pointer; padding:6px 12px; font-size:0.85rem;">
+                    <i class="fas fa-layer-group"></i> Priority
+                </a>
+            </div>
+        </div>
         {% if events %}
             <div class="events-count">{{ events|length }} event{{ events|length > 1 ? 's' : '' }}</div>
         {% endif %}
@@ -536,6 +563,110 @@
                     }
                 }
             });
+        });
+    });
+})();
+</script>
+
+<script>
+// Search highlighting with FLIP animation for smooth reordering
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('event-search-input');
+        if (!searchInput) return;
+
+        const container = document.querySelector('.events-grid');
+        // We'll query cards dynamically inside the input event or update the list if cards are added/removed.
+        // For now, assuming static list after load.
+        let cards = Array.from(document.querySelectorAll('.event-card'));
+        
+        let debounceTimer;
+
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const term = e.target.value.toLowerCase().trim();
+                
+                // Refresh list in case DOM changed
+                cards = Array.from(document.querySelectorAll('.event-card'));
+
+                // 1. First: Record initial positions
+                const firstRects = new Map();
+                cards.forEach(card => {
+                    firstRects.set(card, card.getBoundingClientRect());
+                });
+
+                // 2. Identify best match
+                let bestCard = null;
+                let maxScore = 0;
+
+                if (term.length > 0) {
+                    cards.forEach(card => {
+                        const title = card.querySelector('.event-title') ? card.querySelector('.event-title').textContent.toLowerCase() : '';
+                        const desc = card.querySelector('.event-description') ? card.querySelector('.event-description').textContent.toLowerCase() : '';
+                        
+                        let score = 0;
+                        if (title.startsWith(term)) score = 100;
+                        else if (title.includes(term)) score = 50;
+                        else if (desc.includes(term)) score = 10;
+                        
+                        // We strictly want only one, so we pick the first highest score we see, 
+                        // or we could collect all and sort, but first-highest is usually fine for "best match".
+                        // Logic: Update if strictly greater to keep first occurrence of high score,
+                        // or update if >= to get last. Let's keep first occurrence of best score.
+                        if (score > maxScore) {
+                            maxScore = score;
+                            bestCard = card;
+                        }
+                    });
+                }
+
+                // 3. Apply state changes
+                cards.forEach(card => {
+                    if (card === bestCard) {
+                        card.classList.add('search-match');
+                        card.style.order = "-1"; // Move to top
+                    } else {
+                        card.classList.remove('search-match');
+                        card.style.order = "0"; // Reset order
+                    }
+                });
+
+                // 4. Last: Record final positions
+                const lastRects = new Map();
+                cards.forEach(card => {
+                    lastRects.set(card, card.getBoundingClientRect());
+                });
+
+                // 5. Invert: Calculate delta and apply transform
+                cards.forEach(card => {
+                    const first = firstRects.get(card);
+                    const last = lastRects.get(card);
+                    
+                    if (!first || !last) return;
+
+                    const deltaX = first.left - last.left;
+                    const deltaY = first.top - last.top;
+
+                    // Only animate if position changed significantly
+                    if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
+                        card.style.transition = 'none';
+                        card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    }
+                });
+
+                // Force reflow
+                document.body.offsetHeight; 
+
+                // 6. Play: Remove transform to animate to final position
+                cards.forEach(card => {
+                    if (card.style.transform && card.style.transform !== '') {
+                        card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        card.style.transform = '';
+                    }
+                });
+
+            }, 50); // Debounce delay
         });
     });
 })();

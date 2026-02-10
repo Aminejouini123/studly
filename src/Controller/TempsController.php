@@ -19,7 +19,14 @@ final class TempsController extends AbstractController
     public function index(EventRepository $eventRepository, Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+        $sort = $request->query->get('sort');
+
+        if ($sort === 'priority') {
+            $events = $eventRepository->findByUserSortedByPriority($user);
+        } else {
+            // Default sort by date
+            $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+        }
 
         $event = new Event();
         $form = $this->createForm(EventType::class, $event);
