@@ -1,0 +1,119 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Motivation for {{ event.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h1 style="margin-bottom: 5px;">Motivation Setup</h1>
+            <p style="color: var(--text-muted);">Define your motivation strategy for <strong>{{ event.title }}</strong></p>
+        </div>
+        <a href="{{ path('app_temps') }}" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fas fa-arrow-left"></i> Back to Events
+        </a>
+    </div>
+
+    <div class="form-card" style="background:#fff; border:1px solid var(--border-color); border-radius:16px; padding:30px; box-shadow:var(--shadow-sm);">
+        
+        <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <div style="width: 50px; height: 50px; background: rgba(0, 51, 102, 0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-size: 1.5rem;">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 5px 0;">Current Status</h3>
+                    {% if motivation %}
+                        <div style="display: flex; gap: 15px; color: var(--text-muted);">
+                            <span><i class="fas fa-tachometer-alt"></i> Level: <strong>{{ motivation.motivationLevel }}</strong></span>
+                            <span><i class="fas fa-smile"></i> Emotion: <strong>{{ motivation.emotion|capitalize }}</strong></span>
+                        </div>
+                    {% else %}
+                        <div style="color: var(--text-muted);">No motivation strategy defined yet. Fill out the form below to get started!</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {{ form_start(form, {'action': path('app_motivation_save', {id: event.id}), 'attr': {'novalidate': 'novalidate'}}) }}
+        
+        {% if form.vars.errors|length > 0 %}
+            <div class="alert alert-danger" style="background:#fff5f5; border:1px solid #fed7d7; color:#c53030; padding:15px; border-radius:8px; margin-bottom:20px;">
+                <strong><i class="fas fa-exclamation-circle"></i> Please fix the following errors:</strong>
+                <ul style="margin: 5px 0 0 20px;">
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div style="display: grid; gap: 20px;">
+            <div class="form-group">
+                {{ form_label(form.motivationLevel, 'Motivation Level (1-10)', {'label_attr': {'style': 'font-weight: 600; margin-bottom: 8px; display: block;'}}) }}
+                {{ form_widget(form.motivationLevel, {'attr': {'class':'form-control', 'style': 'padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;'}}) }}
+                <small class="form-text text-muted">How motivated do you feel right now?</small>
+                {% if form.motivationLevel.vars.errors|length > 0 %}
+                    <div style="color:#dc3545; font-size:0.85rem; margin-top:5px;">
+                        {% for error in form.motivationLevel.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.emotion, 'Current Emotion', {'label_attr': {'style': 'font-weight: 600; margin-bottom: 8px; display: block;'}}) }}
+                {{ form_widget(form.emotion, {'attr': {'class':'form-control', 'style': 'padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;'}}) }}
+                {% if form.emotion.vars.errors|length > 0 %}
+                    <div style="color:#dc3545; font-size:0.85rem; margin-top:5px;">
+                        {% for error in form.emotion.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.preparation, 'Preparation Steps', {'label_attr': {'style': 'font-weight: 600; margin-bottom: 8px; display: block;'}}) }}
+                {{ form_widget(form.preparation, {'attr': {'class':'form-control', 'style': 'padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;'}}) }}
+                <small class="form-text text-muted">What have you done to get ready?</small>
+                {% if form.preparation.vars.errors|length > 0 %}
+                    <div style="color:#dc3545; font-size:0.85rem; margin-top:5px;">
+                        {% for error in form.preparation.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.reward, 'Reward', {'label_attr': {'style': 'font-weight: 600; margin-bottom: 8px; display: block;'}}) }}
+                {{ form_widget(form.reward, {'attr': {'class':'form-control', 'style': 'padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;'}}) }}
+                <small class="form-text text-muted">What will you give yourself after completing this?</small>
+                {% if form.reward.vars.errors|length > 0 %}
+                    <div style="color:#dc3545; font-size:0.85rem; margin-top:5px;">
+                        {% for error in form.reward.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            <a href="{{ path('app_temps') }}" class="btn-secondary" style="padding: 10px 20px; border-radius: 10px; text-decoration: none; color: var(--text-dark); border: 1px solid var(--border-color);">Cancel</a>
+            
+            {% if motivation %}
+                <button type="button" onclick="if(confirm('Are you sure you want to delete this motivation strategy?')) document.getElementById('delete-motivation-form').submit();" class="btn-secondary" style="background: #fff; border: 1px solid #f5c6cb; color: #ff4757; padding: 10px 20px; border-radius: 10px; cursor: pointer;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            {% endif %}
+            
+            <button type="submit" class="btn-primary" style="padding: 10px 25px; border-radius: 10px; background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); color: #fff; border: none; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-save"></i> Save Strategy
+            </button>
+        </div>
+        
+        {{ form_end(form) }}
+
+        {% if motivation %}
+            <form id="delete-motivation-form" method="post" action="{{ path('app_motivation_delete', {'id': event.id}) }}" style="display: none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_motivation' ~ event.id) }}">
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

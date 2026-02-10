@@ -75,10 +75,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Event::class)]
+    private Collection $events;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
+    private Collection $motivations;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_ETUDIANT']; // Default role
+        $this->events = new ArrayCollection();
+        $this->motivations = new ArrayCollection();
         $this->courses = new ArrayCollection();
     }
 
@@ -264,6 +272,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setUser($this);
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Course::class)]
     private Collection $courses;
 
@@ -282,6 +304,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getUser() === $this) {
+                $event->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Motivation>
+     */
+    public function getMotivations(): Collection
+    {
+        return $this->motivations;
+    }
+
+    public function addMotivation(Motivation $motivation): static
+    {
+        if (!$this->motivations->contains($motivation)) {
+            $this->motivations->add($motivation);
+            $motivation->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMotivation(Motivation $motivation): static
+    {
+        if ($this->motivations->removeElement($motivation)) {
+            // set the owning side to null (unless already changed)
+            if ($motivation->getUser() === $this) {
+                $motivation->setUser(null);
     public function removeCourse(Course $course): static
     {
         if ($this->courses->removeElement($course)) {
