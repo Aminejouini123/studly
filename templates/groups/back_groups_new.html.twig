@@ -1,0 +1,15 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}New Group{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <h1 class="page-title">Create New Group</h1>
+        <div class="content-card">
+            <div class="card-body">
+                {{ include('groups/_form.html.twig') }}
+                <a href="{{ path('app_admin_groups_index') }}" class="btn btn-secondary mt-3">Back to list</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

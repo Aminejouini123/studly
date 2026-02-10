@@ -71,6 +71,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $updatedAt = null;
 
     // Legacy fields kept for compatibility or future removal if needed, made nullable
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Event::class)]
+    private Collection $events;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
+    private Collection $motivations;
+
+    #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
+    private Collection $groups;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
@@ -79,6 +88,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_ETUDIANT']; // Default role
+        $this->events = new ArrayCollection();
+        $this->motivations = new ArrayCollection();
+        $this->groups = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -260,6 +272,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatut(?string $statut): static
     {
         $this->statut = $statut;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getUser() === $this) {
+                $event->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Motivation>
+     */
+    public function getMotivations(): Collection
+    {
+        return $this->motivations;
+    }
+
+    public function addMotivation(Motivation $motivation): static
+    {
+        if (!$this->motivations->contains($motivation)) {
+            $this->motivations->add($motivation);
+            $motivation->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMotivation(Motivation $motivation): static
+    {
+        if ($this->motivations->removeElement($motivation)) {
+            // set the owning side to null (unless already changed)
+            if ($motivation->getUser() === $this) {
+                $motivation->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+            $group->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        if ($this->groups->removeElement($group)) {
+            // set the owning side to null (unless already changed)
+            if ($group->getCreator() === $this) {
+                $group->setCreator(null);
+            }
+        }
 
         return $this;
     }
