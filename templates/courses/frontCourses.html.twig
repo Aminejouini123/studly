@@ -1,20 +1,595 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Hello CoursesController!{% endblock %}
+{% block title %}Mes Cours{% endblock %}
 
 {% block content %}
+<div class="courses-container">
+    <!-- En-tête -->
+    <div class="courses-header">
+        <div class="header-content">
+            <h1 class="page-title"> Mes Cours</h1>
+            <p class="page-subtitle">Gérez et suivez tous vos cours en un seul endroit</p>
+        </div>
+        <a href="{{ path('app_course_new') }}" class="btn-primary btn-lg">
+            <i class="icon">➕</i> Ajouter un Cours
+        </a>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="stats-banner">
+        <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|length }}</div>
+            <div class="stat-label">Cours Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'en cours')|length }}</div>
+            <div class="stat-label">En Cours</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'terminé')|length }}</div>
+            <div class="stat-label">Terminés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ courses|filter(c => c.status == 'en attente')|length }}</div>
+            <div class="stat-label">En Attente</div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Tableau des cours -->
+    <div class="courses-section">
+        <div class="section-header">
+            <h2> Liste des Cours</h2>
+            <div class="search-filter">
+                <input type="text" id="searchInput" class="search-box" placeholder=" Rechercher un cours...">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="en cours">En Cours</option>
+                    <option value="terminé">Terminé</option>
+                    <option value="en attente">En Attente</option>
+                </select>
+            </div>
+        </div>
+
+        {% if courses|length > 0 %}
+            <div class="courses-grid">
+                {% for course in courses %}
+                    <div class="course-card" data-status="{{ course.status }}">
+                        
+                        <div class="card-header-row">
+                            <h3 class="course-title">{{ course.name }}</h3>
+                            <span class="status-badge status-{{ course.status|lower|replace({' ': '-'}) }}">
+                                {{ course.status|upper }}
+                            </span>
+                        </div>
+
+                        <div class="teacher-info">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>{{ course.teacherEmail }}</span>
+                        </div>
+
+                        <div class="info-grid-row">
+                            <div class="info-metric">
+                                <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                                <span class="metric-value">{{ course.duration }}h</span>
+                            </div>
+                            <div class="info-metric">
+                                <div class="metric-icon"><i class="fas fa-calendar-alt"></i></div>
+                                <span class="metric-value">{{ course.semester }}</span>
+                            </div>
+                            <div class="info-metric">
+                                <div class="metric-icon"><i class="fas fa-weight-hanging"></i></div>
+                                <span class="metric-value">Coef: {{ course.coefficient }}</span>
+                            </div>
+                        </div>
+
+                        <div class="tags-row">
+                            <span class="tag tag-difficulty {{ 'difficulty-' ~ course.difficultyLevel|lower }}">{{ course.difficultyLevel|upper }}</span>
+                            <span class="tag tag-type">{{ course.type|upper }}</span>
+                            <span class="tag tag-priority {{ 'priority-' ~ course.priority|lower }}">{{ course.priority|upper }}</span>
+                        </div>
+
+                        <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn-details-main">
+                            Voir les détails <i class="fas fa-arrow-right"></i>
+                        </a>
+
+                        <div class="card-action-buttons">
+                            <a href="{{ path('app_examen') }}" class="btn-action-main btn-examen">
+                                <i class="fas fa-file-alt"></i> Examen
+                            </a>
+                            <a href="{{ path('app_activity') }}" class="btn-action-main btn-activity">
+                                <i class="fas fa-tasks"></i> Activité
+                            </a>
+                        </div>
+
+                        <div class="card-footer-actions">
+                            <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-action btn-edit-sub">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" onsubmit="return confirm('Confirmer la suppression ?')" style="display:inline; flex:1;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                                <button type="submit" class="btn-action btn-delete-sub">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"></div>
+                <h3>Aucun cours trouvé</h3>
+                <p>Vous n'avez pas encore ajouté de cours. Commencez dès maintenant!</p>
+                <a href="{{ path('app_course_new') }}" class="btn-primary">Ajouter mon premier cours</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --sidebar-blue: #0059A9;
+        --sidebar-dark: #01304f; /* slightly lighter than before */
+        --sidebar-accent: #00B4D8;
+        --card-dark: #eaf6ff; /* soft, professional card background */
+        --card-light: #ffffff; /* page card */
+        --muted: #6c757d;
+        --text-on-dark: rgba(255,255,255,0.92);
+    }
+
+    .courses-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f9fd 0%, #eef4f9 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .courses-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--card-light);
+        color: #1F1F1F;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 6px 24px rgba(10, 45, 80, 0.06);
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        color: #0b2e4a;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #0059A9; /* sidebar blue */
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #001F3F; /* darker sidebar navy */
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 89, 169, 0.3);
+    }
+
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.9rem 2rem;
+    }
+
+    /* Statistiques - dark banner */
+    .stats-banner {
+        background: linear-gradient(90deg, rgba(6,40,80,1) 0%, var(--sidebar-blue) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: inset 0 -6px 20px rgba(0,0,0,0.12);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stat-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        padding: 1.25rem 1rem;
+        border-radius: 10px;
+        text-align: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        color: rgba(255,255,255,0.95);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+    }
+
+    .stat-number {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #d2f0ea; /* soft mint for numbers */
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: rgba(255,255,255,0.75);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Section Courses */
+    .courses-section {
+        background: var(--card-light);
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(10, 45, 80, 0.04);
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h2 {
+        color: #1F1F1F;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .search-filter {
+        display: flex;
+        gap: 1rem;
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .search-box, .filter-select {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box:focus, .filter-select:focus {
+        outline: none;
+        border-color: #0059A9;
+        box-shadow: 0 0 0 3px rgba(0, 89, 169, 0.06);
+    }
+
+    /* Tableau */
+    /* Grid Layout */
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 2rem;
+        padding-top: 1rem;
+    }
+
+    /* Course Card V2 */
+    .course-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08); /* hover shadow */
+    }
+
+    /* Header Row */
+    .card-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .course-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #0b1e3b; /* Dark Navy */
+        margin: 0;
+        flex: 1;
+        padding-right: 1rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-en-attente { background: #fff0f0; color: #c62828; }
+    .status-en-cours { background: #fff8e1; color: #f57f17; }
+    .status-terminé { background: #e8f5e9; color: #2e7d32; }
+
+    /* Teacher Info */
+    .teacher-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .teacher-info i { color: #8898aa; }
+
+    /* Info Grid Row */
+    .info-grid-row {
+        display: flex;
+        justify-content: space-between;
+        background: #f8f9fc; /* Very light blue/gray bg */
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-metric {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        flex: 1;
+        text-align: center;
+    }
+
+    .metric-icon {
+        color: #0056b3; /* Primary Blue */
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+    }
+
+    .metric-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #525f7f;
+    }
+
+    /* Tags Row */
+    .tags-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .tag-difficulty.difficulty-facile { background: #e3f2fd; color: #0d47a1; }
+    .tag-difficulty.difficulty-moyen { background: #e3f2fd; color: #1565c0; }
+    .tag-difficulty.difficulty-difficile { background: #ffebee; color: #c62828; }
+
+    .tag-type { background: #e3f2fd; color: #0d47a1; } 
+
+    .tag-priority { background: #f8f9fa; color: #525f7f; border: 1px solid #e9ecef; } /* BASSE style */
+
+    /* Main Action Button (Details) */
+    .btn-details-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        background: #0056b3; /* Primary Blue */
+        color: white;
+        padding: 0.8rem;
+        border-radius: 12px; /* Slightly more rounded */
+        text-decoration: none;
+        font-weight: 700;
+        margin-bottom: 1rem; /* Consistent spacing */
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 86, 179, 0.2);
+    }
+
+    .btn-details-main:hover {
+        background: #003d80;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 86, 179, 0.3);
+    }
+
+    /* Action Buttons Row (Examen / Activité) */
+    .card-action-buttons {
+        display: flex;
+        flex-direction: column; /* Stack vertically */
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-action-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem; /* Consistent padding */
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    /* Specific Button Styles - Professional Soft Style */
+    .btn-examen {
+        background-color: #e6f0fa; /* Very Light Sidebar Blue */
+        color: #004080; /* Darker Sidebar Blue for contrast */
+        border: 1px solid rgba(0, 89, 169, 0.15); /* Subtle border */
+    }
+
+    .btn-examen:hover {
+        background-color: #dbeafe; /* Slightly darker on hover */
+        color: #002d5a;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 89, 169, 0.08);
+    }
+
+    .btn-activity {
+        background-color: #e0faff; /* Very Light Sidebar Cyan */
+        color: #007ea7; /* Darker Cyan for contrast */
+        border: 1px solid rgba(0, 180, 216, 0.15); /* Subtle border */
+    }
+
+    .btn-activity:hover {
+        background-color: #d1f5fd; /* Slightly darker on hover */
+        color: #006b8f;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 180, 216, 0.08);
+    }
+
+    /* Footer Actions Row (Edit / Delete) */
+    .card-footer-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-action {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit-sub {
+        background: #f3e8ff; /* Soft Purple */
+        color: #7e22ce;
+        border: 1px solid #e9d5ff; /* Added border for consistency */
+    }
+
+    .btn-edit-sub:hover {
+        background: #e9d5ff;
+        color: #6b21a8;
+        transform: translateY(-1px);
+    }
+
+    .btn-delete-sub {
+        background: #fef2f2; /* Soft Red */
+        color: #dc2626;
+        border: 1px solid #fecaca; /* Added border */
+        width: 100%; /* Ensure full width in flex container if needed */
+    }
+
+    .btn-delete-sub:hover {
+        background: #fee2e2;
+        color: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+        .courses-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-filter {
+            flex-direction: column;
+            min-width: auto;
+        }
+        
+        .card-footer-actions {
+            flex-direction: column;
+        }
+    }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<script>
+    // Search Functionality
+    document.getElementById('searchInput')?.addEventListener('keyup', function() {
+        const term = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.course-card');
+        
+        cards.forEach(card => {
+            const title = card.querySelector('.course-title').textContent.toLowerCase();
+            const teacher = card.querySelector('.teacher-info span').textContent.toLowerCase();
+            const visible = title.includes(term) || teacher.includes(term);
+            card.style.display = visible ? 'flex' : 'none';
+        });
+    });
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/jouin/Project_PI/src/Controller/CoursesController.php</code></li>
-        <li>Your template at <code>C:/Users/jouin/Project_PI/templates/courses/index.html.twig</code></li>
-    </ul>
-</div>
+    // Filter Functionality
+    document.getElementById('statusFilter')?.addEventListener('change', function() {
+        const status = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.course-card');
+        
+        cards.forEach(card => {
+            const cardStatus = card.dataset.status.toLowerCase();
+            const visible = !status || cardStatus === status;
+            card.style.display = visible ? 'flex' : 'none';
+        });
+    });
+
+
+</script>
 {% endblock %}
