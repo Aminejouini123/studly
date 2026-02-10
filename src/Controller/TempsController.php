@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class TempsController extends AbstractController
 {
     #[Route('/temps', name: 'app_temps')]
-    public function index(EventRepository $eventRepository, Request $request, EntityManagerInterface $em): Response
+    public function index(EventRepository $eventRepository, Request $request, EntityManagerInterface $em, \App\Service\PomodoroService $pomodoroService): Response
     {
         $user = $this->getUser();
         $sort = $request->query->get('sort');
@@ -51,7 +51,12 @@ final class TempsController extends AbstractController
             }
 
             $event->setUser($user);
+            
+            // Auto-generate Pomodoro sessions
+            $pomodoroService->generateSessionsForEvent($event);
+
             $em->persist($event);
+
             $em->flush();
             $this->addFlash('success', 'Event "' . $event->getTitle() . '" created successfully!');
             return $this->redirectToRoute('app_temps');
@@ -79,7 +84,7 @@ final class TempsController extends AbstractController
     }
 
     #[Route('/temps/{id}/edit', name: 'app_temps_edit')]
-    public function edit(Event $event, Request $request, EntityManagerInterface $em): Response
+    public function edit(Event $event, Request $request, EntityManagerInterface $em, \App\Service\PomodoroService $pomodoroService): Response
     {
         $this->denyAccessUnlessGranted('edit', $event);
 
@@ -87,6 +92,10 @@ final class TempsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            // Regenerate/Update Pomodoro sessions if duration changed
+            $pomodoroService->generateSessionsForEvent($event);
+
             $em->flush();
             $this->addFlash('success', 'Event updated successfully!');
             return $this->redirectToRoute('app_temps');

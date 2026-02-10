@@ -16,6 +16,58 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
+    /**
+     * Returns weekly duration stats (in minutes) for a given user.
+     *
+     * Each row contains:
+     *  - year  (ISO week-numbering year)
+     *  - week  (ISO week number)
+     *  - totalMinutes (sum of durations in minutes)
+     *
+     * @return array<int, array{year:int, week:int, totalMinutes:int}>
+     */
+    public function getWeeklyDurationMinutesForUser($user): array
+    {
+        // Fetch only the needed fields to keep the query light
+        $rows = $this->createQueryBuilder('e')
+            ->select('e.date AS date', 'e.duration AS duration')
+            ->andWhere('e.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('e.date', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $stats = [];
+
+        foreach ($rows as $row) {
+            /** @var \DateTimeInterface $date */
+            $date = $row['date'];
+
+            // ISO-8601 week-numbering year and week
+            $weekYear = (int) $date->format('o');
+            $weekNum  = (int) $date->format('W');
+
+            $key = sprintf('%d-W%02d', $weekYear, $weekNum);
+
+            if (!isset($stats[$key])) {
+                $stats[$key] = [
+                    'year'         => $weekYear,
+                    'week'         => $weekNum,
+                    'totalMinutes' => 0,
+                ];
+            }
+
+            $stats[$key]['totalMinutes'] += (int) $row['duration'];
+        }
+
+        // Ensure results are sorted by year then week
+        usort($stats, static function (array $a, array $b): int {
+            return [$a['year'], $a['week']] <=> [$b['year'], $b['week']];
+        });
+
+        return $stats;
+    }
+
 
     /**
      * @return Event[] Returns an array of Event objects sorted by priority (High > Medium > Low)

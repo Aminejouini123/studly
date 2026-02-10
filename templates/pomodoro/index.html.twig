@@ -1,0 +1,118 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Pomodoro - {{ event.title }}{% endblock %}
+
+{% block content %}
+<style>
+.pomodoro-container { display:flex; justify-content:center; max-width:800px; margin:0 auto; }
+.timer-card { background:#fff; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center; padding:40px; width:100%; }
+.timer-display { font-size:5rem; font-weight:800; color:#2c3e50; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:20px; }
+.timer-controls { display:flex; gap:12px; justify-content:center; margin-bottom:30px; }
+.btn-round { width:60px; height:60px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:0.2s; }
+.btn-start { background:#2ecc71; color:white; } .btn-start:hover { transform:scale(1.1); box-shadow:0 5px 15px rgba(46,204,113,0.3); }
+.btn-pause { background:#f1c40f; color:white; } .btn-reset { background:#e74c3c; color:white; }
+
+.timer-mode { display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
+.mode-btn { padding:8px 16px; border-radius:20px; border:1px solid #eee; background:transparent; cursor:pointer; }
+.mode-btn.active { background:#2c3e50; color:white; border-color:#2c3e50; }
+</style>
+
+<div class="row" style="margin-bottom:20px; align-items:center;">
+    <a href="{{ path('app_temps') }}" style="text-decoration:none; color:var(--text-muted);"><i class="fas fa-arrow-left"></i> Back to Events</a>
+    <h1 style="margin:0 auto 0 20px;">🍅 Pomodoro Focus</h1>
+</div>
+
+<div class="pomodoro-container">
+    <div class="timer-section" style="width:100%;">
+        <div class="timer-card">
+            <h2 style="margin:0 0 10px;">{{ event.title }}</h2>
+            <p class="text-muted" id="current-session-label">Select a session to start</p>
+            
+            <div class="timer-mode">
+                <button class="mode-btn active" onclick="setTimer(25, 'WORK', this)">Work (25m)</button>
+                <button class="mode-btn" onclick="setTimer(5, 'BREAK', this)">Short Break (5m)</button>
+                <button class="mode-btn" onclick="setTimer(15, 'BREAK', this)">Long Break (15m)</button>
+            </div>
+
+            <div class="timer-display" id="timer">25:00</div>
+
+            <div class="timer-controls">
+                <button class="btn-round btn-start" onclick="startTimer()"><i class="fas fa-play"></i></button>
+                <button class="btn-round btn-pause" onclick="pauseTimer()"><i class="fas fa-pause"></i></button>
+                <button class="btn-round btn-reset" onclick="resetTimer()"><i class="fas fa-redo"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let timeLeft = 25 * 60;
+let timerId = null;
+let currentDuration = 25;
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function updateDisplay() {
+    document.getElementById('timer').textContent = formatTime(timeLeft);
+    document.title = formatTime(timeLeft) + " - Pomodoro";
+}
+
+function startTimer() {
+    if (timerId) return;
+    timerId = setInterval(() => {
+        if (timeLeft > 0) {
+            timeLeft--;
+            updateDisplay();
+        } else {
+            clearInterval(timerId);
+            timerId = null;
+            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
+            alert("Timer Finished!");
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(timerId);
+    timerId = null;
+}
+
+function resetTimer() {
+    pauseTimer();
+    timeLeft = currentDuration * 60;
+    updateDisplay();
+}
+
+function setTimer(minutes, type, btn) {
+    pauseTimer();
+    currentDuration = minutes;
+    timeLeft = minutes * 60;
+    updateDisplay();
+    document.getElementById('current-session-label').textContent = type === 'WORK' ? 'Focus Time' : 'Time for a break';
+
+    // Update active button state
+    document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        // Try to match based on duration/type if btn not provided (e.g. from session list)
+        document.querySelectorAll('.mode-btn').forEach(el => {
+            if (el.textContent.includes(`(${minutes}m)`)) {
+                el.classList.add('active');
+            }
+        });
+    }
+}
+
+function selectSession(minutes, type, id) {
+    setTimer(minutes, type);
+    // highlight active
+    document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('session-' + id).classList.add('active');
+}
+</script>
+{% endblock %}
