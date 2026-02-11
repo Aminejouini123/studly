@@ -10,26 +10,187 @@
         <div class="content-card">
             <div class="card-header">
                 <h3>All Groups</h3>
-                <button class="btn-action"><i class="fas fa-plus"></i> Add Group</button>
+                <div class="action-buttons">
+                    <form method="get" action="{{ path('app_admin_groups_index') }}" class="search-form" style="display: flex; gap: 10px; margin-right: 15px;">
+                        <input type="text" name="q" value="{{ app.request.query.get('q') }}" placeholder="Search by category..." class="form-control" style="width: 200px;">
+                        <button type="submit" class="btn-secondary"><i class="fas fa-search"></i></button>
+                    </form>
+                    <a href="{{ path('app_admin_groups_export') }}" class="btn-secondary"><i class="fas fa-file-csv"></i> CSV</a>
+                    <a href="{{ path('app_admin_groups_export_pdf') }}" class="btn-secondary"><i class="fas fa-file-pdf"></i> PDF</a>
+                    <button class="btn-action" onclick="openModal()"><i class="fas fa-plus"></i> Add Group</button>
+                </div>
             </div>
+
+            <!-- Create Group Modal -->
+            <div class="modal-overlay" id="groupModal">
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h2>Create New Group</h2>
+                        <button class="modal-close" onclick="closeModal()">&times;</button>
+                    </div>
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    <div class="modal-body">
+                        <div class="form-group">
+                            {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Mathematics'}}) }}
+                            {{ form_errors(form.category) }}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                {{ form_label(form.capacity, 'Capacity', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.capacity, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 30'}}) }}
+                                {{ form_errors(form.capacity) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.memberGroup, 'Assigned Member', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.memberGroup, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.memberGroup) }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.groupPhoto, 'Group Photo URL', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.groupPhoto, {'attr': {'class': 'form-control', 'placeholder': 'https://...'}}) }}
+                            {{ form_errors(form.groupPhoto) }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn-action">Create Group</button>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Members</th>
+                            <th>
+                                <a href="{{ path('app_admin_groups_index', {'sort': 'id', 'direction': app.request.query.get('direction') == 'ASC' ? 'DESC' : 'ASC'}) }}" style="color: inherit; text-decoration: none;">
+                                    ID
+                                    {% if app.request.query.get('sort') == 'id' %}
+                                        <i class="fas fa-sort-{{ app.request.query.get('direction') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('app_admin_groups_index', {'sort': 'category', 'direction': app.request.query.get('direction') == 'ASC' ? 'DESC' : 'ASC'}) }}" style="color: inherit; text-decoration: none;">
+                                    Category
+                                    {% if app.request.query.get('sort') == 'category' %}
+                                        <i class="fas fa-sort-{{ app.request.query.get('direction') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('app_admin_groups_index', {'sort': 'capacity', 'direction': app.request.query.get('direction') == 'ASC' ? 'DESC' : 'ASC'}) }}" style="color: inherit; text-decoration: none;">
+                                    Capacity
+                                    {% if app.request.query.get('sort') == 'capacity' %}
+                                        <i class="fas fa-sort-{{ app.request.query.get('direction') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Created By</th>
+                            <th>
+                                <a href="{{ path('app_admin_groups_index', {'sort': 'createdAt', 'direction': app.request.query.get('direction') == 'ASC' ? 'DESC' : 'ASC'}) }}" style="color: inherit; text-decoration: none;">
+                                    Created At
+                                    {% if app.request.query.get('sort') == 'createdAt' %}
+                                        <i class="fas fa-sort-{{ app.request.query.get('direction') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                    {% for group in groups %}
                         <tr>
-                            <td colspan="5" style="text-align: center;">No groups found.</td>
+                            <td style="font-weight: 500;">#{{ group.id }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; background: #eff6ff; color: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    {{ group.category }}
+                                </div>
+                            </td>
+                            <td>{{ group.capacity }} members</td>
+                            <td>
+                                <strong>{{ group.creator.firstName }} {{ group.creator.lastName }}</strong><br>
+                                <small style="color: #666;">{{ group.creator.email }}</small>
+                            </td>
+                            <td>{{ group.createdAt|date('d/m/Y H:i') }}</td>
+                            <td>
+                                {% if group.memberGroup %}
+                                    <span class="status-badge status-active">Assigned</span>
+                                {% else %}
+                                    <span class="status-badge status-pending">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{{ path('app_admin_groups_show', {'id': group.id}) }}" class="btn-secondary" title="View"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ path('app_admin_groups_edit', {'id': group.id}) }}" class="btn-secondary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <form method="post" action="{{ path('app_admin_groups_delete', {'id': group.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ group.id) }}">
+                                        <button type="submit" class="btn-secondary" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--admin-text-muted);">
+                                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                No groups found.
+                            </td>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const modal = document.getElementById('groupModal');
+        const modalTitle = modal.querySelector('.modal-header h2');
+        
+        function openModal() {
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // Auto-open if there are form errors
+        {% if not form.vars.valid %}
+            window.onload = function() {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        {% endif %}
+
+        // Close on overlay click
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
 {% endblock %}

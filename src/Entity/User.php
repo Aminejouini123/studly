@@ -71,15 +71,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $updatedAt = null;
 
     // Legacy fields kept for compatibility or future removal if needed, made nullable
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
-    private ?string $statut = 'Active';
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Event::class)]
     private Collection $events;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
     private Collection $motivations;
+
+    #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
+    private Collection $groups;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
+    private ?string $statut = 'Active';
+
+
 
     public function __construct()
     {
@@ -87,6 +92,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = ['ROLE_ETUDIANT']; // Default role
         $this->events = new ArrayCollection();
         $this->motivations = new ArrayCollection();
+        $this->groups = new ArrayCollection();
         $this->courses = new ArrayCollection();
     }
 
@@ -285,6 +291,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->events->contains($event)) {
             $this->events->add($event);
+
+            $event->setUser($this);
         }
 
         return $this;
@@ -303,6 +311,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->courses->contains($course)) {
             $this->courses->add($course);
             $course->setUser($this);
+
         }
 
         return $this;
@@ -350,12 +359,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+            $group->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        if ($this->groups->removeElement($group)) {
+            // set the owning side to null (unless already changed)
+            if ($group->getCreator() === $this) {
+                $group->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function removeCourse(Course $course): static
     {
         if ($this->courses->removeElement($course)) {
             // set the owning side to null (unless already changed)
             if ($course->getUser() === $this) {
                 $course->setUser(null);
+
             }
         }
 

@@ -55,13 +55,10 @@ class CreateAdminCommand extends Command
             $user->setFirstName($firstName);
             $user->setLastName($lastName);
             $user->setStatut('Active');
-            $user->setDateOfBirth(new \DateTime('2000-01-01'));
+            $user->setDateOfBirth(new \DateTime('1990-01-01'));
             $user->setPhoneNumber('20000000');
             $user->setAddress('Admin Address');
         }
-
-        // Handle potentially nullable fields if not provided or strict validation
-        // dateOfBirth, phoneNumber, address kept null for simplicity or can be added as arguments
 
         $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);

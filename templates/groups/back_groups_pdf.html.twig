@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Groups Export</title>
+    <style>
+        body { font-family: sans-serif; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .meta { text-align: right; font-size: 10px; color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="meta">Generated on {{ "now"|date("d/m/Y H:i") }}</div>
+    <h1>Groups List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Capacity</th>
+                <th>Created By</th>
+                <th>Created At</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for group in groups %}
+            <tr>
+                <td>{{ group.id }}</td>
+                <td>{{ group.category }}</td>
+                <td>{{ group.capacity }}</td>
+                <td>
+                    {{ group.creator.firstName }} {{ group.creator.lastName }}<br>
+                    <small>{{ group.creator.email }}</small>
+                </td>
+                <td>{{ group.createdAt|date('d/m/Y H:i') }}</td>
+                <td>{{ group.memberGroup ? 'Assigned' : 'Unassigned' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

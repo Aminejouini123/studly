@@ -1,0 +1,30 @@
+{{ form_start(form) }}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-group">
+            <label class="form-label">Category Name</label>
+            {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Mathematics Study Group'}}) }}
+            {{ form_errors(form.category) }}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Capacity</label>
+            {{ form_widget(form.capacity, {'attr': {'class': 'form-control', 'placeholder': 'Max members'}}) }}
+            {{ form_errors(form.capacity) }}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label">Group Photo URL</label>
+        {{ form_widget(form.groupPhoto, {'attr': {'class': 'form-control', 'placeholder': 'https://example.com/photo.jpg'}}) }}
+        {{ form_errors(form.groupPhoto) }}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Member Group (Optional)</label>
+        {{ form_widget(form.memberGroup, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.memberGroup) }}
+    </div>
+
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button class="btn-action">{{ button_label|default('Save Group') }}</button>
+    </div>
+{{ form_end(form) }}

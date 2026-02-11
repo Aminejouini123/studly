@@ -1,0 +1,41 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Create New Group{% endblock %}
+
+{% block content %}
+    <div class="welcome-section">
+        <h1>Create New Group</h1>
+        <p>Set up your study group and start collaborating.</p>
+    </div>
+
+    <div class="form-container" style="max-width: 600px; margin: 0 auto;">
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.category) }}
+                {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g., JavaScript Study Group'}}) }}
+                {{ form_errors(form.category) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.capacity) }}
+                {{ form_widget(form.capacity, {'attr': {'class': 'form-control', 'type': 'number', 'min': 1}}) }}
+                {{ form_errors(form.capacity) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.groupPhoto) }}
+                {{ form_widget(form.groupPhoto, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.groupPhoto) }}
+            </div>
+
+            <div class="button-group" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Group
+                </button>
+                <a href="{{ path('app_groups_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

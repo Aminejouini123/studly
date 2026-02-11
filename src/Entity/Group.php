@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\GroupRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
@@ -25,6 +26,13 @@ class Group
     #[ORM\Column(length: 255)]
     private ?string $category = null;
 
+    #[ORM\ManyToOne(inversedBy: 'groups')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $creator = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
+
     #[ORM\OneToOne(mappedBy: 'group', cascade: ['persist', 'remove'])]
     private ?MemberGroup $memberGroup = null;
 
@@ -37,6 +45,7 @@ class Group
     public function __construct()
     {
         $this->projects = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -128,6 +137,30 @@ class Group
                 $project->setGroup(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreator(): ?User
+    {
+        return $this->creator;
+    }
+
+    public function setCreator(?User $creator): static
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

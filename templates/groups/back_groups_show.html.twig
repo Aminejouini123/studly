@@ -1,0 +1,114 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Group Details{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{{ path('app_admin_groups_index') }}">Groups Management</a> > details
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1 class="page-title" style="margin-bottom: 0;">{{ group.category }}</h1>
+            <div style="display: flex; gap: 10px;">
+                <a href="{{ path('app_admin_groups_edit', {'id': group.id}) }}" class="btn-action" style="background-color: var(--admin-accent);">
+                    <i class="fas fa-edit"></i> Edit Group
+                </a>
+                <a href="{{ path('app_admin_groups_index') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-value">{{ group.capacity }}</div>
+                <div class="stat-label">Total Capacity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">
+                        {% if group.memberGroup %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="fas fa-clock"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-value" style="font-size: 1.5rem;">
+                    {% if group.memberGroup %}Active{% else %}Pending{% endif %}
+                </div>
+                <div class="stat-label">Current Status</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
+                </div>
+                <div class="stat-value" style="font-size: 1.5rem;">{{ group.createdAt|date('d M Y') }}</div>
+                <div class="stat-label">Creation Date</div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3>About this Group</h3>
+            </div>
+            <div style="padding: 24px; display: flex; gap: 40px; flex-wrap: wrap;">
+                 <div style="flex: 1; max-width: 300px;">
+                    {% if group.groupPhoto %}
+                        <img src="{{ group.groupPhoto }}" alt="{{ group.category }}" style="width: 100%; border-radius: 8px; border: 1px solid var(--admin-border);">
+                    {% else %}
+                        <div style="width: 100%; aspect-ratio: 16/9; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 3rem; border: 1px solid var(--admin-border);">
+                            <i class="fas fa-image"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--admin-border);">
+                        <div style="font-size: 0.85rem; color: var(--admin-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 12px;">Created By</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: var(--admin-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                {{ group.creator.firstName|first }}{{ group.creator.lastName|first }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--admin-text-main);">{{ group.creator.firstName }} {{ group.creator.lastName }}</div>
+                                <div style="font-size: 0.85rem; color: var(--admin-text-muted);">{{ group.creator.email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="flex: 2; min-width: 300px;">
+                    <div style="margin-bottom: 32px;">
+                        <h4 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--admin-text-main);">Description</h4>
+                        <p style="color: #475569; line-height: 1.6;">
+                            This is a study group focused on <strong>{{ group.category }}</strong>. 
+                            It was established to foster collaboration and academic growth among students.
+                            {% if group.capacity > 0 %}
+                                With a capacity of <strong>{{ group.capacity }}</strong> students, it offers a focused environment for learning.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if group.memberGroup %}
+                    <div>
+                        <h4 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--admin-text-main);">Associations</h4>
+                        <div style="padding: 16px; border: 1px solid var(--admin-border); border-radius: 8px; display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; background: #ecfdf5; color: #059669; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Member Group Assigned</div>
+                                <div style="font-size: 0.9rem; color: var(--admin-text-muted);">ID: #{{ group.memberGroup.id }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
