@@ -1,10 +1,673 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Activités{% endblock %}
+{% block title %}Mes Activités - {{ course.name }}{% endblock %}
 
 {% block content %}
-<div class="container" style="padding: 2rem;">
-    <h1>Liste des Activités</h1>
-    <p>Bienvenue sur la page des activités.</p>
+<div class="activities-container">
+    <!-- En-tête -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1 class="page-title">{{ course.name }} - Activités</h1>
+            <p class="page-subtitle">Travaux pratiques, devoirs et ateliers</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ path('app_courses') }}" class="btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Retour aux Cours
+            </a>
+            <a href="{{ path('app_course_activity_new', {id: course.id}) }}" class="btn-primary btn-lg">
+                <i class="fas fa-plus"></i> Ajouter une Activité
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="stats-banner">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ activities|length }}</div>
+                <div class="stat-label">Total Activités</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {{ activities|filter(a => a.status == 'à faire')|length }}
+                </div>
+                <div class="stat-label">À Faire</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {{ activities|filter(a => a.status == 'en cours')|length }}
+                </div>
+                <div class="stat-label">En Cours</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {{ activities|filter(a => a.status == 'terminé')|length }}
+                </div>
+                <div class="stat-label">Terminées</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Liste des Activités -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2><i class="fas fa-tasks"></i> Liste des Activités</h2>
+            <div class="search-filter">
+                <div class="search-box-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Rechercher une activité...">
+                </div>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="à faire">À Faire</option>
+                    <option value="en cours">En Cours</option>
+                    <option value="terminé">Terminé</option>
+                </select>
+            </div>
+        </div>
+
+        {% if activities|length > 0 %}
+            <div class="activities-grid">
+                {% for activity in activities %}
+                    <div class="activity-card" data-status="{{ activity.status|lower }}">
+                        <div class="card-status status-{{ activity.status|lower|replace({' ': '-'}) }}">
+                            {{ activity.status|capitalize }}
+                        </div>
+                        <div class="card-header">
+                            <a href="{{ path('app_activity_show', {id: activity.id}) }}" class="activity-title">{{ activity.title }}</a>
+                            <p class="activity-desc">{{ activity.description|slice(0, 80) ~ (activity.description|length > 80 ? '...' : '') }}</p>
+                        </div>
+                        
+                        <div class="activity-details">
+                            <div class="detail-item">
+                                <i class="far fa-clock"></i>
+                                <span>{{ activity.duration }} min estimate</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-layer-group"></i>
+                                <span>{{ activity.difficulty }}</span>
+                            </div>
+                             <div class="detail-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>{{ activity.level }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="actions">
+                                <a href="{{ path('app_activity_show', {id: activity.id}) }}" class="btn-text btn-view">Consulter</a>
+                                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-text btn-edit">Modifier</a>
+                                <button type="button" class="btn-text btn-delete" onclick="openDeleteModal({{ activity.id }})">Supprimer</button>
+                                <form id="delete-form-{{ activity.id }}" method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" style="display:none;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+             <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+                <h3>Aucune activité trouvée</h3>
+                <p>Vous n'avez pas encore ajouté d'activités pour ce cours.</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
+
+<style>
+    :root {
+        --sidebar-blue: #0059A9;
+        --sidebar-dark: #01304f;
+        --card-bg: #ffffff;
+        --bg-light: #f5f9fd;
+        --text-primary: #0b2e4a;
+        --text-secondary: #6c757d;
+        --accent-color: #00B4D8;
+        --success-color: #2e7d32;
+        --warning-color: #f57f17;
+        --border-radius: 16px;
+    }
+
+    .activities-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f9fd 0%, #eef4f9 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Header Styles */
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--card-bg);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(10, 45, 80, 0.06);
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        color: var(--text-primary);
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: var(--sidebar-blue);
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 89, 169, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: var(--sidebar-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 89, 169, 0.3);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: var(--sidebar-blue);
+        border: 2px solid var(--sidebar-blue);
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: var(--sidebar-blue);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 89, 169, 0.15);
+    }
+
+    /* Stats Banner */
+    .stats-banner {
+        background: linear-gradient(90deg, rgba(6,40,80,1) 0%, var(--sidebar-blue) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 50, 100, 0.15);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 1.25rem;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #d2f0ea;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    /* Content Section */
+    .content-section {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        border-bottom: 2px solid #f0f4f8;
+        padding-bottom: 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-filter {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        width: 300px;
+        max-width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.5rem;
+        border: 1px solid #e1e5ea;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .search-box:focus {
+        border-color: var(--sidebar-blue);
+        box-shadow: 0 0 0 3px rgba(0, 89, 169, 0.1);
+    }
+
+    .filter-select {
+        padding: 0.7rem 1rem;
+        border: 1px solid #e1e5ea;
+        border-radius: 8px;
+        outline: none;
+        background-color: white;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    /* Grid Layout */
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Activity Card */
+    .activity-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e1e5ea;
+        padding: 1.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .activity-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        border-color: transparent;
+    }
+
+    .activity-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--sidebar-blue);
+        border-radius: 4px 0 0 4px;
+    }
+
+    .card-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-à-faire { background: #e3f2fd; color: #0277bd; }
+    .status-en-cours { background: #fff8e1; color: var(--warning-color); }
+    .status-terminé { background: #e8f5e9; color: var(--success-color); }
+
+    .card-header {
+        margin-bottom: 1.2rem;
+        padding-right: 4rem;
+    }
+
+    .activity-title {
+        color: var(--text-primary);
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-decoration: none;
+        display: block;
+        transition: color 0.2s;
+    }
+    
+    .activity-title:hover {
+        color: var(--sidebar-blue);
+    }
+    
+    .activity-desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .activity-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+        flex: 1;
+        background: #f8fafc;
+        padding: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .detail-item i {
+        width: 20px;
+        text-align: center;
+        color: var(--sidebar-blue);
+    }
+
+    .card-footer {
+        padding-top: 1rem;
+        border-top: 1px solid #f0f4f8;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-link {
+        color: var(--sidebar-blue);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .btn-link:hover { text-decoration: underline; }
+    
+    .file-badge {
+        font-size: 0.8rem;
+        background: #f1f3f5;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-text {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        background: transparent;
+    }
+
+    .btn-view { color: #0059A9; background: #e3f2fd; }
+    .btn-view:hover { background: #bbdefb; }
+
+    .btn-edit { color: #e65100; background: #ffe0b2; }
+    .btn-edit:hover { background: #ffcc80; }
+
+    .btn-delete { color: #c62828; background: #ffcdd2; }
+    .btn-delete:hover { background: #ef9a9a; }
+
+    .actions form { display: flex; }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        color: #e1e5ea;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header-section {
+             flex-direction: column;
+             text-align: center;
+             gap: 1rem;
+        }
+
+        .search-filter { width: 100%; flex-direction: column; }
+        .search-box-wrapper { width: 100%; }
+        .section-header { flex-direction: column; align-items: stretch; }
+    }
+</style>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirmer la suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-icon {
+        width: 60px;
+        height: 60px;
+        background: #fee2e2;
+        color: #dc2626;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .modal-content h3 {
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .modal-content p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-cancel, .btn-confirm {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-confirm {
+        background: #dc2626;
+        color: white;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-confirm:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+    }
+</style>
+
+<script>
+    let activityIdToDelete = null;
+
+    function openDeleteModal(id) {
+        activityIdToDelete = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        activityIdToDelete = null;
+    }
+
+    function confirmDelete() {
+        if (activityIdToDelete) {
+            document.getElementById('delete-form-' + activityIdToDelete).submit();
+        }
+    }
+
+    // Close on click outside
+    document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        filterCards(searchText, document.getElementById('statusFilter').value.toLowerCase());
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        const status = this.value.toLowerCase();
+        filterCards(document.getElementById('searchInput').value.toLowerCase(), status);
+    });
+
+    function filterCards(text, status) {
+        document.querySelectorAll('.activity-card').forEach(card => {
+            const title = card.querySelector('.activity-title').innerText.toLowerCase();
+            const desc = card.querySelector('.activity-desc').innerText.toLowerCase();
+            const cardStatus = card.dataset.status.toLowerCase();
+            
+            const matchesText = title.includes(text) || desc.includes(text);
+            const matchesStatus = status === '' || cardStatus === status;
+
+            card.style.display = (matchesText && matchesStatus) ? 'flex' : 'none';
+        });
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Course Details{% endblock %}
+
+{% block breadcrumb %}
+    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_courses') }}" style="color: var(--admin-text-muted); text-decoration: none;">Courses</a> / <span>Details</span>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h1 class="page-title" style="margin-bottom: 8px;">{{ course.name }}</h1>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <span class="status-badge {{ course.status == 'published' or course.status == 'active' ? 'status-active' : 'status-pending' }}">
+                    {{ course.status|default('Draft') }}
+                </span>
+                <span style="color: var(--admin-text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-calendar-alt"></i> Created on {{ course.createdAt ? course.createdAt|date('M d, Y') : 'N/A' }}
+                </span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ path('app_admin_courses') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border);">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <a href="{{ path('app_admin_course_edit', {'id': course.id}) }}" class="btn-action">
+                <i class="fas fa-edit"></i> Edit Course
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon blue"><i class="fas fa-layer-group"></i></div>
+            </div>
+            <div class="stat-value">{{ course.difficultyLevel }}</div>
+            <div class="stat-label">Difficulty Level</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon purple"><i class="fas fa-clock"></i></div>
+            </div>
+            <div class="stat-value">{{ course.duration }}h</div>
+            <div class="stat-label">Total Duration</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon green"><i class="fas fa-percentage"></i></div>
+            </div>
+            <div class="stat-value">{{ course.coefficient }}</div>
+            <div class="stat-label">Coefficient</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon orange"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="stat-value">{{ course.priority }}</div>
+            <div class="stat-label">Priority</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Main Info -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle" style="color: var(--admin-accent); margin-right: 8px;"></i> General Information</h3>
+            </div>
+            <div class="card-body" style="padding: 24px;">
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 0.9rem; color: var(--admin-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Description & Notes</h4>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--admin-border); line-height: 1.6;">
+                        {% if course.comment %}
+                            {{ course.comment|nl2br }}
+                        {% else %}
+                            <span style="color: var(--admin-text-muted); font-style: italic;">No description or comments available.</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div>
+                        <h4 style="font-size: 0.9rem; color: var(--admin-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Course Type</h4>
+                        <div style="font-weight: 600; font-size: 1.05rem;">{{ course.type }}</div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.9rem; color: var(--admin-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Semester</h4>
+                        <div style="font-weight: 600; font-size: 1.05rem;">{{ course.semester }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Instructor Card -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chalkboard-teacher" style="color: var(--admin-text-muted); margin-right: 8px;"></i> Instructor</h3>
+                </div>
+                <div class="card-body" style="padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #64748b;">
+                            {% if course.user %}
+                                {{ course.user.email|first|upper }}
+                            {% else %}
+                                ?
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">{{ course.teacherEmail }}</div>
+                            <div style="font-size: 0.85rem; color: var(--admin-text-muted);">
+                                {% if course.user %}
+                                    {{ course.user.email }}
+                                {% else %}
+                                    External / Unassigned
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" style="font-size: 0.9rem; color: var(--admin-accent); text-decoration: none;">View Profiles</a>
+                </div>
+            </div>
+
+            <!-- Resources Card -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-folder-open" style="color: var(--admin-text-muted); margin-right: 8px;"></i> Resources</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="resource-list">
+                        {% if course.courseFile %}
+                        <a href="{{ asset('uploads/courses/' ~ course.courseFile) }}" target="_blank" style="display: flex; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--admin-border); text-decoration: none; color: var(--admin-text-main); transition: background 0.2s;">
+                            <i class="fas fa-file-pdf" style="color: #ef4444; font-size: 1.2rem; margin-right: 16px;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Course Material</div>
+                                <div style="font-size: 0.8rem; color: var(--admin-text-muted);">PDF / Document</div>
+                            </div>
+                            <i class="fas fa-download" style="color: var(--admin-text-muted);"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if course.courseLink %}
+                        <a href="{{ course.courseLink }}" target="_blank" style="display: flex; align-items: center; padding: 16px 24px; text-decoration: none; color: var(--admin-text-main); transition: background 0.2s;">
+                            <i class="fas fa-link" style="color: #2563eb; font-size: 1.2rem; margin-right: 16px;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">External Link</div>
+                                <div style="font-size: 0.8rem; color: var(--admin-text-muted);">Web Resource</div>
+                            </div>
+                            <i class="fas fa-external-link-alt" style="color: var(--admin-text-muted);"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if not course.courseFile and not course.courseLink %}
+                            <div style="padding: 24px; text-align: center; color: var(--admin-text-muted); font-style: italic;">
+                                No resources attached.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .resource-list a:hover {
+        background-color: #f8fafc;
+    }
+</style>
+{% endblock %}

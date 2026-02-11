@@ -1,125 +1,98 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Ajouter un Cours{% endblock %}
+{% block title %}Ajouter une Activité - {{ course.name }}{% endblock %}
 
 {% block content %}
 <div class="course-form-container">
     <!-- En-tête -->
     <div class="form-header">
         <div style="margin-bottom: 20px;">
-             <a href="{{ path('app_courses') }}" class="btn-back-custom">
-                <i class="fas fa-arrow-left"></i> Retour aux cours
+             <a href="{{ path('app_course_activities', {'id': course.id}) }}" class="btn-back-custom">
+                <i class="fas fa-arrow-left"></i> Retour aux Activités
             </a>
         </div>
         <div class="header-content">
-            <h1 class="page-title">Ajouter un Nouveau Cours</h1>
-            <p class="page-subtitle">Remplissez les informations du cours pour l'ajouter à votre liste</p>
+            <h1 class="page-title">Ajouter une Activité</h1>
+            <p class="page-subtitle">Cours : <strong>{{ course.name }}</strong></p>
         </div>
     </div>
 
     <!-- Formulaire -->
     <div class="form-card">
-        {{ form_start(form, {'attr': {'class': 'course-form', 'novalidate': true}, 'multipart': true}) }}
-
+        {{ form_start(form, {'attr': {'class': 'course-form'}}) }}
+        
+        <!-- General Info Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-info-circle"></i> Informations Générales</h3>
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> Informations de l'Activité</h3>
             <div class="form-grid">
-                <!-- Première ligne -->
                 <div class="form-group">
-                    {{ form_label(form.name, 'Nom du Cours') }}
-                    {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Introduction à l\'Algorithmique'}}) }}
-                    {{ form_errors(form.name) }}
+                    {{ form_label(form.title, 'Titre de l\'activité', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'Ex: TP1, Atelier Pratique...'}}) }}
+                    {{ form_errors(form.title) }}
                 </div>
-
-                <div class="form-group">
-                    {{ form_label(form.teacherEmail, 'Email du Professeur') }}
-                    {{ form_widget(form.teacherEmail, {'attr': {'class': 'form-input', 'placeholder': 'professeur@univ.edu'}}) }}
-                    {{ form_errors(form.teacherEmail) }}
-                </div>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Paramètres du Cours</h3>
-            <div class="form-grid">
-                <!-- Deuxième ligne -->
-                <div class="form-group">
-                    {{ form_label(form.semester, 'Semestre') }}
-                    {{ form_widget(form.semester, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.semester) }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_label(form.difficultyLevel, 'Niveau de Difficulté') }}
-                    {{ form_widget(form.difficultyLevel, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.difficultyLevel) }}
-                </div>
-
-                <!-- Troisième ligne -->
-                <div class="form-group">
-                    {{ form_label(form.type, 'Type de Cours') }}
-                    {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.type) }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_label(form.priority, 'Priorité') }}
-                    {{ form_widget(form.priority, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.priority) }}
-                </div>
-
-                 <!-- Quatrième ligne -->
-                <div class="form-group">
-                    {{ form_label(form.status, 'Statut') }}
+                
+                 <div class="form-group">
+                    {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.status) }}
+                     {{ form_errors(form.status) }}
                 </div>
-
-                <div class="form-group">
-                    {{ form_label(form.coefficient, 'Coefficient') }}
-                    {{ form_widget(form.coefficient, {'attr': {'class': 'form-input', 'step': '0.5'}}) }}
-                    {{ form_errors(form.coefficient) }}
-                </div>
+            </div>
+            
+            <div class="form-group full-width" style="margin-top: 1.5rem;">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-input form-textarea', 'rows': 4, 'placeholder': 'Détaillez les objectifs et consignes...'}}) }}
+                {{ form_errors(form.description) }}
             </div>
         </div>
 
+        <!-- Details Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-calendar-check"></i> Planification & Ressources</h3>
+            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Configuration</h3>
             <div class="form-grid">
-                <!-- Cinquième ligne -->
-                <div class="form-group">
-                    {{ form_label(form.duration, 'Durée (heures)') }}
-                    {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'min': '1'}}) }}
-                    {{ form_errors(form.duration) }}
+                 <div class="form-group">
+                     {{ form_label(form.duration, 'Durée (min)', {'label_attr': {'class': 'form-label'}}) }}
+                     {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'placeholder': '60'}}) }}
+                     {{ form_errors(form.duration) }}
                 </div>
-
-                <div class="form-group">
-                    {{ form_label(form.courseFile, 'Fichier du Cours') }}
-                    {{ form_widget(form.courseFile, {'attr': {'class': 'form-input'}}) }}
-                    {{ form_errors(form.courseFile) }}
+                 <div class="form-group">
+                    {{ form_label(form.difficulty, 'Difficulté', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.difficulty, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.difficulty) }}
                 </div>
-
-                <!-- Sixième ligne -->
-                <div class="form-group full-width">
-                    {{ form_label(form.courseLink, 'Lien du Cours (Visio)') }}
-                    {{ form_widget(form.courseLink, {'attr': {'class': 'form-input', 'placeholder': 'https://meet.google.com/...'}}) }}
-                    {{ form_errors(form.courseLink) }}
-                </div>
-
-                <!-- Commentaires -->
-                <div class="form-group full-width">
-                    {{ form_label(form.comment, 'Commentaires') }}
-                    {{ form_widget(form.comment, {'attr': {'class': 'form-input form-textarea', 'rows': '4', 'placeholder': 'Notes ou instructions supplémentaires...'}}) }}
-                    {{ form_errors(form.comment) }}
+                 <div class="form-group">
+                    {{ form_label(form.level, 'Niveau', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.level, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.level) }}
                 </div>
             </div>
         </div>
 
-        <!-- Boutons d'action -->
+        <!-- Resources Section -->
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-paperclip"></i> Ressources & Liens</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form_label(form.link, 'Lien Externe', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.link, {'attr': {'class': 'form-input', 'placeholder': 'https://...'}}) }}
+                    {{ form_errors(form.link) }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.file, 'Fichier Joint (PDF, Docx)', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.file, {'attr': {'class': 'form-input', 'style': 'padding: 0.7rem;'}}) }}
+                    {{ form_errors(form.file) }}
+                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Supports de cours, énoncés, etc.</small>
+                </div>
+            </div>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="icon">💾</i> Ajouter le Cours
+                <i class="fas fa-save"></i> Enregistrer l'Activité
             </button>
+            <a href="{{ path('app_course_activities', {id: course.id}) }}" class="btn-cancel">
+                Annuler
+            </a>
         </div>
 
         {{ form_end(form) }}
@@ -127,7 +100,7 @@
 </div>
 
 <style>
-    /* Using variables from base.html.twig where possible */
+    /* Using variables based on the new standard design */
     
     .course-form-container {
         padding: 0;
@@ -135,22 +108,21 @@
         min-height: 100vh;
         font-family: 'Poppins', sans-serif;
         padding-bottom: 4rem;
-        padding-top: 2rem; /* Add top padding to container */
+        padding-top: 2rem;
     }
 
     .form-header {
         display: flex;
         flex-direction: column;
-        background: var(--sidebar-bg); /* Keep exact color */
-        padding: 3rem 2rem 8rem 2rem; /* Increased top padding, keep bottom deep */
+        background: var(--sidebar-bg);
+        padding: 3rem 2rem 8rem 2rem;
         color: white;
-        margin: 0 auto; /* Center horizontal */
+        margin: 0 auto;
         position: relative;
         z-index: 1;
-        /* Width constraints */
         width: 95%;
         max-width: 1250px;
-        border-radius: 20px; /* Rounded all around */
+        border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0, 51, 102, 0.15);
     }
     
@@ -162,7 +134,7 @@
     .header-content {
         text-align: center;
         max-width: 800px;
-        margin: 0 auto; /* Center alignment */
+        margin: 0 auto;
     }
 
     .header-content h1 {
@@ -181,6 +153,14 @@
         max-width: 600px;
         margin: 0 auto;
     }
+    
+    .page-subtitle strong {
+        color: white;
+        font-weight: 600;
+        background: rgba(255,255,255,0.1);
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+    }
 
     /* Carte du formulaire */
     .form-card {
@@ -189,8 +169,8 @@
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         padding: 4rem;
         width: 95%; 
-        max-width: 1250px; /* Match header width */
-        margin: -5rem auto 0 auto; /* Overlap with header */
+        max-width: 1250px;
+        margin: -5rem auto 0 auto;
         position: relative;
         z-index: 10;
         border: 1px solid rgba(0,0,0,0.02);
@@ -292,11 +272,11 @@
         border-color: #35d1f5;
         box-shadow: 0 0 0 4px rgba(53, 209, 245, 0.15);
     }
-
+    
     .form-input:hover {
         border-color: #b1b7c1;
     }
-
+    
     .form-textarea {
         resize: vertical;
         min-height: 140px;
@@ -328,6 +308,7 @@
         justify-content: flex-end;
         padding-top: 2rem;
         border-top: 1px solid #f0f0f0;
+        align-items: center;
     }
 
     .btn-submit {
@@ -354,6 +335,22 @@
 
     .btn-submit:active {
         transform: translateY(0);
+    }
+    
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+        border-radius: 12px;
+        color: #6c757d;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-cancel:hover {
+        color: #343a40;
+        background: #f1f3f5;
     }
 
     /* Back Custom Button - White Pill */
@@ -395,7 +392,7 @@
     @media (max-width: 768px) {
         .form-header {
             padding: 1.5rem 1.5rem 6rem 1.5rem;
-            width: 95%; /* Keep width consistent on mobile */
+            width: 95%;
             border-radius: 16px;
         }
 
@@ -406,7 +403,7 @@
         .form-card {
             padding: 2rem;
             margin-top: -4rem;
-            width: 95%; /* Keep consistent width */
+            width: 95%;
             border-radius: 16px;
         }
 
@@ -423,7 +420,11 @@
             width: 100%;
             justify-content: center;
         }
+        
+        .form-actions {
+            flex-direction: column-reverse;
+            gap: 1rem;
+        }
     }
 </style>
-
 {% endblock %}

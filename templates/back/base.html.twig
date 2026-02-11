@@ -410,6 +410,30 @@
             .btn-secondary:hover {
                 background: #f1f5f9;
             }
+
+            .btn-back {
+                padding: 8px 16px;
+                background: white;
+                border: 1px solid var(--admin-border);
+                border-radius: 6px;
+                color: var(--admin-text-muted);
+                font-size: 0.9rem;
+                font-weight: 500;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+
+            .btn-back:hover {
+                background: white;
+                color: var(--admin-text-main);
+                border-color: #cbd5e1;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+                transform: translateY(-1px);
+            }
         </style>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         {% block stylesheets %}{% endblock %}
@@ -452,7 +476,11 @@
                         <i class="fas fa-bullseye"></i> <span>Objectives</span>
                     </a>
                 </li>
-                <li class="menu-item"><a href="{{ path('app_admin_courses') }}"><i class="fas fa-book"></i> <span>Courses</span></a></li>
+                <li class="menu-item">
+                    <a href="{{ path('app_admin_courses') }}" class="{{ app.current_route starts with 'app_admin_courses' or app.current_route starts with 'app_course' ? 'active' : '' }}">
+                        <i class="fas fa-book"></i> <span>Courses</span>
+                    </a>
+                </li>
                 
                 
                 <li class="menu-label">System</li>

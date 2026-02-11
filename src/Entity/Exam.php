@@ -31,7 +31,7 @@ class Exam
     #[ORM\Column(length: 50)]
     private ?string $status = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]

@@ -1,0 +1,149 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Gestion des Examens{% endblock %}
+
+{% block breadcrumb %}Gestion des Examens / {{ course.name }}{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h1 class="page-title" style="margin-bottom: 5px;">Examens</h1>
+                <p style="color: #64748b; margin: 0;">Cours : <strong>{{ course.name }}</strong></p>
+            </div>
+            <a href="{{ path('app_admin_courses') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour aux cours
+            </a>
+        </div>
+
+        {# Flash Messages #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if label == 'success' %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% else %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3>Liste des Examens</h3>
+                <a href="{{ path('app_admin_course_exam_new', {'id': course.id}) }}" class="btn-action">
+                    <i class="fas fa-plus"></i> Ajouter un Examen
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Date</th>
+                            <th>Durée (min)</th>
+                            <th>Note (/20)</th>
+                            <th>Difficulté</th>
+                            <th>Statut</th>
+                            <th>Fichier</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in exams %}
+                            <tr>
+                                <td>{{ exam.id }}</td>
+                                <td>
+                                    <strong>{{ exam.title }}</strong>
+                                </td>
+                                <td>
+                                    <span style="font-size: 0.85rem; color: #64748b;">
+                                        <i class="fas fa-calendar-alt"></i> {{ exam.date ? exam.date|date('d/m/Y H:i') : '' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 0.85rem; color: #64748b;">
+                                        <i class="fas fa-clock"></i> {{ exam.duration }} min
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600; color: #0f172a;">{{ exam.grade }}</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge" style="background-color: #f1f5f9; color: #475569;">
+                                        {{ exam.difficulty }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ exam.status == 'published' ? 'status-active' : 'status-pending' }}">
+                                        {{ exam.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if exam.file %}
+                                        <a href="{{ asset('uploads/exams/' ~ exam.file) }}" target="_blank" class="status-badge status-active" style="text-decoration: none;">
+                                            <i class="fas fa-download"></i> Télécharger
+                                        </a>
+                                    {% else %}
+                                        <span class="status-badge status-pending">Aucun fichier</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 8px;">
+                                        <a href="{{ path('app_admin_exam_edit', {'id': exam.id}) }}" class="btn-secondary" title="Modifier"><i class="fas fa-edit"></i></a>
+                                        <button type="button" class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;" title="Supprimer" 
+                                                onclick="confirmDelete('{{ path('app_exam_delete', {'id': exam.id}) }}', '{{ csrf_token('delete' ~ exam.id) }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
+                                    Aucun examen trouvé pour ce cours.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {# Delete Confirmation Modal #}
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Confirmer la suppression</h2>
+                <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet examen ? Cette action est irréversible.</p>
+                <form id="deleteForm" method="post" action="">
+                    <input type="hidden" name="_token" id="deleteToken" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete(actionUrl, token) {
+            document.getElementById('deleteForm').action = actionUrl;
+            document.getElementById('deleteToken').value = token;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+    </script>
+{% endblock %}
