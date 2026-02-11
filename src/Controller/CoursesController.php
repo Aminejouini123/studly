@@ -29,36 +29,36 @@ final class CoursesController extends AbstractController
         ]);
     }
 
-    #[Route('/course/new', name: 'app_course_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-    {
-        $course = new Course();
-        $form = $this->createForm(CourseType::class, $course);
-        $form->handleRequest($request);
+            #[Route('/course/new', name: 'app_course_new', methods: ['GET', 'POST'])]
+            public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+            {
+                $course = new Course();
+                $form = $this->createForm(CourseType::class, $course);
+                $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Assign the current user to the course
-            $course->setUser($this->getUser());
+                if ($form->isSubmitted() && $form->isValid()) {
+                    // Assign the current user to the course
+                    $course->setUser($this->getUser());
 
-            // handle uploaded file
-            /** @var UploadedFile|null $uploadedFile */
-            $uploadedFile = $form->get('courseFile')->getData();
-            if ($uploadedFile) {
-                $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
+                    // handle uploaded file
+                    /** @var UploadedFile|null $uploadedFile */
+                    $uploadedFile = $form->get('courseFile')->getData();
+                    if ($uploadedFile) {
+                        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename);
+                        $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
 
-                $targetDir = $this->getParameter('kernel.project_dir').'/public/uploads/courses';
-                try {
-                    $uploadedFile->move($targetDir, $newFilename);
-                    $course->setCourseFile($newFilename);
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Impossible d\'enregistrer le fichier.');
-                }
-            }
+                        $targetDir = $this->getParameter('kernel.project_dir').'/public/uploads/courses';
+                        try {
+                            $uploadedFile->move($targetDir, $newFilename);
+                            $course->setCourseFile($newFilename);
+                        } catch (\Exception $e) {
+                            $this->addFlash('error', 'Impossible d\'enregistrer le fichier.');
+                        }
+                    }
 
-            $course->setCreatedAt(new \DateTime());
-            $entityManager->persist($course);
+                    $course->setCreatedAt(new \DateTime());
+                    $entityManager->persist($course);
             $entityManager->flush();
 
             $this->addFlash('success', 'Le cours a été ajouté avec succès!');

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ActivityRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 class Activity
@@ -15,27 +16,36 @@ class Activity
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre de l'activité est obligatoire")]
+    #[Assert\Length(min: 3, minMessage: "Le titre doit contenir au moins 3 caractères")]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins 10 caractères")]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: "Le lien doit être une URL valide")]
     private ?string $link = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: "La durée doit être positive")]
     private ?int $duration = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
     private ?string $status = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
     private ?string $difficulty = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le niveau est obligatoire")]
     private ?string $level = null;
 
     #[ORM\ManyToOne(inversedBy: 'activities')]

@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File as FileConstraint;
 
 class ActivityType extends AbstractType
 {
@@ -62,6 +63,19 @@ class ActivityType extends AbstractType
                 'label' => 'Fichier joint (PDF, Docx)',
                 'mapped' => false,
                 'required' => false,
+                'constraints' => [
+                    new FileConstraint([
+                        'maxSize' => '10M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'image/jpeg',
+                            'image/png'
+                        ],
+                        'mimeTypesMessage' => 'Veuillez télécharger un document valide (PDF, Word, Image)',
+                    ])
+                ],
             ])
             ->add('link', UrlType::class, [
                 'label' => 'Lien externe (Ressource)',
