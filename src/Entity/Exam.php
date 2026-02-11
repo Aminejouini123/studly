@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ExamRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamRepository::class)]
 class Exam
@@ -14,27 +15,36 @@ class Exam
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre de l'examen est obligatoire")]
+    #[Assert\Length(min: 3, minMessage: "Le titre doit contenir au moins 3 caractères")]
     private ?string $title = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "La date de l'examen est obligatoire")]
+    #[Assert\GreaterThan("today", message: "La date de l'examen doit être dans le futur")]
     private ?\DateTime $date = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: "La durée doit être positive")]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note doit être comprise entre {{ min }} et {{ max }}")]
     private ?float $grade = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
     private ?string $difficulty = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
     private ?string $status = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: "Le lien doit être une URL valide")]
     private ?string $link = null;
 
     #[ORM\ManyToOne(inversedBy: 'exams')]

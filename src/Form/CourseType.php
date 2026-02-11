@@ -15,11 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Positive;
 
 class CourseType extends AbstractType
 {
@@ -33,10 +29,6 @@ class CourseType extends AbstractType
                     'placeholder' => 'Ex: Programmation Orientée Objet',
                     'class' => 'form-control'
                 ],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom du cours est obligatoire']),
-                    new Length(['min' => 3, 'minMessage' => 'Le nom doit contenir au moins 3 caractères']),
-                ],
             ])
             ->add('teacherEmail', EmailType::class, [
                 'label' => 'Email du Professeur',
@@ -44,10 +36,6 @@ class CourseType extends AbstractType
                 'attr' => [
                     'placeholder' => 'prof@exemple.com',
                     'class' => 'form-control'
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'email est obligatoire']),
-                    new Email(['message' => 'L\'email n\'est pas valide']),
                 ],
             ])
             ->add('semester', ChoiceType::class, [
@@ -110,9 +98,6 @@ class CourseType extends AbstractType
                     'step' => '0.5',
                     'class' => 'form-control'
                 ],
-                'constraints' => [
-                    new Positive(['message' => 'Le coefficient doit être positif']),
-                ],
             ])
             ->add('duration', IntegerType::class, [
                 'label' => 'Durée (en heures)',
@@ -121,9 +106,6 @@ class CourseType extends AbstractType
                     'placeholder' => '30',
                     'min' => '1',
                     'class' => 'form-control'
-                ],
-                'constraints' => [
-                    new Positive(['message' => 'La durée doit être positive']),
                 ],
             ])
             ->add('courseFile', FileType::class, [

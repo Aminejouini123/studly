@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 class Course
@@ -17,36 +18,48 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom du cours est obligatoire")]
+    #[Assert\Length(min: 3, minMessage: "Le nom doit contenir au moins 3 caractères")]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $courseFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: "Le lien doit être une URL valide")]
     private ?string $courseLink = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'email du professeur est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     private ?string $teacherEmail = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le semestre est obligatoire")]
     private ?string $semester = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le niveau de difficulté est obligatoire")]
     private ?string $difficultyLevel = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le type de cours est obligatoire")]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La priorité est obligatoire")]
     private ?string $priority = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: "Le coefficient doit être positif")]
     private ?float $coefficient = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: "La durée doit être positive")]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
