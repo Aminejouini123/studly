@@ -1,0 +1,162 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Gestion des Activités{% endblock %}
+
+{% block breadcrumb %}Gestion des Activités / {{ course.name }}{% endblock %}
+
+{% block content %}
+    <div class="dashboard-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h1 class="page-title" style="margin-bottom: 5px;">Activités</h1>
+                <p style="color: #64748b; margin: 0;">Cours : <strong>{{ course.name }}</strong></p>
+            </div>
+            <a href="{{ path('app_admin_courses') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour aux cours
+            </a>
+        </div>
+
+        {# Flash Messages #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if label == 'success' %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% else %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3>Liste des Activités</h3>
+                <a href="{{ path('app_admin_course_activity_new', {'id': course.id}) }}" class="btn-action">
+                    <i class="fas fa-plus"></i> Ajouter une Activité
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Durée (min)</th>
+                            <th>Niveau</th>
+                            <th>Difficulté</th>
+                            <th>Statut</th>
+                            <th>Ressources</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                            <tr>
+                                <td>{{ activity.id }}</td>
+                                <td>
+                                    <strong>{{ activity.title }}</strong>
+                                </td>
+                                <td style="max-width: 200px;">
+                                    <span style="color: #64748b; font-size: 0.85rem;">
+                                        {{ activity.description|slice(0, 50) ~ (activity.description|length > 50 ? '...' : '') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 0.85rem; color: #64748b;">
+                                        <i class="fas fa-clock"></i> {{ activity.duration }} min
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 0.85rem; color: #64748b;">
+                                        {{ activity.level }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge" style="background-color: #f1f5f9; color: #475569;">
+                                        {{ activity.difficulty }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ activity.status == 'published' ? 'status-active' : 'status-pending' }}">
+                                        {{ activity.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        {% if activity.file %}
+                                            <a href="{{ asset('uploads/activities/' ~ activity.file) }}" target="_blank" class="text-xs font-weight-bold text-primary" style="text-decoration: none;">
+                                                <i class="fas fa-download"></i> Fichier
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if activity.link %}
+                                            <a href="{{ activity.link }}" target="_blank" class="text-xs font-weight-bold text-info" style="text-decoration: none;">
+                                                <i class="fas fa-link"></i> Lien
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if not activity.file and not activity.link %}
+                                            <span class="text-xs text-secondary">Aucune</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 8px;">
+                                        <a href="{{ path('app_admin_activity_edit', {'id': activity.id}) }}" class="btn-secondary" title="Modifier"><i class="fas fa-edit"></i></a>
+                                        <button type="button" class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;" title="Supprimer" 
+                                                onclick="confirmDelete('{{ path('app_activity_delete', {'id': activity.id}) }}', '{{ csrf_token('delete' ~ activity.id) }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
+                                    Aucune activité trouvée pour ce cours.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# Delete Confirmation Modal #}
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Confirmer la suppression</h2>
+                <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+                <form id="deleteForm" method="post" action="">
+                    <input type="hidden" name="_token" id="deleteToken" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete(actionUrl, token) {
+            document.getElementById('deleteForm').action = actionUrl;
+            document.getElementById('deleteToken').value = token;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+    </script>
+{% endblock %}

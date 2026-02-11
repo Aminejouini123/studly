@@ -58,13 +58,13 @@ class Course
     /**
      * @var Collection<int, Activity>
      */
-    #[ORM\OneToMany(targetEntity: Activity::class, mappedBy: 'course')]
+    #[ORM\OneToMany(targetEntity: Activity::class, mappedBy: 'course', orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $activities;
 
     /**
      * @var Collection<int, Exam>
      */
-    #[ORM\OneToMany(targetEntity: Exam::class, mappedBy: 'course')]
+    #[ORM\OneToMany(targetEntity: Exam::class, mappedBy: 'course', orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $exams;
 
     public function __construct()

@@ -23,15 +23,15 @@
             <div class="stat-label">Cours Total</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status == 'en cours')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en cours')|length }}</div>
             <div class="stat-label">En Cours</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status == 'terminé')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'terminé')|length }}</div>
             <div class="stat-label">Terminés</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status == 'en attente')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en attente')|length }}</div>
             <div class="stat-label">En Attente</div>
         </div>
         </div>
@@ -95,10 +95,10 @@
                         </a>
 
                         <div class="card-action-buttons">
-                            <a href="{{ path('app_examen') }}" class="btn-action-main btn-examen">
+                            <a href="{{ path('app_course_exams', {id: course.id}) }}" class="btn-action-main btn-examen">
                                 <i class="fas fa-file-alt"></i> Examen
                             </a>
-                            <a href="{{ path('app_activity') }}" class="btn-action-main btn-activity">
+                            <a href="{{ path('app_course_activities', {id: course.id}) }}" class="btn-action-main btn-activity">
                                 <i class="fas fa-tasks"></i> Activité
                             </a>
                         </div>
@@ -107,11 +107,11 @@
                             <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-action btn-edit-sub">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
-                            <form method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" onsubmit="return confirm('Confirmer la suppression ?')" style="display:inline; flex:1;">
+                            <button type="button" class="btn-action btn-delete-sub" onclick="openDeleteModal({{ course.id }})">
+                                <i class="fas fa-trash-alt"></i> Supprimer
+                            </button>
+                            <form id="delete-form-{{ course.id }}" method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" style="display:none;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
-                                <button type="submit" class="btn-action btn-delete-sub">
-                                    <i class="fas fa-trash-alt"></i> Supprimer
-                                </button>
                             </form>
                         </div>
                     </div>
@@ -119,16 +119,80 @@
             </div>
         {% else %}
             <div class="empty-state">
-                <div class="empty-icon"></div>
+                <div class="empty-icon-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </div>
                 <h3>Aucun cours trouvé</h3>
-                <p>Vous n'avez pas encore ajouté de cours. Commencez dès maintenant!</p>
-                <a href="{{ path('app_course_new') }}" class="btn-primary">Ajouter mon premier cours</a>
+                <p>Vous n'avez pas encore ajouté de cours. Commencez votre aventure d'apprentissage dès maintenant!</p>
+                <a href="{{ path('app_course_new') }}" class="btn-primary btn-lg pulse-animation">
+                    <i class="fas fa-plus-circle"></i> Ajouter mon premier cours
+                </a>
             </div>
         {% endif %}
     </div>
 </div>
 
 <style>
+    /* ... existing styles ... */
+
+    /* Empty State Styles */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        text-align: center;
+        margin-top: 1rem;
+        border: 2px dashed #e2e8f0;
+    }
+
+    .empty-icon-container {
+        width: 100px;
+        height: 100px;
+        background: #f0f9ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: #0059A9;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        font-size: 1rem;
+        max-width: 400px;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(0, 89, 169, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(0, 89, 169, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 89, 169, 0);
+        }
+    }
+
     * {
         margin: 0;
         padding: 0;
@@ -564,7 +628,143 @@
     }
 </style>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirmer la suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-icon {
+        width: 60px;
+        height: 60px;
+        background: #fee2e2;
+        color: #dc2626;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .modal-content h3 {
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .modal-content p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-cancel, .btn-confirm {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-confirm {
+        background: #dc2626;
+        color: white;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-confirm:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+    }
+</style>
+
 <script>
+    let courseIdToDelete = null;
+
+    function openDeleteModal(id) {
+        courseIdToDelete = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        courseIdToDelete = null;
+    }
+
+    function confirmDelete() {
+        if (courseIdToDelete) {
+            document.getElementById('delete-form-' + courseIdToDelete).submit();
+        }
+    }
+
+    // Close on click outside
+    document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Existing search/filter scripts...
     // Search Functionality
     document.getElementById('searchInput')?.addEventListener('keyup', function() {
         const term = this.value.toLowerCase();
@@ -589,7 +789,5 @@
             card.style.display = visible ? 'flex' : 'none';
         });
     });
-
-
 </script>
 {% endblock %}
