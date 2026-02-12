@@ -24,6 +24,23 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $userPasswordHasher
     ): Response {
+        // Handle Search, Filter, Sort
+        $search = $request->query->get('q');
+        $role = $request->query->get('role');
+        $sort = $request->query->get('sort', 'DESC'); // Default sort DESC
+
+        // Map frontend role names to DB roles if necessary, or pass strictly from frontend
+        // For security/cleanliness, let's map simple 'admin'/'student' to actual roles if passed
+        $roleParam = match ($role) {
+            'admin' => 'ROLE_ADMIN',
+            'student' => 'ROLE_ETUDIANT',
+            default => null
+        };
+
+        $users = $userRepository->findBySearchFilterSort($search, $roleParam, $sort);
+
+
+
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -47,7 +64,7 @@ final class UserController extends AbstractController
         }
 
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'users' => $users,
             'form' => $form,
         ]);
     }

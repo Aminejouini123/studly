@@ -26,9 +26,19 @@ final class GroupsController extends AbstractController
         $user = $this->getUser();
         
         $groups = $groupRepository->findByCreator($user);
+        $assignedCount = 0;
+        $totalCapacity = 0;
+        foreach ($groups as $g) {
+            if ($g->getMemberGroup() !== null) {
+                $assignedCount++;
+            }
+            $totalCapacity += $g->getCapacity();
+        }
 
         return $this->render('groups/frontGroups.html.twig', [
             'groups' => $groups,
+            'assigned_count' => $assignedCount,
+            'total_capacity' => $totalCapacity,
         ]);
     }
 

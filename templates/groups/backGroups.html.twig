@@ -7,6 +7,16 @@
 {% block content %}
     <div class="dashboard-content">
         <h1 class="page-title">Groups Management</h1>
+
+        {# Flash Messages - same style as Courses #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if label == 'success' %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% else %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
         <div class="content-card">
             <div class="card-header">
                 <h3>All Groups</h3>
@@ -21,7 +31,7 @@
                 </div>
             </div>
 
-            <!-- Create Group Modal -->
+            <!-- Create Group Modal - same overlay pattern as Courses -->
             <div class="modal-overlay" id="groupModal">
                 <div class="modal-card">
                     <div class="modal-header">
@@ -127,7 +137,7 @@
                             <td>{{ group.capacity }} members</td>
                             <td>
                                 <strong>{{ group.creator.firstName }} {{ group.creator.lastName }}</strong><br>
-                                <small style="color: #666;">{{ group.creator.email }}</small>
+                                <small style="color: var(--admin-text-muted);">{{ group.creator.email }}</small>
                             </td>
                             <td>{{ group.createdAt|date('d/m/Y H:i') }}</td>
                             <td>
@@ -166,31 +176,25 @@
 {% block javascripts %}
     <script>
         const modal = document.getElementById('groupModal');
-        const modalTitle = modal.querySelector('.modal-header h2');
-        
+
         function openModal() {
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
+            modal.classList.add('active');
         }
 
         function closeModal() {
             modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
         }
 
         // Auto-open if there are form errors
         {% if not form.vars.valid %}
-            window.onload = function() {
-                modal.style.display = 'flex';
-                setTimeout(() => modal.classList.add('active'), 10);
-            }
+            document.addEventListener('DOMContentLoaded', function() {
+                modal.classList.add('active');
+            });
         {% endif %}
 
-        // Close on overlay click
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
+        // Close on overlay click (same as Courses delete modal)
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
     </script>
 {% endblock %}

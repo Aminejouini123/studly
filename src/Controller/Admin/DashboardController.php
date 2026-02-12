@@ -2,49 +2,42 @@
 
 namespace App\Controller\Admin;
 
-use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
-use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use App\Repository\UserRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[AdminDashboard(routePath: '/admin', routeName: 'admin')]
-class DashboardController extends AbstractDashboardController
+#[Route('/admin')]
+#[IsGranted('ROLE_ADMIN')]
+class DashboardController extends AbstractController
 {
-    public function index(): Response
+    #[Route('/dashboard', name: 'app_admin_dashboard')]
+    public function index(UserRepository $userRepository): Response
     {
-        return parent::index();
+        // Real gathered stats
+        $totalUsers = $userRepository->count([]);
 
-        // Option 1. You can make your dashboard redirect to some common page of your backend
-        //
-        // 1.1) If you have enabled the "pretty URLs" feature:
-        // return $this->redirectToRoute('admin_user_index');
-        //
-        // 1.2) Same example but using the "ugly URLs" that were used in previous EasyAdmin versions:
-        // $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
-        // return $this->redirect($adminUrlGenerator->setController(OneOfYourCrudController::class)->generateUrl());
+        // Mocking role counts since countByRole might not exist yet in Repo
+        // Optimized: In a real app, use a custom repository method for this.
+        $allUsers = $userRepository->findAll();
+        $students = 0;
+        $admins = 0;
+        foreach ($allUsers as $u) {
+            if (in_array('ROLE_ETUDIANT', $u->getRoles()))
+                $students++;
+            if (in_array('ROLE_ADMIN', $u->getRoles()))
+                $admins++;
+        }
 
-        // Option 2. You can make your dashboard redirect to different pages depending on the user
-        //
-        // if ('jane' === $this->getUser()->getUsername()) {
-        //     return $this->redirectToRoute('...');
-        // }
+        $recentUsers = $userRepository->findBy([], ['createdAt' => 'DESC'], 5);
 
-        // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
-        // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
-        //
-        // return $this->render('some/path/my-dashboard.html.twig');
-    }
-
-    public function configureDashboard(): Dashboard
-    {
-        return Dashboard::new()
-            ->setTitle('Studly');
-    }
-
-    public function configureMenuItems(): iterable
-    {
-        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        // yield MenuItem::linkToCrud('The Label', 'fas fa-list', EntityClass::class);
+        return $this->render('admin/dashboard.html.twig', [
+            'totalUsers' => $totalUsers,
+            'students' => $students,
+            'admins' => $admins,
+            'recentUsers' => $recentUsers,
+            'revenueData' => [1200, 1900, 3000, 5000, 2000, 3000], // Example data
+        ]);
     }
 }

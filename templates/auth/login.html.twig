@@ -173,8 +173,8 @@
         max-width: 380px;
         width: 100%;
         background-color: var(--input-bg);
-        margin: 10px 0;
-        height: 55px;
+        margin: 6px 0;
+        height: 42px;
         border-radius: 15px; /* More rounded, distinct from pill */
         display: grid;
         grid-template-columns: 15% 85%;
@@ -190,7 +190,7 @@
 
     .input-field i {
         text-align: center;
-        line-height: 55px;
+        line-height: 42px;
         color: #555;
         font-size: 1.1rem;
     }
@@ -216,12 +216,12 @@
         background-color: var(--btn-color);
         border: none;
         outline: none;
-        height: 50px;
+        height: 40px;
         border-radius: 50px;
         color: #fff;
         text-transform: uppercase;
         font-weight: 600;
-        margin: 20px 0;
+        margin: 12px 0;
         cursor: pointer;
         transition: 0.5s;
         box-shadow: 0 5px 20px rgba(0,0,0,0.2);
@@ -585,20 +585,34 @@
                 </div>
             </form>
 
-            <form action="{{ path('app_register') }}" method="post" class="sign-up-form" style="max-height: 90vh; overflow-y: auto; padding-top: 20px;">
-                <h2 class="title" style="margin-bottom: 15px;">Sign up</h2>
+            <form action="{{ path('app_register') }}" method="post" class="sign-up-form" style="padding-top: 10px;">
+                <h2 class="title" style="margin-bottom: 10px; font-size: 2.2rem;">Sign up</h2>
+                
+                {% set registration_data = app.session.get('registration_data', {}) %}
+                
+                {% for message in app.flashes('error') %}
+                    <div style="color: #ff4757; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; text-align: center; background: rgba(255, 71, 87, 0.1); padding: 8px; border-radius: 10px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                
+                {% for message in app.flashes('success') %}
+                    <div style="color: #2ed573; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; text-align: center; background: rgba(46, 213, 115, 0.1); padding: 8px; border-radius: 10px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
                 
                 <div class="input-field">
                     <i class="fas fa-user"></i>
-                    <input type="text" name="firstName" placeholder="First Name" required />
+                    <input type="text" name="firstName" placeholder="First Name" value="{{ registration_data.firstName ?? '' }}" required />
                 </div>
                 <div class="input-field">
                     <i class="fas fa-user"></i>
-                    <input type="text" name="lastName" placeholder="Last Name" required />
+                    <input type="text" name="lastName" placeholder="Last Name" value="{{ registration_data.lastName ?? '' }}" required />
                 </div>
                 <div class="input-field">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" name="email" placeholder="Email" required />
+                    <input type="email" name="email" placeholder="Email" value="{{ registration_data.email ?? '' }}" required />
                 </div>
                 <div class="input-field">
                     <i class="fas fa-lock"></i>
@@ -606,21 +620,21 @@
                 </div>
                 <div class="input-field">
                     <i class="fas fa-calendar"></i>
-                    <input type="date" name="dateOfBirth" placeholder="Date of Birth" required style="color: #333;" />
+                    <input type="date" name="dateOfBirth" placeholder="Date of Birth" value="{{ registration_data.dateOfBirth ?? '' }}" required style="color: #333;" />
                 </div>
                 <div class="input-field">
                     <i class="fas fa-phone"></i>
-                    <input type="text" name="phoneNumber" placeholder="Phone Number" />
+                    <input type="text" name="phoneNumber" placeholder="Phone Number" value="{{ registration_data.phoneNumber ?? '' }}" />
                 </div>
-                <div class="input-field" style="height: auto; padding: 10px;">
-                    <i class="fas fa-map-marker-alt" style="line-height: normal; margin-top: 10px;"></i>
-                    <textarea name="address" placeholder="Address" style="background: none; border: none; outline: none; width: 100%; font-weight: 600; font-size: 1.1rem; color: #333; resize: none; margin-left: 10px; font-family: 'Poppins', sans-serif;" rows="2"></textarea>
+                <div class="input-field" style="height: auto; padding: 8px;">
+                    <i class="fas fa-map-marker-alt" style="line-height: normal; margin-top: 6px;"></i>
+                    <textarea name="address" placeholder="Address" style="background: none; border: none; outline: none; width: 100%; font-weight: 600; font-size: 1.1rem; color: #333; resize: none; margin-left: 10px; font-family: 'Poppins', sans-serif;" rows="1">{{ registration_data.address ?? '' }}</textarea>
                 </div>
 
                 <input type="submit" class="btn solid" value="Sign up" />
                 
-                <p class="social-text">Or Sign up with social platforms</p>
-                <div class="social-media" style="margin-bottom: 20px;">
+                <p class="social-text" style="padding: 0.4rem 0;">Or Sign up with social platforms</p>
+                <div class="social-media" style="margin-bottom: 10px;">
                     <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-google"></i></a>
@@ -677,6 +691,13 @@
                 container.classList.remove("sign-up-mode");
             });
         }
+
+        // Auto-switch to sign-up mode if there are registration errors
+        {% if app.session.get('registration_data') %}
+            if(container) {
+                container.classList.add("sign-up-mode");
+            }
+        {% endif %}
     });
 </script>
 {% endblock %}

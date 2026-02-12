@@ -28,43 +28,81 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register', methods: ['POST'])]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, \App\Repository\UserRepository $userRepository): Response
-    {
-        $email = $request->request->get('email');
-
-        // Check if user already exists
-        if ($userRepository->findOneBy(['email' => $email])) {
-            $this->addFlash('error', 'This email is already registered.');
-            return $this->redirectToRoute('app_auth');
-        }
-
+    public function register(
+        Request $request,
+        UserPasswordHasherInterface $userPasswordHasher,
+        EntityManagerInterface $entityManager,
+        \App\Repository\UserRepository $userRepository,
+        \Symfony\Component\Validator\Validator\ValidatorInterface $validator
+    ): Response {
         $user = new User();
-        $user->setEmail($email);
+
+        // Set all user data from the form
+        $user->setEmail($request->request->get('email'));
         $user->setFirstName($request->request->get('firstName'));
         $user->setLastName($request->request->get('lastName'));
 
-        // Handle optional Date Of Birth
+        // Set plain password for validation
+        $plainPassword = $request->request->get('password');
+        $user->setPlainPassword($plainPassword);
+
+        // Handle Date Of Birth
         $dob = $request->request->get('dateOfBirth');
         if ($dob) {
-            $user->setDateOfBirth(new \DateTime($dob));
+            try {
+                $user->setDateOfBirth(new \DateTime($dob));
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Invalid date format.');
+                return $this->redirectToRoute('app_auth');
+            }
         }
 
-        $user->setPhoneNumber($request->request->get('phoneNumber') ?? null);
-        $user->setAddress($request->request->get('address') ?? null);
-
+        $user->setPhoneNumber($request->request->get('phoneNumber'));
+        $user->setAddress($request->request->get('address'));
         $user->setRoles(['ROLE_ETUDIANT']); // Default role
         $user->setStatut('Active');
 
-        // encode the plain password
+        // Validate the user entity with 'create' validation group
+        $errors = $validator->validate($user, null, ['Default', 'create']);
+
+        if (count($errors) > 0) {
+            // Collect all validation errors
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+
+            // Store form data in session to repopulate the form
+            $request->getSession()->set('registration_data', [
+                'firstName' => $request->request->get('firstName'),
+                'lastName' => $request->request->get('lastName'),
+                'email' => $request->request->get('email'),
+                'dateOfBirth' => $request->request->get('dateOfBirth'),
+                'phoneNumber' => $request->request->get('phoneNumber'),
+                'address' => $request->request->get('address'),
+            ]);
+
+            return $this->redirectToRoute('app_auth');
+        }
+
+        // Hash the password
         $user->setPassword(
             $userPasswordHasher->hashPassword(
                 $user,
-                $request->request->get('password')
+                $plainPassword
             )
         );
 
+        // Clear plain password before persisting
+        $user->eraseCredentials();
+
         $entityManager->persist($user);
         $entityManager->flush();
+
+        // Clear registration data from session
+        $request->getSession()->remove('registration_data');
+
+        // Add success message
+        $this->addFlash('success', 'Registration successful! Please sign in.');
 
         // Redirect to login (auth page)
         return $this->redirectToRoute('app_auth');

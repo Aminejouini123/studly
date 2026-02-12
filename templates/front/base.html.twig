@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Student Hub{% endblock %}
+{% block title %}Studly{% endblock %}
 
 {% block body %}
 <style>
@@ -368,8 +368,8 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo">
-            <i class="fas fa-graduation-cap"></i>
-            <span>StudentHub</span>
+            <i class="fas fa-book-reader"></i>
+            <span>Studly</span>
         </div>
         <ul class="nav-links">
             <li class="nav-item">
@@ -379,7 +379,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ path('app_temps') }}" class="{{ app.current_route == 'app_temps' ? 'active' : '' }}">
+                <a href="{{ path('app_temps') }}" class="{{ app.current_route starts with 'app_temps' ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Time Management</span>
                 </a>
@@ -397,7 +397,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ path('app_groups_index') }}" class="{{ app.current_route == 'app_groups_index' ? 'active' : '' }}">
+                <a href="{{ path('app_groups_index') }}" class="{{ app.current_route starts with 'app_groups' ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span>Groups</span>
                 </a>
@@ -424,11 +424,25 @@
                     <i class="fas fa-bell"></i>
                     <span class="notification-dot"></span>
                 </div>
-                <div class="profile-card">
-                    <div class="avatar">SJ</div>
+                <div class="profile-card" onclick="window.location.href='{{ path('app_user_profile') }}'">
+                    <div class="avatar">
+                        {% if app.user and app.user.profilePicture %}
+                            <img src="{{ asset('uploads/avatars/' ~ app.user.profilePicture) }}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">
+                        {% elseif app.user %}
+                            {{ app.user.firstName|first }}{{ app.user.lastName|first }}
+                        {% else %}
+                            Guest
+                        {% endif %}
+                    </div>
                     <div class="profile-info">
-                        <span class="profile-name">Sami Jouini</span>
-                        <span class="profile-role">Student</span>
+                        <span class="profile-name">{{ app.user ? app.user.firstName ~ ' ' ~ app.user.lastName : 'Guest' }}</span>
+                        <span class="profile-role">
+                            {% if app.user %}
+                                {{ app.user.roles|join(', ')|replace({'ROLE_': ''})|title }}
+                            {% else %}
+                                Visitor
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
             </div>
