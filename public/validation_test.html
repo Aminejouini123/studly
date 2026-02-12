@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Validation Test</title>
+</head>
+
+<body>
+    <h1>Test Server-Side Validation</h1>
+
+    <h2>Test 1: Empty Form (Should show multiple validation errors)</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="submit" value="Submit Empty Form">
+    </form>
+
+    <hr>
+
+    <h2>Test 2: Invalid Email</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="text" name="firstName" value="John">
+        <input type="text" name="lastName" value="Doe">
+        <input type="text" name="email" value="invalid-email">
+        <input type="text" name="password" value="123456">
+        <input type="date" name="dateOfBirth" value="2000-01-01">
+        <input type="text" name="phoneNumber" value="20123456">
+        <input type="text" name="address" value="Test Address">
+        <input type="submit" value="Submit Invalid Email">
+    </form>
+
+    <hr>
+
+    <h2>Test 3: Short Password (less than 6 chars)</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="text" name="firstName" value="John">
+        <input type="text" name="lastName" value="Doe">
+        <input type="text" name="email" value="test@example.com">
+        <input type="text" name="password" value="123">
+        <input type="date" name="dateOfBirth" value="2000-01-01">
+        <input type="text" name="phoneNumber" value="20123456">
+        <input type="text" name="address" value="Test Address">
+        <input type="submit" value="Submit Short Password">
+    </form>
+
+    <hr>
+
+    <h2>Test 4: Invalid Phone Number</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="text" name="firstName" value="John">
+        <input type="text" name="lastName" value="Doe">
+        <input type="text" name="email" value="test2@example.com">
+        <input type="text" name="password" value="123456">
+        <input type="date" name="dateOfBirth" value="2000-01-01">
+        <input type="text" name="phoneNumber" value="12345678">
+        <input type="text" name="address" value="Test Address">
+        <input type="submit" value="Submit Invalid Phone">
+    </form>
+
+    <hr>
+
+    <h2>Test 5: Future Date of Birth</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="text" name="firstName" value="John">
+        <input type="text" name="lastName" value="Doe">
+        <input type="text" name="email" value="test3@example.com">
+        <input type="text" name="password" value="123456">
+        <input type="date" name="dateOfBirth" value="2030-01-01">
+        <input type="text" name="phoneNumber" value="20123456">
+        <input type="text" name="address" value="Test Address">
+        <input type="submit" value="Submit Future DOB">
+    </form>
+
+    <hr>
+
+    <h2>Test 6: Valid Data (Should succeed)</h2>
+    <form action="http://localhost:8000/register" method="POST">
+        <input type="text" name="firstName" value="John">
+        <input type="text" name="lastName" value="Doe">
+        <input type="text" name="email" value="validuser@example.com">
+        <input type="text" name="password" value="securepassword123">
+        <input type="date" name="dateOfBirth" value="1995-05-15">
+        <input type="text" name="phoneNumber" value="20123456">
+        <input type="text" name="address" value="123 Test Street, Tunis">
+        <input type="submit" value="Submit Valid Data">
+    </form>
+</body>
+
+</html>

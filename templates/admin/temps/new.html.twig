@@ -2,19 +2,25 @@
 
 {% block title %}New Event{% endblock %}
 
-{% block breadcrumb %}Time Management / New{% endblock %}
+{% block breadcrumb %}
+    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_temps_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Temps</a> / <span>New</span>
+{% endblock %}
 
 {% block content %}
     <div class="dashboard-content">
-        <h1 class="page-title">Create New Event</h1>
-        
-        <div class="content-card" style="max-width: 800px; margin: 0 auto;">
+
+        <div style="margin-bottom: 24px;">
+            <h1 class="page-title" style="margin-bottom: 8px;">Create New Event</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Add a new schedule entry for time management.</p>
+        </div>
+
+        <div class="content-card">
             <div class="card-header">
                 <h3>Event Details</h3>
                 <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back to List</a>
             </div>
-            
-            <div style="padding: 24px;">
+
+            <div class="card-body" style="padding: 24px;">
                 {{ form_start(form) }}
                     {% if not form.vars.valid %}
                     <div class="alert alert-danger" style="margin-bottom: 20px; color: #dc2626;">
@@ -78,8 +84,9 @@
                         </div>
                     </div>
 
-                    <div style="margin-top: 24px; text-align: right;">
-                        <button class="btn-action">{{ button_label|default('Save Event') }}</button>
+                    <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                        <a href="{{ path('app_admin_temps_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border);">Cancel</a>
+                        <button type="submit" class="btn-action"><i class="fas fa-save"></i> {{ button_label|default('Save Event') }}</button>
                     </div>
                 {{ form_end(form) }}
             </div>

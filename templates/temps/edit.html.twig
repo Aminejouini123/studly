@@ -1,13 +1,22 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Edit Event - Student Hub{% endblock %}
+{% block title %}Modifier l'événement{% endblock %}
 
 {% block content %}
 <style>
-    .edit-header { margin-bottom: 20px; }
-    .edit-header h1 { font-size: 1.8rem; color: #1a1a1a; margin: 0 0 6px; font-weight:700; }
-    .edit-header p { color: var(--text-muted); margin:0; }
-
+    .course-form-container { padding: 0; background: #f8f9fa; min-height: 100vh; padding: 2rem 0 4rem; }
+    .form-header { display: flex; flex-direction: column; background: radial-gradient(circle at 10% 20%, rgb(0, 89, 169) 0%, rgb(0, 31, 63) 90%); padding: 3rem 2rem 8rem 2rem; color: white; margin: 0 auto; width: 95%; max-width: 1250px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 51, 102, 0.15); }
+    .header-content { text-align: center; max-width: 800px; margin: 0 auto; }
+    .header-content .page-title { font-size: 2.5rem; color: #fff; margin-bottom: 0.8rem; font-weight: 700; }
+    .page-subtitle { color: rgba(255,255,255,0.9); font-size: 1.1rem; }
+    .btn-back-custom { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; }
+    .btn-back-custom:hover { color: #fff; }
+    .form-card { background: #fff; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); padding: 4rem; width: 95%; max-width: 1250px; margin: -5rem auto 0 auto; position: relative; z-index: 10; }
+    .form-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #00c6ff, #0072ff); border-radius: 20px 20px 0 0; }
+    .section-title { font-size: 1.2rem; color: #1a1a1a; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .btn-submit { padding: 1rem 2rem; background: #0059A9; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary-custom { padding: 1rem 2rem; border: 1px solid #d2d6da; border-radius: 12px; color: #344767; text-decoration: none; font-weight: 600; }
+    .btn-secondary-custom:hover { background: #f8f9fa; }
     .edit-container { display:grid; grid-template-columns: 1fr 360px; gap:28px; align-items:start; max-width:1100px; }
     .edit-card { background:#fff; border:1px solid var(--border-color); border-radius:12px; padding:22px; box-shadow:var(--shadow-sm); }
     .edit-card h2 { margin-top:0; font-size:1.2rem; color:#1a1a1a; font-weight:600; }
@@ -34,14 +43,23 @@
     @media (max-width:900px) { .edit-container { grid-template-columns:1fr; } .event-preview { position:relative; top:auto; } }
 </style>
 
-<div class="edit-header">
-    <h1>✏️ Edit Event</h1>
-    <p>Update the event details below</p>
-</div>
+<div class="course-form-container">
+    <div class="form-header">
+        <div style="margin-bottom: 20px;">
+            <a href="{{ path('app_temps') }}" class="btn-back-custom">
+                <i class="fas fa-arrow-left"></i> Retour au planning
+            </a>
+        </div>
+        <div class="header-content">
+            <h1 class="page-title">Modifier l'événement</h1>
+            <p class="page-subtitle">Mise à jour pour : <strong>{{ event.title }}</strong></p>
+        </div>
+    </div>
 
-<div class="edit-container">
+    <div class="form-card">
+        <div class="edit-container">
     <div class="edit-card">
-        <h2>Event Details</h2>
+        <h2 class="section-title" style="border:none; padding:0; margin-bottom:1.5rem;"><i class="fas fa-calendar-alt" style="color:#00c6ff;"></i> Détails</h2>
 
         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
@@ -120,25 +138,24 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-            <a href="{{ path('app_temps') }}" class="btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer</button>
+            <a href="{{ path('app_temps') }}" class="btn-secondary-custom"><i class="fas fa-times"></i> Annuler</a>
         </div>
 
         {{ form_end(form) }}
     </div>
 
     <div class="event-preview">
-        <h3>Event Preview</h3>
-
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Title</div><div style="font-weight:600;">{{ event.title ?? 'Not set' }}</div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Date</div><div>{{ event.date ? event.date|date('F d, Y') : 'Not set' }}</div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Priority</div><div>{{ event.priority ?? 'Not set' }}</div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Status</div><div>{{ event.status ?? 'Not set' }}</div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Duration</div><div>{{ event.duration ?? 'Not set' }} minutes</div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:var(--text-muted);">Location</div><div>{{ event.location ?? 'Not set' }}</div></div>
-        {% if event.description %}
-            <div><div style="font-size:0.85rem;color:var(--text-muted);">Description</div><div>{{ event.description }}</div></div>
-        {% endif %}
+        <h3>Aperçu</h3>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Titre</div><div style="font-weight:600;">{{ event.title ?? '—' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Date</div><div>{{ event.date ? event.date|date('d/m/Y') : '—' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Priorité</div><div>{{ event.priority ?? '—' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Statut</div><div>{{ event.status ?? '—' }}</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Durée</div><div>{{ event.duration ?? '—' }} min</div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:0.85rem;color:#6c757d;">Lieu</div><div>{{ event.location ?? '—' }}</div></div>
+        {% if event.description %}<div><div style="font-size:0.85rem;color:#6c757d;">Description</div><div>{{ event.description }}</div></div>{% endif %}
+    </div>
+        </div>
     </div>
 </div>
 

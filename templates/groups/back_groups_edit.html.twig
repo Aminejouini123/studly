@@ -2,18 +2,48 @@
 
 {% block title %}Edit Group{% endblock %}
 
+{% block breadcrumb %}
+    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_groups_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Groups</a> / <span>Edit</span>
+{% endblock %}
+
 {% block content %}
-    <div class="dashboard-content">
-        <h1 class="page-title">Edit Group</h1>
+<div class="dashboard-content">
+
+    <div style="margin-bottom: 24px;">
+        <h1 class="page-title" style="margin-bottom: 8px;">Edit Group</h1>
+        <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Update the details for <strong>{{ group.category }}</strong></p>
+    </div>
+
+    {{ form_start(form, {'attr': {'class': 'admin-form', 'novalidate': true}}) }}
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
         <div class="content-card">
-            <div class="card-body">
-                {{ include('groups/_form.html.twig', {'button_label': 'Update'}) }}
-                <a href="{{ path('app_admin_groups_index') }}" class="btn btn-secondary mt-3">Back to list</a>
-                
-                <div class="mt-3">
-                    {{ include('groups/_delete_form.html.twig') }}
+            <div class="card-header">
+                <h3>Group Information</h3>
+            </div>
+            <div class="card-body" style="padding: 24px;">
+                {{ include('groups/_form.html.twig', {'button_label': 'Update', 'form_only_fields': true}) }}
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="content-card">
+                <div class="card-body" style="padding: 24px;">
+                    <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{{ path('app_admin_groups_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border); width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+                        Cancel
+                    </a>
+                    <div style="border-top: 1px solid var(--admin-border); margin: 12px 0; padding-top: 12px;">
+                        {{ include('groups/_delete_form.html.twig') }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    {{ form_end(form) }}
+
+</div>
 {% endblock %}

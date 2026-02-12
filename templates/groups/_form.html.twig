@@ -1,4 +1,6 @@
+{% if not form_only_fields|default(false) %}
 {{ form_start(form) }}
+{% endif %}
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="form-group">
             <label class="form-label">Category Name</label>
@@ -11,7 +13,7 @@
             {{ form_errors(form.capacity) }}
         </div>
     </div>
-    
+
     <div class="form-group">
         <label class="form-label">Group Photo URL</label>
         {{ form_widget(form.groupPhoto, {'attr': {'class': 'form-control', 'placeholder': 'https://example.com/photo.jpg'}}) }}
@@ -24,7 +26,9 @@
         {{ form_errors(form.memberGroup) }}
     </div>
 
+    {% if not form_only_fields|default(false) %}
     <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
         <button class="btn-action">{{ button_label|default('Save Group') }}</button>
     </div>
-{{ form_end(form) }}
+    {{ form_end(form) }}
+{% endif %}

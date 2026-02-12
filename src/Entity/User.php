@@ -84,6 +84,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePicture = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: "Le niveau d'éducation ne peut pas dépasser {{ limit }} caractères.")]
+    private ?string $educationLevel = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: "Le titre du poste ne peut pas dépasser {{ limit }} caractères.")]
+    private ?string $jobTitle = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: "L'URL du site web ne peut pas dépasser {{ limit }} caractères.")]
+    #[Assert\Url(message: "L'URL '{{ value }}' n'est pas valide.")]
+    private ?string $website = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 1000, maxMessage: "La biographie ne peut pas dépasser {{ limit }} caractères.")]
+    private ?string $bio = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $skills = [];
+
 
 
     public function __construct()
@@ -400,6 +423,71 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?string $profilePicture): static
+    {
+        $this->profilePicture = $profilePicture;
+        return $this;
+    }
+
+    public function getBio(): ?string
+    {
+        return $this->bio;
+    }
+
+    public function setBio(?string $bio): static
+    {
+        $this->bio = $bio;
+        return $this;
+    }
+
+    public function getEducationLevel(): ?string
+    {
+        return $this->educationLevel;
+    }
+
+    public function setEducationLevel(?string $educationLevel): static
+    {
+        $this->educationLevel = $educationLevel;
+        return $this;
+    }
+
+    public function getJobTitle(): ?string
+    {
+        return $this->jobTitle;
+    }
+
+    public function setJobTitle(?string $jobTitle): static
+    {
+        $this->jobTitle = $jobTitle;
+        return $this;
+    }
+
+    public function getWebsite(): ?string
+    {
+        return $this->website;
+    }
+
+    public function setWebsite(?string $website): static
+    {
+        $this->website = $website;
+        return $this;
+    }
+
+    public function getSkills(): ?array
+    {
+        return $this->skills;
+    }
+
+    public function setSkills(?array $skills): static
+    {
+        $this->skills = $skills;
         return $this;
     }
 }

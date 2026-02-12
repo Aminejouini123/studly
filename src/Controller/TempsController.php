@@ -77,9 +77,17 @@ final class TempsController extends AbstractController
             }
         }
 
+        $completedCount = 0;
+        foreach ($events as $e) {
+            if ($e->getStatus() === 'Completed' || $e->getStatus() === 'Terminé') {
+                $completedCount++;
+            }
+        }
+
         return $this->render('temps/index.html.twig', [
             'events' => $events,
             'form' => $form->createView(),
+            'completed_count' => $completedCount,
         ]);
     }
 

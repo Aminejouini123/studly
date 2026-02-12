@@ -1,0 +1,458 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+<!-- Admin Custom Styles -->
+<style>
+    :root {
+        --admin-sidebar-w: 260px;
+        --admin-bg: #f3f4f6;
+        --admin-header-h: 70px;
+        --accent-color: #4f46e5;
+    }
+    
+    body { background-color: var(--admin-bg); }
+
+    /* Layout */
+    .admin-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Overrides/Extensions */
+    .admin-sidebar {
+        width: var(--admin-sidebar-w);
+        background: #1e293b;
+        color: white;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-header {
+        height: var(--admin-header-h);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        font-weight: 700;
+        font-size: 1.2rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .sidebar-header i { color: var(--accent-color); margin-right: 12px; }
+
+    .sidebar-menu {
+        padding: 20px 0;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .menu-item {
+        display: block;
+        padding: 12px 24px;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover, .menu-item.active {
+        background: rgba(255,255,255,0.05);
+        color: white;
+    }
+    
+    .menu-item.active { border-left-color: var(--accent-color); }
+    .menu-item i { width: 24px; margin-right: 10px; }
+
+    /* Main Content */
+    .admin-main {
+        flex: 1;
+        margin-left: var(--admin-sidebar-w);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header */
+    .admin-header {
+        height: var(--admin-header-h);
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        position: sticky;
+        top: 0;
+        z-index: 900;
+    }
+
+    .header-search input {
+        background: #f1f5f9;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        width: 300px;
+        color: #475569;
+    }
+
+    .header-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .admin-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    /* Dashboard Content */
+    .admin-content {
+        padding: 30px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 30px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #1e293b; margin: 5px 0 0 0; }
+    .stat-label { font-size: 0.9rem; color: #64748b; margin: 0; }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .bg-blue-light { background: #eff6ff; color: #3b82f6; }
+    .bg-green-light { background: #f0fdf4; color: #22c55e; }
+    .bg-purple-light { background: #faf5ff; color: #a855f7; }
+    .bg-orange-light { background: #fff7ed; color: #f97316; }
+
+    /* Charts & Tables Split */
+    .content-split {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Table */
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .admin-table th {
+        text-align: left;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .admin-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.95rem;
+    }
+
+    .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+    .status-active { background: #22c55e; }
+    .status-pending { background: #f59e0b; }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-book-reader"></i> Studly
+
+        </div>
+        <nav class="sidebar-menu">
+            <a href="#" class="menu-item active"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="#" class="menu-item"><i class="fas fa-users"></i> Users</a>
+            <a href="#" class="menu-item"><i class="fas fa-book"></i> Courses</a>
+            <a href="#" class="menu-item"><i class="fas fa-calendar"></i> Events</a>
+            <a href="#" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+        <div class="sidebar-footer" style="padding: 24px;">
+            <a href="{{ path('app_logout') }}" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-search">
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="header-profile">
+                <div style="text-align: right;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">Admin User</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">Super Admin</div>
+                </div>
+                <div class="admin-avatar">A</div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <h1 class="page-title">Dashboard Overview</h1>
+
+            <!-- Stats Row -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">Total Users</p>
+                        <h3 class="stat-value">{{ totalUsers }}</h3>
+                    </div>
+                    <div class="stat-icon bg-blue-light">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">Students</p>
+                        <h3 class="stat-value">{{ students }}</h3>
+                    </div>
+                    <div class="stat-icon bg-green-light">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">Active Users</p>
+                        <h3 class="stat-value">{{ activeUsers }}</h3>
+                    </div>
+                    <div class="stat-icon bg-purple-light">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <p class="stat-label">Revenue</p>
+                        <h3 class="stat-value">$12.4k</h3>
+                    </div>
+                    <div class="stat-icon bg-orange-light">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Lists -->
+            <div class="content-split">
+                <!-- Activity Chart -->
+                <div class="content-card">
+                    <div class="card-title">
+                        User Activity
+                        <select style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem;">
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Traffic Source / Donut -->
+                <div class="content-card">
+                    <div class="card-title">User Distribution</div>
+                    <div class="chart-container" style="height: 250px; position: relative;">
+                        <canvas id="userTypeChart"></canvas>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; justify-content: space-around;">
+                        <div style="text-align: center;">
+                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ ((students / totalUsers) * 100)|round }}%</h4>
+                            <span style="font-size: 0.8rem; color: #64748b;">Students</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ ((admins / totalUsers) * 100)|round }}%</h4>
+                            <span style="font-size: 0.8rem; color: #64748b;">Admins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users Table -->
+            <div class="content-card">
+                <div class="card-title">
+                    Recent Registrations
+                    <a href="{{ path('app_admin_user_index') }}" style="font-size: 0.85rem; color: var(--accent-color); text-decoration: none;">View All</a>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recentUsers %}
+                        <tr>
+                            <td>
+                                <div class="user-pill">
+                                    <div class="admin-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                        {{ user.firstName|first }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600;">{{ user.firstName }} {{ user.lastName }}</div>
+                                        <div style="font-size: 0.8rem; color: #94a3b8;">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Admin</span>
+                                {% else %}
+                                    <span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Student</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.statut == 'Active' %}
+                                    <span style="color: #16a34a; font-size: 0.85rem; font-weight: 500;"><span class="status-dot status-active"></span>Active</span>
+                                {% else %}
+                                    <span style="color: #ca8a04; font-size: 0.85rem; font-weight: 500;"><span class="status-dot status-pending"></span>Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.createdAt|date('M d, Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Activity Chart
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'New Users',
+                data: [12, 19, 3, 5, 2, 3, 7],
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [2, 4] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // User Type Chart
+    const ctx2 = document.getElementById('userTypeChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Students', 'Admins', 'Others'],
+            datasets: [{
+                data: [{{ students }}, {{ admins }}, {{ totalUsers - students - admins }}],
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#e2e8f0']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}
