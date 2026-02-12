@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Détails de l'Activité - {{ activity.title }}{% endblock %}
+{% block title %}Activity Details - {{ activity.title }}{% endblock %}
 
 {% block content %}
 <!-- Modernized Premium Design matching Course/Exam Details -->
@@ -9,15 +9,15 @@
         <!-- Breadcrumb / Top Bar -->
         <div class="top-bar fade-in-down">
             <a href="{{ path('app_course_activities', {id: activity.course.id}) }}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Retour aux Activités
+                <i class="fas fa-arrow-left"></i> Back to Activities
             </a>
             <div class="top-actions">
-                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-icon-action edit" title="Modifier">
+                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-icon-action edit" title="Edit">
                     <i class="fas fa-pen"></i>
                 </a>
-                <form method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" onsubmit="return confirm('Confirmer la suppression ?')" style="display:inline;">
+                <form method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" onsubmit="return confirm('Confirm deletion?')" style="display:inline;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
-                    <button type="submit" class="btn-icon-action delete" title="Supprimer">
+                    <button type="submit" class="btn-icon-action delete" title="Delete">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </form>
@@ -57,7 +57,7 @@
                     </svg>
                     <div class="stat-content">
                         <span class="stat-value">{{ activity.difficulty|first|upper }}</span>
-                        <span class="stat-label">NIVEAU</span>
+                        <span class="stat-label">LEVEL</span>
                     </div>
                 </div>
             </div>
@@ -86,15 +86,15 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <i class="fas fa-folder-open icon-gradient"></i>
-                        <h2>Ressources</h2>
+                        <h2>Resources</h2>
                     </div>
                     <div class="card-body resources-grid">
                         {% if activity.link %}
                             <a href="{{ activity.link }}" target="_blank" class="resource-tile link">
                                 <div class="tile-icon"><i class="fas fa-link"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Lien Externe</span>
-                                    <span class="tile-subtitle">Accéder à la ressource</span>
+                                    <span class="tile-title">External Link</span>
+                                    <span class="tile-subtitle">Access resource</span>
                                 </div>
                                 <i class="fas fa-external-link-alt tile-arrow"></i>
                             </a>
@@ -103,8 +103,8 @@
                             <a href="{{ asset('uploads/activities/' ~ activity.file) }}" download class="resource-tile file">
                                 <div class="tile-icon"><i class="fas fa-file-pdf"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Fichier Joint</span>
-                                    <span class="tile-subtitle">Télécharger le document</span>
+                                    <span class="tile-title">Attached File</span>
+                                    <span class="tile-subtitle">Download document</span>
                                 </div>
                                 <i class="fas fa-download tile-arrow"></i>
                             </a>
@@ -118,18 +118,18 @@
             <!-- Right Column: Meta Info -->
             <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
-                    <h3 class="sidebar-heading">Métadonnées</h3>
+                    <h3 class="sidebar-heading">Metadata</h3>
                     <div class="meta-list">
                          <div class="meta-row">
-                            <span class="meta-label">ID Activité</span>
+                            <span class="meta-label">Activity ID</span>
                             <span class="meta-value">#{{ activity.id }}</span>
                         </div>
                         <div class="meta-row">
-                            <span class="meta-label">Difficulté</span>
+                            <span class="meta-label">Difficulty</span>
                             <span class="meta-value">{{ activity.difficulty }}</span>
                         </div>
                          <div class="meta-row">
-                            <span class="meta-label">Niveau</span>
+                            <span class="meta-label">Level</span>
                             <span class="meta-value">{{ activity.level }}</span>
                         </div>
                     </div>

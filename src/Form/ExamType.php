@@ -23,43 +23,43 @@ class ExamType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Titre de l\'examen',
-                'attr' => ['placeholder' => 'Ex: Partiel, Examen Final...']
+                'label' => 'Exam Title',
+                'attr' => ['placeholder' => 'Ex: Midterm, Final Exam...']
             ])
             ->add('date', DateTimeType::class, [
                 'widget' => 'single_text',
-                'label' => 'Date et Heure de l\'examen',
+                'label' => 'Exam Date and Time',
             ])
             ->add('duration', IntegerType::class, [
-                'label' => 'Durée (minutes)',
+                'label' => 'Duration (minutes)',
                 'attr' => ['placeholder' => 'Ex: 90']
             ])
             ->add('grade', NumberType::class, [
-                'label' => 'Note (/20)',
+                'label' => 'Grade (/20)',
                 'required' => false,
                 'scale' => 2,
                 'attr' => ['placeholder' => '15.5']
             ])
             ->add('difficulty', ChoiceType::class, [
-                'label' => 'Difficulté',
+                'label' => 'Difficulty',
                 'choices' => [
-                    'Facile' => 'Facile',
-                    'Moyen' => 'Moyen',
-                    'Difficile' => 'Difficile',
+                    'Easy' => 'Easy',
+                    'Medium' => 'Medium',
+                    'Hard' => 'Hard',
                 ],
-                'placeholder' => 'Choisir la difficulté',
+                'placeholder' => 'Select difficulty',
             ])
             ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
+                'label' => 'Status',
                 'choices' => [
-                    'À venir' => 'à venir',
-                    'Terminé' => 'terminé',
-                    'Reporté' => 'reporté',
+                    'Upcoming' => 'upcoming',
+                    'Completed' => 'completed',
+                    'Postponed' => 'postponed',
                 ],
-                'placeholder' => 'Choisir le statut',
+                'placeholder' => 'Select status',
             ])
             ->add('file', FileType::class, [
-                'label' => 'Fichier joint (PDF, Docx)',
+                'label' => 'Attached File (PDF, Docx)',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -72,12 +72,12 @@ class ExamType extends AbstractType
                             'image/jpeg',
                             'image/png'
                         ],
-                        'mimeTypesMessage' => 'Veuillez télécharger un document valide (PDF, Word, Image)',
+                        'mimeTypesMessage' => 'Please upload a valid document (PDF, Word, Image)',
                     ])
                 ],
             ])
             ->add('link', UrlType::class, [
-                'label' => 'Lien externe (Meet, Zoom, Ressource)',
+                'label' => 'External Link (Meet, Zoom, Resource)',
                 'required' => false,
                 'attr' => ['placeholder' => 'https://...']
             ])

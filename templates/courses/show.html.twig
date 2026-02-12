@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}{{ course.name }} - Détails{% endblock %}
+{% block title %}{{ course.name }} - Details{% endblock %}
 
 {% block content %}
 <!-- Modernized Premium Design -->
@@ -9,15 +9,15 @@
         <!-- Breadcrumb / Top Bar -->
         <div class="top-bar fade-in-down">
             <a href="{{ path('app_courses') }}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Retour aux cours
+                <i class="fas fa-arrow-left"></i> Back to Courses
             </a>
             <div class="top-actions">
-                <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-icon-action edit" title="Modifier">
+                <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-icon-action edit" title="Edit">
                     <i class="fas fa-pen"></i>
                 </a>
-                <form method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" onsubmit="return confirm('Confirmer la suppression ?')" style="display:inline;">
+                <form method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" onsubmit="return confirm('Confirm deletion?')" style="display:inline;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
-                    <button type="submit" class="btn-icon-action delete" title="Supprimer">
+                    <button type="submit" class="btn-icon-action delete" title="Delete">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </form>
@@ -36,10 +36,10 @@
                 <h1 class="hero-title">{{ course.name }}</h1>
                 <div class="hero-info">
                     <div class="info-pill">
-                        <i class="far fa-clock"></i> {{ course.duration }} heures
+                        <i class="far fa-clock"></i> {{ course.duration }} hours
                     </div>
                     <div class="info-pill">
-                        <i class="fas fa-layer-group"></i> Semestre {{ course.semester }}
+                        <i class="fas fa-layer-group"></i> Semester {{ course.semester }}
                     </div>
                     <div class="info-pill teacher">
                         <i class="fas fa-chalkboard-teacher"></i> {{ course.teacherEmail }}
@@ -70,18 +70,18 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <i class="fas fa-align-left icon-gradient"></i>
-                        <h2>Détails & Description</h2>
+                        <h2>Details & Description</h2>
                     </div>
                     <div class="card-body">
                         <div class="attributes-grid">
                             <div class="attribute-box">
-                                <span class="attr-label">Difficulté</span>
+                                <span class="attr-label">Difficulty</span>
                                 <span class="attr-value difficulty-{{ course.difficultyLevel|lower }}">
                                     {{ course.difficultyLevel }}
                                 </span>
                             </div>
                             <div class="attribute-box">
-                                <span class="attr-label">Priorité</span>
+                                <span class="attr-label">Priority</span>
                                 <span class="attr-value priority-{{ course.priority|lower }}">
                                     {{ course.priority }}
                                 </span>
@@ -95,15 +95,15 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <i class="fas fa-folder-open icon-gradient"></i>
-                        <h2>Ressources</h2>
+                        <h2>Resources</h2>
                     </div>
                     <div class="card-body resources-grid">
                         {% if course.courseLink %}
                             <a href="{{ course.courseLink }}" target="_blank" class="resource-tile link">
                                 <div class="tile-icon"><i class="fas fa-link"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Lien Externe</span>
-                                    <span class="tile-subtitle">Accéder au cours</span>
+                                    <span class="tile-title">External Link</span>
+                                    <span class="tile-subtitle">Access course</span>
                                 </div>
                                 <i class="fas fa-external-link-alt tile-arrow"></i>
                             </a>
@@ -112,8 +112,8 @@
                             <a href="{{ asset('uploads/courses/' ~ course.courseFile) }}" download class="resource-tile file">
                                 <div class="tile-icon"><i class="fas fa-file-pdf"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Fichier Joint</span>
-                                    <span class="tile-subtitle">Télécharger PDF</span>
+                                    <span class="tile-title">Attached File</span>
+                                    <span class="tile-subtitle">Download PDF</span>
                                 </div>
                                 <i class="fas fa-download tile-arrow"></i>
                             </a>
@@ -133,7 +133,7 @@
                             {% if course.comment %}
                                 {{ course.comment|nl2br }}
                             {% else %}
-                                <span class="text-muted">Aucune note personnelle pour ce cours.</span>
+                                <span class="text-muted">No personal notes for this course.</span>
                             {% endif %}
                         </div>
                     </div>
@@ -143,10 +143,10 @@
             <!-- Right Column: Meta Info -->
             <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
-                    <h3 class="sidebar-heading">Métadonnées</h3>
+                    <h3 class="sidebar-heading">Metadata</h3>
                     <div class="meta-list">
                         <div class="meta-row">
-                            <span class="meta-label">Création</span>
+                            <span class="meta-label">Created on</span>
                             <span class="meta-value">{{ course.createdAt ? course.createdAt|date('d M Y') : '-' }}</span>
                         </div>
                         <div class="meta-row">

@@ -53,7 +53,7 @@ final class CoursesController extends AbstractController
                             $uploadedFile->move($targetDir, $newFilename);
                             $course->setCourseFile($newFilename);
                         } catch (\Exception $e) {
-                            $this->addFlash('error', 'Impossible d\'enregistrer le fichier.');
+                            $this->addFlash('error', 'Unable to save the file.');
                         }
                     }
 
@@ -61,7 +61,7 @@ final class CoursesController extends AbstractController
                     $entityManager->persist($course);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le cours a été ajouté avec succès!');
+            $this->addFlash('success', 'The course has been successfully added!');
             return $this->redirectToRoute('app_courses');
         }
 
@@ -95,13 +95,13 @@ final class CoursesController extends AbstractController
                     $uploadedFile->move($targetDir, $newFilename);
                     $course->setCourseFile($newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'Impossible d\'enregistrer le fichier.');
+                    $this->addFlash('error', 'Unable to save the file.');
                 }
             }
 
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le cours a été modifié avec succès!');
+            $this->addFlash('success', 'The course has been successfully updated!');
             
             // Redirect based on role/referer might be better, but for now:
             if ($this->isGranted('ROLE_ADMIN') && strpos($request->headers->get('referer'), '/admin') !== false) {
@@ -140,7 +140,7 @@ final class CoursesController extends AbstractController
         $entityManager->remove($course);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Le cours a été supprimé avec succès!');
+        $this->addFlash('success', 'The course has been successfully deleted!');
         
         // rudimentary check if we came from admin
         // better way is to pass a 'from' query param or check referer
@@ -182,13 +182,13 @@ final class CoursesController extends AbstractController
                     $uploadedFile->move($targetDir, $newFilename);
                     $course->setCourseFile($newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'Impossible d\'enregistrer le fichier.');
+                    $this->addFlash('error', 'Unable to save the file.');
                 }
             }
 
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le cours a été modifié avec succès!');
+            $this->addFlash('success', 'The course has been successfully updated!');
             return $this->redirectToRoute('app_admin_courses');
         }
 

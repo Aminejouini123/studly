@@ -1,21 +1,21 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Mes Activités - {{ course.name }}{% endblock %}
+{% block title %}My Activities - {{ course.name }}{% endblock %}
 
 {% block content %}
 <div class="activities-container">
     <!-- En-tête -->
     <div class="header-section">
         <div class="header-content">
-            <h1 class="page-title">{{ course.name }} - Activités</h1>
-            <p class="page-subtitle">Travaux pratiques, devoirs et ateliers</p>
+            <h1 class="page-title">{{ course.name }} - Activities</h1>
+            <p class="page-subtitle">Practical work, assignments, and workshops</p>
         </div>
         <div style="display: flex; gap: 10px;">
             <a href="{{ path('app_courses') }}" class="btn-secondary btn-lg">
-                <i class="fas fa-arrow-left"></i> Retour aux Cours
+                <i class="fas fa-arrow-left"></i> Back to Courses
             </a>
             <a href="{{ path('app_course_activity_new', {id: course.id}) }}" class="btn-primary btn-lg">
-                <i class="fas fa-plus"></i> Ajouter une Activité
+                <i class="fas fa-plus"></i> Add an Activity
             </a>
         </div>
     </div>
@@ -25,25 +25,25 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{{ activities|length }}</div>
-                <div class="stat-label">Total Activités</div>
+                <div class="stat-label">Total Activities</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
                     {{ activities|filter(a => a.status == 'à faire')|length }}
                 </div>
-                <div class="stat-label">À Faire</div>
+                <div class="stat-label">To Do</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
                     {{ activities|filter(a => a.status == 'en cours')|length }}
                 </div>
-                <div class="stat-label">En Cours</div>
+                <div class="stat-label">In Progress</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
                     {{ activities|filter(a => a.status == 'terminé')|length }}
                 </div>
-                <div class="stat-label">Terminées</div>
+                <div class="stat-label">Completed</div>
             </div>
         </div>
     </div>
@@ -51,17 +51,17 @@
     <!-- Section Liste des Activités -->
     <div class="content-section">
         <div class="section-header">
-            <h2><i class="fas fa-tasks"></i> Liste des Activités</h2>
+            <h2><i class="fas fa-tasks"></i> Activity List</h2>
             <div class="search-filter">
                 <div class="search-box-wrapper">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-box" placeholder="Rechercher une activité...">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search for an activity...">
                 </div>
                 <select id="statusFilter" class="filter-select">
-                    <option value="">Tous les statuts</option>
-                    <option value="à faire">À Faire</option>
-                    <option value="en cours">En Cours</option>
-                    <option value="terminé">Terminé</option>
+                    <option value="">All statuses</option>
+                    <option value="à faire">To Do</option>
+                    <option value="en cours">In Progress</option>
+                    <option value="terminé">Completed</option>
                 </select>
             </div>
         </div>
@@ -95,9 +95,9 @@
 
                         <div class="card-footer">
                             <div class="actions">
-                                <a href="{{ path('app_activity_show', {id: activity.id}) }}" class="btn-text btn-view">Consulter</a>
-                                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-text btn-edit">Modifier</a>
-                                <button type="button" class="btn-text btn-delete" onclick="openDeleteModal({{ activity.id }})">Supprimer</button>
+                                <a href="{{ path('app_activity_show', {id: activity.id}) }}" class="btn-text btn-view">View</a>
+                                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-text btn-edit">Edit</a>
+                                <button type="button" class="btn-text btn-delete" onclick="openDeleteModal({{ activity.id }})">Delete</button>
                                 <form id="delete-form-{{ activity.id }}" method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" style="display:none;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
                                 </form>
@@ -109,8 +109,8 @@
         {% else %}
              <div class="empty-state">
                 <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
-                <h3>Aucune activité trouvée</h3>
-                <p>Vous n'avez pas encore ajouté d'activités pour ce cours.</p>
+                <h3>No activities found</h3>
+                <p>You have not added any activities for this course yet.</p>
             </div>
         {% endif %}
     </div>
@@ -517,11 +517,11 @@
         <div class="modal-icon">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3>Confirmer la suppression</h3>
-        <p>Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this activity? This action is irreversible.</p>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
-            <button class="btn-confirm" onclick="confirmDelete()">Supprimer</button>
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Delete</button>
         </div>
     </div>
 </div>

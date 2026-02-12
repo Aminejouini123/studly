@@ -21,46 +21,46 @@ class ActivityType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Titre de l\'activité',
-                'attr' => ['placeholder' => 'Ex: TP1, Devoir Maison...']
+                'label' => 'Activity Title',
+                'attr' => ['placeholder' => 'Ex: Lab 1, Homework...']
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'attr' => ['rows' => 4, 'placeholder' => 'Détails de l\'activité...']
+                'attr' => ['rows' => 4, 'placeholder' => 'Activity details...']
             ])
             ->add('duration', IntegerType::class, [
-                'label' => 'Durée estimée (minutes)',
+                'label' => 'Estimated Duration (minutes)',
                 'attr' => ['placeholder' => 'Ex: 60']
             ])
             ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
+                'label' => 'Status',
                 'choices' => [
-                    'À faire' => 'à faire',
-                    'En cours' => 'en cours',
-                    'Terminé' => 'terminé',
+                    'To Do' => 'to do',
+                    'In Progress' => 'in progress',
+                    'Completed' => 'completed',
                 ],
-                'placeholder' => 'Choisir le statut',
+                'placeholder' => 'Select status',
             ])
             ->add('difficulty', ChoiceType::class, [
-                'label' => 'Difficulté',
+                'label' => 'Difficulty',
                 'choices' => [
-                    'Facile' => 'Facile',
-                    'Moyen' => 'Moyen',
-                    'Difficile' => 'Difficile',
+                    'Easy' => 'Easy',
+                    'Medium' => 'Medium',
+                    'Hard' => 'Hard',
                 ],
-                'placeholder' => 'Choisir la difficulté',
+                'placeholder' => 'Select difficulty',
             ])
             ->add('level', ChoiceType::class, [
-                'label' => 'Niveau requis',
+                'label' => 'Required Level',
                 'choices' => [
-                    'Débutant' => 'Débutant',
-                    'Intermédiaire' => 'Intermédiaire',
-                    'Avancé' => 'Avancé',
+                    'Beginner' => 'Beginner',
+                    'Intermediate' => 'Intermediate',
+                    'Advanced' => 'Advanced',
                 ],
-                'placeholder' => 'Choisir le niveau',
+                'placeholder' => 'Select level',
             ])
             ->add('file', FileType::class, [
-                'label' => 'Fichier joint (PDF, Docx)',
+                'label' => 'Attached File (PDF, Docx)',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -73,12 +73,12 @@ class ActivityType extends AbstractType
                             'image/jpeg',
                             'image/png'
                         ],
-                        'mimeTypesMessage' => 'Veuillez télécharger un document valide (PDF, Word, Image)',
+                        'mimeTypesMessage' => 'Please upload a valid document (PDF, Word, Image)',
                     ])
                 ],
             ])
             ->add('link', UrlType::class, [
-                'label' => 'Lien externe (Ressource)',
+                'label' => 'External Link (Resource)',
                 'required' => false,
                 'attr' => ['placeholder' => 'https://...']
             ])

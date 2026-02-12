@@ -88,7 +88,7 @@ final class ExamenController extends AbstractController
             $entityManager->persist($exam);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Examen ajouté avec succès !');
+            $this->addFlash('success', 'Exam successfully added!');
 
             return $this->redirectToRoute('app_course_exams', ['id' => $course->getId()]);
         }
@@ -132,7 +132,7 @@ final class ExamenController extends AbstractController
             $entityManager->persist($exam);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Examen ajouté avec succès !');
+            $this->addFlash('success', 'Exam successfully added!');
 
             return $this->redirectToRoute('app_course_exams', ['id' => $course->getId()]);
         }
@@ -176,7 +176,7 @@ final class ExamenController extends AbstractController
             
             $entityManager->flush();
 
-            $this->addFlash('success', 'Examen modifié avec succès !');
+            $this->addFlash('success', 'Exam successfully updated!');
 
             return $this->redirectToRoute('app_course_exams', ['id' => $course->getId()]);
         }
@@ -226,7 +226,7 @@ final class ExamenController extends AbstractController
             
             $entityManager->flush();
 
-            $this->addFlash('success', 'Examen modifié avec succès !');
+            $this->addFlash('success', 'Exam successfully updated!');
 
             return $this->redirectToRoute('app_course_exams', ['id' => $course->getId()]);
         }
@@ -263,7 +263,7 @@ final class ExamenController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$exam->getId(), $request->request->get('_token'))) {
             $entityManager->remove($exam);
             $entityManager->flush();
-            $this->addFlash('success', 'Examen supprimé avec succès !');
+            $this->addFlash('success', 'Exam successfully deleted!');
         }
 
         return $this->redirectToRoute('app_course_exams', ['id' => $course->getId()]);

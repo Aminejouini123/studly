@@ -23,23 +23,23 @@ class CourseType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nom du Cours',
+                'label' => 'Course Name',
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'Ex: Programmation Orientée Objet',
+                    'placeholder' => 'Ex: Object Oriented Programming',
                     'class' => 'form-control'
                 ],
             ])
             ->add('teacherEmail', EmailType::class, [
-                'label' => 'Email du Professeur',
+                'label' => 'Teacher Email',
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'prof@exemple.com',
+                    'placeholder' => 'prof@example.com',
                     'class' => 'form-control'
                 ],
             ])
             ->add('semester', ChoiceType::class, [
-                'label' => 'Semestre',
+                'label' => 'Semester',
                 'required' => true,
                 'choices' => [
                     'S1' => 'S1',
@@ -50,43 +50,43 @@ class CourseType extends AbstractType
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('difficultyLevel', ChoiceType::class, [
-                'label' => 'Niveau de Difficulté',
+                'label' => 'Difficulty Level',
                 'required' => true,
                 'choices' => [
-                    'Facile' => 'Facile',
-                    'Moyen' => 'Moyen',
-                    'Difficile' => 'Difficile',
+                    'Easy' => 'Easy',
+                    'Medium' => 'Medium',
+                    'Hard' => 'Hard',
                 ],
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('type', ChoiceType::class, [
-                'label' => 'Type de Cours',
+                'label' => 'Course Type',
                 'required' => true,
                 'choices' => [
-                    'Magistral' => 'Magistral',
-                    'Pratique' => 'Pratique',
-                    'Mixte' => 'Mixte',
-                    'En ligne' => 'En ligne',
+                    'Lecture' => 'Lecture',
+                    'Practical' => 'Practical',
+                    'Mixed' => 'Mixed',
+                    'Online' => 'Online',
                 ],
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('priority', ChoiceType::class, [
-                'label' => 'Priorité',
+                'label' => 'Priority',
                 'required' => true,
                 'choices' => [
-                    'Basse' => 'Basse',
-                    'Normale' => 'Normale',
-                    'Élevée' => 'Élevée',
+                    'Low' => 'Low',
+                    'Normal' => 'Normal',
+                    'High' => 'High',
                 ],
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
+                'label' => 'Status',
                 'required' => true,
                 'choices' => [
-                    'En attente' => 'En attente',
-                    'En cours' => 'En cours',
-                    'Terminé' => 'Terminé',
+                    'Pending' => 'Pending',
+                    'In Progress' => 'In Progress',
+                    'Completed' => 'Completed',
                 ],
                 'attr' => ['class' => 'form-control'],
             ])
@@ -100,7 +100,7 @@ class CourseType extends AbstractType
                 ],
             ])
             ->add('duration', IntegerType::class, [
-                'label' => 'Durée (en heures)',
+                'label' => 'Duration (hours)',
                 'required' => true,
                 'attr' => [
                     'placeholder' => '30',
@@ -109,7 +109,7 @@ class CourseType extends AbstractType
                 ],
             ])
             ->add('courseFile', FileType::class, [
-                'label' => 'Fichier du Cours (PDF, DOCX, ...)',
+                'label' => 'Course File (PDF, DOCX, ...)',
                 'required' => false,
                 'mapped' => false,
                 'attr' => [
@@ -126,23 +126,23 @@ class CourseType extends AbstractType
                             'image/png',
                             'image/jpeg'
                         ],
-                        'mimeTypesMessage' => 'Veuillez télécharger un fichier valide (PDF/DOCX/PNG/JPEG).',
+                        'mimeTypesMessage' => 'Please upload a valid file (PDF/DOCX/PNG/JPEG).',
                     ])
                 ],
             ])
             ->add('courseLink', UrlType::class, [
-                'label' => 'Lien du Cours',
+                'label' => 'Course Link',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'https://exemple.com/cours',
+                    'placeholder' => 'https://example.com/course',
                     'class' => 'form-control'
                 ],
             ])
             ->add('comment', TextareaType::class, [
-                'label' => 'Commentaires',
+                'label' => 'Comments',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Ajouter des notes ou des commentaires...',
+                    'placeholder' => 'Add notes or comments...',
                     'rows' => 4,
                     'class' => 'form-control'
                 ],

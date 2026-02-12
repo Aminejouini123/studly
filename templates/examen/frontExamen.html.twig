@@ -1,21 +1,21 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Mes Examens{% endblock %}
+{% block title %}My Exams{% endblock %}
 
 {% block content %}
 <div class="examens-container">
     <!-- En-tête -->
     <div class="header-section">
         <div class="header-content">
-            <h1 class="page-title">{{ course.name }} - Mes Examens</h1>
-            <p class="page-subtitle">Gérez les examens pour ce cours</p>
+            <h1 class="page-title">{{ course.name }} - My Exams</h1>
+            <p class="page-subtitle">Manage exams for this course</p>
         </div>
         <div style="display: flex; gap: 10px;">
             <a href="{{ path('app_courses') }}" class="btn-secondary btn-lg">
-                <i class="fas fa-arrow-left"></i> Retour aux Cours
+                <i class="fas fa-arrow-left"></i> Back to Courses
             </a>
             <a href="{{ path('app_course_exam_new', {id: course.id}) }}" class="btn-primary btn-lg">
-                <i class="fas fa-plus"></i> Ajouter un Examen
+                <i class="fas fa-plus"></i> Add an Exam
             </a>
         </div>
     </div>
@@ -25,19 +25,19 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{{ exams|length }}</div>
-                <div class="stat-label">Total Examens</div>
+                <div class="stat-label">Total Exams</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
                     {{ exams|filter(e => e.date > date())|length }}
                 </div>
-                <div class="stat-label">À Venir</div>
+                <div class="stat-label">Upcoming</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
                     {{ exams|filter(e => e.date < date())|length }}
                 </div>
-                <div class="stat-label">Terminés</div>
+                <div class="stat-label">Completed</div>
             </div>
             {# Optional: Calculate Average Grade if grades exist #}
             {% set totalGrade = 0 %}
@@ -56,7 +56,7 @@
                         -
                     {% endif %}
                 </div>
-                <div class="stat-label">Moyenne</div>
+                <div class="stat-label">Average</div>
             </div>
         </div>
     </div>
@@ -64,16 +64,16 @@
     <!-- Section Liste des Examens -->
     <div class="content-section">
         <div class="section-header">
-            <h2><i class="fas fa-list-alt"></i> Liste des Examens</h2>
+            <h2><i class="fas fa-list-alt"></i> Exams List</h2>
             <div class="search-filter">
                 <div class="search-box-wrapper">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-box" placeholder="Rechercher un examen...">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search for an exam...">
                 </div>
                 <select id="statusFilter" class="filter-select">
-                    <option value="">Tous les statuts</option>
-                    <option value="à venir">À Venir</option>
-                    <option value="terminé">Terminé</option>
+                    <option value="">All statuses</option>
+                    <option value="à venir">Upcoming</option>
+                    <option value="terminé">Completed</option>
                 </select>
             </div>
         </div>
@@ -84,7 +84,7 @@
                     {% set isUpcoming = exam.date > date() %}
                     <div class="exam-card" data-status="{{ isUpcoming ? 'à venir' : 'terminé' }}">
                         <div class="card-status {{ isUpcoming ? 'status-upcoming' : 'status-completed' }}">
-                            {{ isUpcoming ? 'À Venir' : 'Terminé' }}
+                            {{ isUpcoming ? 'Upcoming' : 'Completed' }}
                         </div>
                         <div class="card-header">
                             <h3 class="exam-subject">{{ course.name }}</h3>
@@ -103,7 +103,7 @@
                             {% if exam.grade is not null %}
                                 <div class="detail-item">
                                     <i class="fas fa-check-circle text-success"></i>
-                                    <span>Note: {{ exam.grade }}/20</span>
+                                    <span>Grade: {{ exam.grade }}/20</span>
                                 </div>
                             {% endif %}
                              <div class="detail-item">
@@ -116,9 +116,9 @@
                             {# Coefficient usually comes from Course, but Exam might have weight too? Using Course Coef for now or placeholder #}
                             {# Duration is already in details, removing redundant badge to clear footer for actions #}
                             <div class="actions">
-                                <a href="{{ path('app_exam_show', {id: exam.id}) }}" class="btn-text btn-view" style="color: #2e7d32; background: #e8f5e9;"><i class="far fa-eye"></i> Consulter</a>
-                                <a href="{{ path('app_exam_edit', {id: exam.id}) }}" class="btn-text btn-edit"><i class="fas fa-edit"></i> Modifier</a>
-                                <button type="button" class="btn-text btn-delete" onclick="openDeleteModal({{ exam.id }})">Supprimer</button>
+                                <a href="{{ path('app_exam_show', {id: exam.id}) }}" class="btn-text btn-view" style="color: #2e7d32; background: #e8f5e9;"><i class="far fa-eye"></i> View</a>
+                                <a href="{{ path('app_exam_edit', {id: exam.id}) }}" class="btn-text btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                                <button type="button" class="btn-text btn-delete" onclick="openDeleteModal({{ exam.id }})">Delete</button>
                                 <form id="delete-form-{{ exam.id }}" method="POST" action="{{ path('app_exam_delete', {id: exam.id}) }}" style="display:none;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
                                 </form>
@@ -130,8 +130,8 @@
         {% else %}
              <div class="empty-state">
                 <div class="empty-icon"><i class="fas fa-file-alt"></i></div>
-                <h3>Aucun examen trouvé</h3>
-                <p>Vous n'avez pas encore d'examens programmés.</p>
+                <h3>No exams found</h3>
+                <p>You have no scheduled exams yet.</p>
             </div>
         {% endif %}
     </div>
@@ -539,11 +539,11 @@
         <div class="modal-icon">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3>Confirmer la suppression</h3>
-        <p>Êtes-vous sûr de vouloir supprimer cet examen ? Cette action est irréversible.</p>
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this exam? This action is irreversible.</p>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
-            <button class="btn-confirm" onclick="confirmDelete()">Supprimer</button>
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Delete</button>
         </div>
     </div>
 </div>
