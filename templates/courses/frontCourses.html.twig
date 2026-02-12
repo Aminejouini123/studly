@@ -1,17 +1,17 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Mes Cours{% endblock %}
+{% block title %}My Courses{% endblock %}
 
 {% block content %}
 <div class="courses-container">
     <!-- En-tête -->
     <div class="courses-header">
         <div class="header-content">
-            <h1 class="page-title"> Mes Cours</h1>
-            <p class="page-subtitle">Gérez et suivez tous vos cours en un seul endroit</p>
+            <h1 class="page-title"> My Courses</h1>
+            <p class="page-subtitle">Manage and track all your courses in one place</p>
         </div>
         <a href="{{ path('app_course_new') }}" class="btn-primary btn-lg">
-            <i class="icon">➕</i> Ajouter un Cours
+            <i class="icon">➕</i> Add a Course
         </a>
     </div>
 
@@ -20,19 +20,19 @@
         <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-number">{{ courses|length }}</div>
-            <div class="stat-label">Cours Total</div>
+            <div class="stat-label">Total Courses</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en cours')|length }}</div>
-            <div class="stat-label">En Cours</div>
+            <div class="stat-label">In Progress</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ courses|filter(c => c.status|lower == 'terminé')|length }}</div>
-            <div class="stat-label">Terminés</div>
+            <div class="stat-label">Completed</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en attente')|length }}</div>
-            <div class="stat-label">En Attente</div>
+            <div class="stat-label">Pending</div>
         </div>
         </div>
     </div>
@@ -40,14 +40,14 @@
     <!-- Tableau des cours -->
     <div class="courses-section">
         <div class="section-header">
-            <h2> Liste des Cours</h2>
+            <h2> Course List</h2>
             <div class="search-filter">
-                <input type="text" id="searchInput" class="search-box" placeholder=" Rechercher un cours...">
+                <input type="text" id="searchInput" class="search-box" placeholder=" Search for a course...">
                 <select id="statusFilter" class="filter-select">
-                    <option value="">Tous les statuts</option>
-                    <option value="en cours">En Cours</option>
-                    <option value="terminé">Terminé</option>
-                    <option value="en attente">En Attente</option>
+                    <option value="">All statuses</option>
+                    <option value="en cours">In Progress</option>
+                    <option value="terminé">Completed</option>
+                    <option value="en attente">Pending</option>
                 </select>
             </div>
         </div>
@@ -91,24 +91,24 @@
                         </div>
 
                         <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn-details-main">
-                            Voir les détails <i class="fas fa-arrow-right"></i>
+                            View Details <i class="fas fa-arrow-right"></i>
                         </a>
 
                         <div class="card-action-buttons">
                             <a href="{{ path('app_course_exams', {id: course.id}) }}" class="btn-action-main btn-examen">
-                                <i class="fas fa-file-alt"></i> Examen
+                                <i class="fas fa-file-alt"></i> Exam
                             </a>
                             <a href="{{ path('app_course_activities', {id: course.id}) }}" class="btn-action-main btn-activity">
-                                <i class="fas fa-tasks"></i> Activité
+                                <i class="fas fa-tasks"></i> Activity
                             </a>
                         </div>
 
                         <div class="card-footer-actions">
                             <a href="{{ path('app_course_edit', {id: course.id}) }}" class="btn-action btn-edit-sub">
-                                <i class="fas fa-edit"></i> Modifier
+                                <i class="fas fa-edit"></i> Edit
                             </a>
                             <button type="button" class="btn-action btn-delete-sub" onclick="openDeleteModal({{ course.id }})">
-                                <i class="fas fa-trash-alt"></i> Supprimer
+                                <i class="fas fa-trash-alt"></i> Delete
                             </button>
                             <form id="delete-form-{{ course.id }}" method="POST" action="{{ path('app_course_delete', {id: course.id}) }}" style="display:none;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
@@ -122,10 +122,10 @@
                 <div class="empty-icon-container">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                 </div>
-                <h3>Aucun cours trouvé</h3>
-                <p>Vous n'avez pas encore ajouté de cours. Commencez votre aventure d'apprentissage dès maintenant!</p>
+                <h3>No courses found</h3>
+                <p>You haven't added any courses yet. Start your learning journey now!</p>
                 <a href="{{ path('app_course_new') }}" class="btn-primary btn-lg pulse-animation">
-                    <i class="fas fa-plus-circle"></i> Ajouter mon premier cours
+                    <i class="fas fa-plus-circle"></i> Add my first course
                 </a>
             </div>
         {% endif %}
@@ -634,11 +634,11 @@
         <div class="modal-icon">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3>Confirmer la suppression</h3>
-        <p>Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.</p>
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this course? This action is irreversible.</p>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
-            <button class="btn-confirm" onclick="confirmDelete()">Supprimer</button>
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Delete</button>
         </div>
     </div>
 </div>

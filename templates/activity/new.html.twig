@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Ajouter une Activité - {{ course.name }}{% endblock %}
+{% block title %}Add Activity - {{ course.name }}{% endblock %}
 
 {% block content %}
 <div class="course-form-container">
@@ -8,12 +8,12 @@
     <div class="form-header">
         <div style="margin-bottom: 20px;">
              <a href="{{ path('app_course_activities', {'id': course.id}) }}" class="btn-back-custom">
-                <i class="fas fa-arrow-left"></i> Retour aux Activités
+                <i class="fas fa-arrow-left"></i> Back to Activities
             </a>
         </div>
         <div class="header-content">
-            <h1 class="page-title">Ajouter une Activité</h1>
-            <p class="page-subtitle">Cours : <strong>{{ course.name }}</strong></p>
+            <h1 class="page-title">Add an Activity</h1>
+            <p class="page-subtitle">Course: <strong>{{ course.name }}</strong></p>
         </div>
     </div>
 
@@ -23,16 +23,16 @@
         
         <!-- General Info Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-info-circle"></i> Informations de l'Activité</h3>
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> Activity Information</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    {{ form_label(form.title, 'Titre de l\'activité', {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'Ex: TP1, Atelier Pratique...'}}) }}
+                    {{ form_label(form.title, 'Activity Title', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Lab 1, Workshop...'}}) }}
                     {{ form_errors(form.title) }}
                 </div>
                 
                  <div class="form-group">
-                    {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.status, 'Status', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
                      {{ form_errors(form.status) }}
                 </div>
@@ -40,7 +40,7 @@
             
             <div class="form-group full-width" style="margin-top: 1.5rem;">
                 {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.description, {'attr': {'class': 'form-input form-textarea', 'rows': 4, 'placeholder': 'Détaillez les objectifs et consignes...'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-input form-textarea', 'rows': 4, 'placeholder': 'Detail the objectives and instructions...'}}) }}
                 {{ form_errors(form.description) }}
             </div>
         </div>
@@ -50,17 +50,17 @@
             <h3 class="section-title"><i class="fas fa-sliders-h"></i> Configuration</h3>
             <div class="form-grid">
                  <div class="form-group">
-                     {{ form_label(form.duration, 'Durée (min)', {'label_attr': {'class': 'form-label'}}) }}
+                     {{ form_label(form.duration, 'Duration (min)', {'label_attr': {'class': 'form-label'}}) }}
                      {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'placeholder': '60'}}) }}
                      {{ form_errors(form.duration) }}
                 </div>
                  <div class="form-group">
-                    {{ form_label(form.difficulty, 'Difficulté', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.difficulty, 'Difficulty', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.difficulty, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.difficulty) }}
                 </div>
                  <div class="form-group">
-                    {{ form_label(form.level, 'Niveau', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.level, 'Level', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.level, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.level) }}
                 </div>
@@ -69,29 +69,29 @@
 
         <!-- Resources Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-paperclip"></i> Ressources & Liens</h3>
+            <h3 class="section-title"><i class="fas fa-paperclip"></i> Resources & Links</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    {{ form_label(form.link, 'Lien Externe', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.link, 'External Link', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.link, {'attr': {'class': 'form-input', 'placeholder': 'https://...'}}) }}
                     {{ form_errors(form.link) }}
                 </div>
                 
                 <div class="form-group">
-                    {{ form_label(form.file, 'Fichier Joint (PDF, Docx)', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.file, 'Attached File (PDF, Docx)', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.file, {'attr': {'class': 'form-input', 'style': 'padding: 0.7rem;'}}) }}
                     {{ form_errors(form.file) }}
-                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Supports de cours, énoncés, etc.</small>
+                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Course materials, instructions, etc.</small>
                 </div>
             </div>
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="fas fa-save"></i> Enregistrer l'Activité
+                <i class="fas fa-save"></i> Save Activity
             </button>
             <a href="{{ path('app_course_activities', {id: course.id}) }}" class="btn-cancel">
-                Annuler
+                Cancel
             </a>
         </div>
 

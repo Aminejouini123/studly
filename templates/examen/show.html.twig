@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Détails de l'Examen - {{ exam.title }}{% endblock %}
+{% block title %}Exam Details - {{ exam.title }}{% endblock %}
 
 {% block content %}
 <!-- Modernized Premium Design matching Course Details -->
@@ -9,15 +9,15 @@
         <!-- Breadcrumb / Top Bar -->
         <div class="top-bar fade-in-down">
             <a href="{{ path('app_course_exams', {id: exam.course.id}) }}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Retour aux Examens
+                <i class="fas fa-arrow-left"></i> Back to Exams
             </a>
             <div class="top-actions">
-                <a href="{{ path('app_exam_edit', {id: exam.id}) }}" class="btn-icon-action edit" title="Modifier">
+                <a href="{{ path('app_exam_edit', {id: exam.id}) }}" class="btn-icon-action edit" title="Edit">
                     <i class="fas fa-pen"></i>
                 </a>
-                <form method="POST" action="{{ path('app_exam_delete', {id: exam.id}) }}" onsubmit="return confirm('Confirmer la suppression ?')" style="display:inline;">
+                <form method="POST" action="{{ path('app_exam_delete', {id: exam.id}) }}" onsubmit="return confirm('Confirm deletion?')" style="display:inline;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
-                    <button type="submit" class="btn-icon-action delete" title="Supprimer">
+                    <button type="submit" class="btn-icon-action delete" title="Delete">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </form>
@@ -30,7 +30,7 @@
                 <div class="hero-meta">
                     {% set isUpcoming = exam.date > date() %}
                     <span class="badge-pill status status-{{ isUpcoming ? 'en-attente' : 'terminé' }}">
-                        {{ isUpcoming ? 'À Venir' : 'Terminé' }}
+                        {{ isUpcoming ? 'Upcoming' : 'Completed' }}
                     </span>
                     <span class="badge-pill type">{{ exam.difficulty|upper }}</span>
                 </div>
@@ -57,7 +57,7 @@
                     </svg>
                     <div class="stat-content">
                         <span class="stat-value">{{ exam.grade ? exam.grade : '-' }}</span>
-                        <span class="stat-label">NOTE /20</span>
+                        <span class="stat-label">GRADE /20</span>
                     </div>
                 </div>
             </div>
@@ -73,15 +73,15 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <i class="fas fa-folder-open icon-gradient"></i>
-                        <h2>Ressources</h2>
+                        <h2>Resources</h2>
                     </div>
                     <div class="card-body resources-grid">
                         {% if exam.link %}
                             <a href="{{ exam.link }}" target="_blank" class="resource-tile link">
                                 <div class="tile-icon"><i class="fas fa-link"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Lien Externe</span>
-                                    <span class="tile-subtitle">Accéder à la ressource</span>
+                                    <span class="tile-title">External Link</span>
+                                    <span class="tile-subtitle">Access resource</span>
                                 </div>
                                 <i class="fas fa-external-link-alt tile-arrow"></i>
                             </a>
@@ -90,8 +90,8 @@
                             <a href="{{ asset('uploads/exams/' ~ exam.file) }}" download class="resource-tile file">
                                 <div class="tile-icon"><i class="fas fa-file-pdf"></i></div>
                                 <div class="tile-info">
-                                    <span class="tile-title">Fichier Joint</span>
-                                    <span class="tile-subtitle">Télécharger le document</span>
+                                    <span class="tile-title">Attached File</span>
+                                    <span class="tile-subtitle">Download document</span>
                                 </div>
                                 <i class="fas fa-download tile-arrow"></i>
                             </a>
@@ -105,7 +105,7 @@
                         <h2>Information</h2>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Aucune ressource pour cet examen.</p>
+                        <p class="text-muted">No resources for this exam.</p>
                     </div>
                  </div>
                 {% endif %}
@@ -115,18 +115,18 @@
             <!-- Right Column: Meta Info -->
             <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
-                    <h3 class="sidebar-heading">Métadonnées</h3>
+                    <h3 class="sidebar-heading">Metadata</h3>
                     <div class="meta-list">
                          <div class="meta-row">
-                            <span class="meta-label">ID Examen</span>
+                            <span class="meta-label">Exam ID</span>
                             <span class="meta-value">#{{ exam.id }}</span>
                         </div>
                         <div class="meta-row">
-                            <span class="meta-label">Difficulté</span>
+                            <span class="meta-label">Difficulty</span>
                             <span class="meta-value">{{ exam.difficulty }}</span>
                         </div>
                          <div class="meta-row">
-                            <span class="meta-label">Statut</span>
+                            <span class="meta-label">Status</span>
                             <span class="meta-value">{{ exam.status }}</span>
                         </div>
                     </div>

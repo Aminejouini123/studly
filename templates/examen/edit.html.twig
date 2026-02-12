@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Modifier l'Examen - {{ course.name }}{% endblock %}
+{% block title %}Edit Exam - {{ course.name }}{% endblock %}
 
 {% block content %}
 <div class="course-form-container">
@@ -8,12 +8,12 @@
     <div class="form-header">
         <div style="margin-bottom: 20px;">
              <a href="{{ path('app_course_exams', {'id': course.id}) }}" class="btn-back-custom">
-                <i class="fas fa-arrow-left"></i> Retour aux Mes Examens
+                <i class="fas fa-arrow-left"></i> Back to My Exams
             </a>
         </div>
         <div class="header-content">
-            <h1 class="page-title">Modifier l'Examen</h1>
-            <p class="page-subtitle">Cours : <strong>{{ course.name }}</strong></p>
+            <h1 class="page-title">Edit Exam</h1>
+            <p class="page-subtitle">Course: <strong>{{ course.name }}</strong></p>
         </div>
     </div>
 
@@ -23,11 +23,11 @@
         
         <!-- General Info Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-info-circle"></i> Informations Générales</h3>
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> General Information</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    {{ form_label(form.title, 'Titre de l\'examen', {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Partiel, Examen Final...'}}) }}
+                    {{ form_label(form.title, 'Exam Title', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Midterm, Final Exam...'}}) }}
                     {{ form_errors(form.title) }}
                 </div>
                 
@@ -40,12 +40,12 @@
             
              <div class="form-grid" style="margin-top: 1.5rem;">
                 <div class="form-group">
-                     {{ form_label(form.duration, 'Durée (minutes)', {'label_attr': {'class': 'form-label'}}) }}
+                     {{ form_label(form.duration, 'Duration (minutes)', {'label_attr': {'class': 'form-label'}}) }}
                      {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 90'}}) }}
                      {{ form_errors(form.duration) }}
                 </div>
                  <div class="form-group">
-                     {{ form_label(form.grade, 'Note Attendue /20 (Optionnel)', {'label_attr': {'class': 'form-label'}}) }}
+                     {{ form_label(form.grade, 'Expected Grade /20 (Optional)', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.grade, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 20'}}) }}
                      {{ form_errors(form.grade) }}
                 </div>
@@ -54,15 +54,15 @@
 
         <!-- Details Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Détails & Configuration</h3>
+            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Details & Configuration</h3>
             <div class="form-grid">
                  <div class="form-group">
-                    {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.status, 'Status', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
                      {{ form_errors(form.status) }}
                 </div>
                  <div class="form-group">
-                    {{ form_label(form.difficulty, 'Difficulté', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.difficulty, 'Difficulty', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.difficulty, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.difficulty) }}
                 </div>
@@ -71,29 +71,29 @@
 
         <!-- Resources Section -->
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-paperclip"></i> Ressources</h3>
+            <h3 class="section-title"><i class="fas fa-paperclip"></i> Resources</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    {{ form_label(form.link, 'Lien Externe', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.link, 'External Link', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.link, {'attr': {'class': 'form-input', 'placeholder': 'https://meet.google.com/...'}}) }}
                     {{ form_errors(form.link) }}
                 </div>
                 
                 <div class="form-group">
-                    {{ form_label(form.file, 'Fichier Joint', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.file, 'Attached File', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.file, {'attr': {'class': 'form-input', 'style': 'padding: 0.7rem;'}}) }}
                     {{ form_errors(form.file) }}
-                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Formats acceptés: PDF, Word. Max: 5MB.</small>
+                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Accepted formats: PDF, Word. Max: 5MB.</small>
                 </div>
             </div>
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="fas fa-save"></i> Enregistrer les modifications
+                <i class="fas fa-save"></i> Save Changes
             </button>
             <a href="{{ path('app_course_exams', {id: course.id}) }}" class="btn-cancel">
-                Annuler
+                Cancel
             </a>
         </div>
 

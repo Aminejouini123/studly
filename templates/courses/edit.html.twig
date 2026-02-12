@@ -1,6 +1,6 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Modifier le Cours{% endblock %}
+{% block title %}Edit Course{% endblock %}
 
 {% block content %}
 <div class="course-form-container">
@@ -8,12 +8,12 @@
     <div class="form-header">
         <div style="margin-bottom: 20px;">
              <a href="{{ path('app_courses') }}" class="btn-back-custom">
-                <i class="fas fa-arrow-left"></i> Retour aux cours
+                <i class="fas fa-arrow-left"></i> Back to Courses
             </a>
         </div>
         <div class="header-content">
-            <h1 class="page-title">Modifier le Cours</h1>
-            <p class="page-subtitle">Mise à jour des informations pour : <strong>{{ course.name }}</strong></p>
+            <h1 class="page-title">Edit Course</h1>
+            <p class="page-subtitle">Update information for: <strong>{{ course.name }}</strong></p>
         </div>
     </div>
 
@@ -22,55 +22,55 @@
         {{ form_start(form, {'attr': {'class': 'course-form', 'novalidate': true}, 'multipart': true}) }}
 
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-info-circle"></i> Informations Générales</h3>
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> General Information</h3>
             <div class="form-grid">
                 <!-- Première ligne -->
                 <div class="form-group">
-                    {{ form_label(form.name, 'Nom du Cours') }}
-                    {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Introduction à l\'Algorithmique'}}) }}
+                    {{ form_label(form.name, 'Course Name') }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Introduction to Algorithms'}}) }}
                     {{ form_errors(form.name) }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_label(form.teacherEmail, 'Email du Professeur') }}
-                    {{ form_widget(form.teacherEmail, {'attr': {'class': 'form-input', 'placeholder': 'professeur@univ.edu'}}) }}
+                    {{ form_label(form.teacherEmail, 'Teacher Email') }}
+                    {{ form_widget(form.teacherEmail, {'attr': {'class': 'form-input', 'placeholder': 'professor@univ.edu'}}) }}
                     {{ form_errors(form.teacherEmail) }}
                 </div>
             </div>
         </div>
 
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Paramètres du Cours</h3>
+            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Course Settings</h3>
             <div class="form-grid">
                 <!-- Deuxième ligne -->
                 <div class="form-group">
-                    {{ form_label(form.semester, 'Semestre') }}
+                    {{ form_label(form.semester, 'Semester') }}
                     {{ form_widget(form.semester, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.semester) }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_label(form.difficultyLevel, 'Niveau de Difficulté') }}
+                    {{ form_label(form.difficultyLevel, 'Difficulty Level') }}
                     {{ form_widget(form.difficultyLevel, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.difficultyLevel) }}
                 </div>
 
                 <!-- Troisième ligne -->
                 <div class="form-group">
-                    {{ form_label(form.type, 'Type de Cours') }}
+                    {{ form_label(form.type, 'Course Type') }}
                     {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.type) }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_label(form.priority, 'Priorité') }}
+                    {{ form_label(form.priority, 'Priority') }}
                     {{ form_widget(form.priority, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.priority) }}
                 </div>
 
                  <!-- Quatrième ligne -->
                 <div class="form-group">
-                    {{ form_label(form.status, 'Statut') }}
+                    {{ form_label(form.status, 'Status') }}
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.status) }}
                 </div>
@@ -84,20 +84,20 @@
         </div>
 
         <div class="form-section">
-            <h3 class="section-title"><i class="fas fa-calendar-check"></i> Planification & Ressources</h3>
+            <h3 class="section-title"><i class="fas fa-calendar-check"></i> Planning & Resources</h3>
             <div class="form-grid">
                 <!-- Cinquième ligne -->
                 <div class="form-group">
-                    {{ form_label(form.duration, 'Durée (heures)') }}
+                    {{ form_label(form.duration, 'Duration (hours)') }}
                     {{ form_widget(form.duration, {'attr': {'class': 'form-input', 'min': '1'}}) }}
                     {{ form_errors(form.duration) }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_label(form.courseFile, 'Fichier du Cours') }}
+                    {{ form_label(form.courseFile, 'Course File') }}
                      <div class="file-current-info">
                         {% if course.courseFile %}
-                            <small class="text-muted"><i class="fas fa-file-alt"></i> Actuel: {{ course.courseFile }}</small>
+                            <small class="text-muted"><i class="fas fa-file-alt"></i> Current: {{ course.courseFile }}</small>
                         {% endif %}
                     </div>
                     {{ form_widget(form.courseFile, {'attr': {'class': 'form-input'}}) }}
@@ -106,15 +106,15 @@
 
                 <!-- Sixième ligne -->
                 <div class="form-group full-width">
-                    {{ form_label(form.courseLink, 'Lien du Cours (Visio)') }}
+                    {{ form_label(form.courseLink, 'Course Link (Video)') }}
                     {{ form_widget(form.courseLink, {'attr': {'class': 'form-input', 'placeholder': 'https://meet.google.com/...'}}) }}
                     {{ form_errors(form.courseLink) }}
                 </div>
 
                 <!-- Commentaires -->
                 <div class="form-group full-width">
-                    {{ form_label(form.comment, 'Commentaires') }}
-                    {{ form_widget(form.comment, {'attr': {'class': 'form-input form-textarea', 'rows': '4', 'placeholder': 'Notes ou instructions supplémentaires...'}}) }}
+                    {{ form_label(form.comment, 'Comments') }}
+                    {{ form_widget(form.comment, {'attr': {'class': 'form-input form-textarea', 'rows': '4', 'placeholder': 'Additional notes or instructions...'}}) }}
                     {{ form_errors(form.comment) }}
                 </div>
             </div>
@@ -123,10 +123,10 @@
         <!-- Boutons d'action -->
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="icon">💾</i> Enregistrer les Modifications
+                <i class="icon">💾</i> Save Changes
             </button>
              <a href="{{ path('app_courses') }}" class="btn-cancel">
-                Annuler
+                Cancel
             </a>
         </div>
 
