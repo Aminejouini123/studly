@@ -1,18 +1,18 @@
 {% extends 'back/base.html.twig' %}
 
-{% block title %}Gestion des Activités{% endblock %}
+{% block title %}Activities Management{% endblock %}
 
-{% block breadcrumb %}Gestion des Activités / {{ course.name }}{% endblock %}
+{% block breadcrumb %}Activities Management / {{ course.name }}{% endblock %}
 
 {% block content %}
     <div class="dashboard-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
-                <h1 class="page-title" style="margin-bottom: 5px;">Activités</h1>
-                <p style="color: #64748b; margin: 0;">Cours : <strong>{{ course.name }}</strong></p>
+                <h1 class="page-title" style="margin-bottom: 5px;">Activities</h1>
+                <p style="color: #64748b; margin: 0;">Course : <strong>{{ course.name }}</strong></p>
             </div>
             <a href="{{ path('app_admin_courses') }}" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Retour aux cours
+                <i class="fas fa-arrow-left"></i> Back to courses
             </a>
         </div>
 
@@ -27,9 +27,9 @@
 
         <div class="content-card">
             <div class="card-header">
-                <h3>Liste des Activités</h3>
+                <h3>Activities List</h3>
                 <a href="{{ path('app_admin_course_activity_new', {'id': course.id}) }}" class="btn-action">
-                    <i class="fas fa-plus"></i> Ajouter une Activité
+                    <i class="fas fa-plus"></i> Add an Activity
                 </a>
             </div>
             <div class="table-responsive">
@@ -37,13 +37,13 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Titre</th>
+                            <th>Title</th>
                             <th>Description</th>
-                            <th>Durée (min)</th>
-                            <th>Niveau</th>
-                            <th>Difficulté</th>
-                            <th>Statut</th>
-                            <th>Ressources</th>
+                            <th>Duration (min)</th>
+                            <th>Level</th>
+                            <th>Difficulty</th>
+                            <th>Status</th>
+                            <th>Resources</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -83,18 +83,18 @@
                                     <div style="display: flex; flex-direction: column; gap: 4px;">
                                         {% if activity.file %}
                                             <a href="{{ asset('uploads/activities/' ~ activity.file) }}" target="_blank" class="text-xs font-weight-bold text-primary" style="text-decoration: none;">
-                                                <i class="fas fa-download"></i> Fichier
+                                                <i class="fas fa-download"></i> File
                                             </a>
                                         {% endif %}
                                         
                                         {% if activity.link %}
                                             <a href="{{ activity.link }}" target="_blank" class="text-xs font-weight-bold text-info" style="text-decoration: none;">
-                                                <i class="fas fa-link"></i> Lien
+                                                <i class="fas fa-link"></i> Link
                                             </a>
                                         {% endif %}
                                         
                                         {% if not activity.file and not activity.link %}
-                                            <span class="text-xs text-secondary">Aucune</span>
+                                            <span class="text-xs text-secondary">None</span>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -111,7 +111,7 @@
                         {% else %}
                             <tr>
                                 <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
-                                    Aucune activité trouvée pour ce cours.
+                                    No activities found for this course.
                                 </td>
                             </tr>
                         {% endfor %}
@@ -125,18 +125,18 @@
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h2>Confirmer la suppression</h2>
+                <h2>Confirm Deletion</h2>
                 <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+                <p>Are you sure you want to delete this activity? This action is irreversible.</p>
                 <form id="deleteForm" method="post" action="">
                     <input type="hidden" name="_token" id="deleteToken" value="">
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Annuler</button>
-                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Supprimer</button>
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Delete</button>
             </div>
         </div>
     </div>

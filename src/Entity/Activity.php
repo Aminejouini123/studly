@@ -16,36 +16,43 @@ class Activity
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le titre de l'activité est obligatoire")]
-    #[Assert\Length(min: 3, minMessage: "Le titre doit contenir au moins 3 caractères")]
+    #[Assert\NotBlank(message: "Activity title is required")]
+    #[Assert\Length(min: 3, max: 255, minMessage: "Title must be at least 3 characters long", maxMessage: "Title cannot be longer than {{ limit }} characters")]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
-    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins 10 caractères")]
+    #[Assert\NotBlank(message: "Description is required")]
+    #[Assert\Length(min: 10, minMessage: "Description must be at least 10 characters long")]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "Le lien doit être une URL valide")]
+    #[Assert\NotBlank(message: "Link is required")]
+    #[Assert\Url(message: "Link must be a valid URL")]
+    #[Assert\Length(max: 255, maxMessage: "Link cannot be longer than {{ limit }} characters")]
     private ?string $link = null;
 
     #[ORM\Column]
-    #[Assert\Positive(message: "La durée doit être positive")]
+    #[Assert\NotBlank(message: "Duration is required")]
+    #[Assert\Positive(message: "Duration must be positive")]
+    #[Assert\Type(type: 'integer', message: "Duration must be an integer")]
     private ?int $duration = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+    #[Assert\NotBlank(message: "Status is required")]
+    #[Assert\Length(max: 255, maxMessage: "Status cannot be longer than {{ limit }} characters")]
     private ?string $status = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
+    #[Assert\NotBlank(message: "Difficulty is required")]
+    #[Assert\Length(max: 255, maxMessage: "Difficulty cannot be longer than {{ limit }} characters")]
     private ?string $difficulty = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le niveau est obligatoire")]
+    #[Assert\NotBlank(message: "Level is required")]
+    #[Assert\Length(max: 255, maxMessage: "Level cannot be longer than {{ limit }} characters")]
     private ?string $level = null;
 
     #[ORM\ManyToOne(inversedBy: 'activities')]
@@ -61,7 +68,7 @@ class Activity
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
         $this->title = $title;
 
@@ -73,7 +80,7 @@ class Activity
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -109,7 +116,7 @@ class Activity
         return $this->duration;
     }
 
-    public function setDuration(int $duration): static
+    public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
 
@@ -121,7 +128,7 @@ class Activity
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(?string $status): static
     {
         $this->status = $status;
 
@@ -133,7 +140,7 @@ class Activity
         return $this->difficulty;
     }
 
-    public function setDifficulty(string $difficulty): static
+    public function setDifficulty(?string $difficulty): static
     {
         $this->difficulty = $difficulty;
 
@@ -145,7 +152,7 @@ class Activity
         return $this->level;
     }
 
-    public function setLevel(string $level): static
+    public function setLevel(?string $level): static
     {
         $this->level = $level;
 

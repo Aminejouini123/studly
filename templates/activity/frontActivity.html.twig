@@ -29,19 +29,19 @@
             </div>
             <div class="stat-card">
                 <div class="stat-number">
-                    {{ activities|filter(a => a.status == 'à faire')|length }}
+                    {{ activities|filter(a => a.status == 'to do')|length }}
                 </div>
                 <div class="stat-label">To Do</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
-                    {{ activities|filter(a => a.status == 'en cours')|length }}
+                    {{ activities|filter(a => a.status == 'in progress')|length }}
                 </div>
                 <div class="stat-label">In Progress</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">
-                    {{ activities|filter(a => a.status == 'terminé')|length }}
+                    {{ activities|filter(a => a.status == 'completed')|length }}
                 </div>
                 <div class="stat-label">Completed</div>
             </div>
@@ -59,9 +59,9 @@
                 </div>
                 <select id="statusFilter" class="filter-select">
                     <option value="">All statuses</option>
-                    <option value="à faire">To Do</option>
-                    <option value="en cours">In Progress</option>
-                    <option value="terminé">Completed</option>
+                    <option value="to do">To Do</option>
+                    <option value="in progress">In Progress</option>
+                    <option value="completed">Completed</option>
                 </select>
             </div>
         </div>
@@ -372,9 +372,9 @@
         text-transform: uppercase;
     }
 
-    .status-à-faire { background: #e3f2fd; color: #0277bd; }
-    .status-en-cours { background: #fff8e1; color: var(--warning-color); }
-    .status-terminé { background: #e8f5e9; color: var(--success-color); }
+    .status-to-do { background: #e3f2fd; color: #0277bd; }
+    .status-in-progress { background: #fff8e1; color: var(--warning-color); }
+    .status-completed { background: #e8f5e9; color: var(--success-color); }
 
     .card-header {
         margin-bottom: 1.2rem;
