@@ -16,6 +16,9 @@ use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class ExamType extends AbstractType
 {
@@ -24,14 +27,17 @@ class ExamType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'label' => 'Exam Title',
+                'required' => false,
                 'attr' => ['placeholder' => 'Ex: Midterm, Final Exam...']
             ])
             ->add('date', DateTimeType::class, [
                 'widget' => 'single_text',
                 'label' => 'Exam Date and Time',
+                'required' => false,
             ])
             ->add('duration', IntegerType::class, [
                 'label' => 'Duration (minutes)',
+                'required' => false,
                 'attr' => ['placeholder' => 'Ex: 90']
             ])
             ->add('grade', NumberType::class, [
@@ -42,6 +48,7 @@ class ExamType extends AbstractType
             ])
             ->add('difficulty', ChoiceType::class, [
                 'label' => 'Difficulty',
+                'required' => false,
                 'choices' => [
                     'Easy' => 'Easy',
                     'Medium' => 'Medium',
@@ -51,31 +58,50 @@ class ExamType extends AbstractType
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Status',
+                'required' => false,
                 'choices' => [
                     'Upcoming' => 'upcoming',
                     'Completed' => 'completed',
                     'Postponed' => 'postponed',
                 ],
                 'placeholder' => 'Select status',
-            ])
-            ->add('file', FileType::class, [
+            ]);
+
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            $exam = $event->getData();
+            $form = $event->getForm();
+
+            $isRequired = !$exam || null === $exam->getId() || null === $exam->getFile();
+
+            $constraints = [
+                new FileConstraint([
+                    'maxSize' => '10M',
+                    'mimeTypes' => [
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'image/jpeg',
+                        'image/png'
+                    ],
+                    'mimeTypesMessage' => 'Please upload a valid document (PDF, Word, Image)',
+                ])
+            ];
+
+            if ($isRequired) {
+                $constraints[] = new NotBlank([
+                    'message' => 'Please upload an exam file',
+                ]);
+            }
+
+            $form->add('file', FileType::class, [
                 'label' => 'Attached File (PDF, Docx)',
                 'mapped' => false,
                 'required' => false,
-                'constraints' => [
-                    new FileConstraint([
-                        'maxSize' => '10M',
-                        'mimeTypes' => [
-                            'application/pdf',
-                            'application/msword',
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                            'image/jpeg',
-                            'image/png'
-                        ],
-                        'mimeTypesMessage' => 'Please upload a valid document (PDF, Word, Image)',
-                    ])
-                ],
-            ])
+                'constraints' => $constraints,
+            ]);
+        });
+
+        $builder
             ->add('link', UrlType::class, [
                 'label' => 'External Link (Meet, Zoom, Resource)',
                 'required' => false,

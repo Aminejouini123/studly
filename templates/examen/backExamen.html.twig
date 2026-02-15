@@ -1,18 +1,18 @@
 {% extends 'back/base.html.twig' %}
 
-{% block title %}Gestion des Examens{% endblock %}
+{% block title %}Exams Management{% endblock %}
 
-{% block breadcrumb %}Gestion des Examens / {{ course.name }}{% endblock %}
+{% block breadcrumb %}Exams Management / {{ course.name }}{% endblock %}
 
 {% block content %}
     <div class="dashboard-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
-                <h1 class="page-title" style="margin-bottom: 5px;">Examens</h1>
-                <p style="color: #64748b; margin: 0;">Cours : <strong>{{ course.name }}</strong></p>
+                <h1 class="page-title" style="margin-bottom: 5px;">Exams</h1>
+                <p style="color: #64748b; margin: 0;">Course : <strong>{{ course.name }}</strong></p>
             </div>
             <a href="{{ path('app_admin_courses') }}" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Retour aux cours
+                <i class="fas fa-arrow-left"></i> Back to courses
             </a>
         </div>
 
@@ -27,9 +27,9 @@
 
         <div class="content-card">
             <div class="card-header">
-                <h3>Liste des Examens</h3>
+                <h3>Exams List</h3>
                 <a href="{{ path('app_admin_course_exam_new', {'id': course.id}) }}" class="btn-action">
-                    <i class="fas fa-plus"></i> Ajouter un Examen
+                    <i class="fas fa-plus"></i> Add an Exam
                 </a>
             </div>
             <div class="table-responsive">
@@ -37,13 +37,13 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Titre</th>
+                            <th>Title</th>
                             <th>Date</th>
-                            <th>Durée (min)</th>
-                            <th>Note (/20)</th>
-                            <th>Difficulté</th>
-                            <th>Statut</th>
-                            <th>Fichier</th>
+                            <th>Duration (min)</th>
+                            <th>Grade (/20)</th>
+                            <th>Difficulty</th>
+                            <th>Status</th>
+                            <th>File</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -80,10 +80,10 @@
                                 <td>
                                     {% if exam.file %}
                                         <a href="{{ asset('uploads/exams/' ~ exam.file) }}" target="_blank" class="status-badge status-active" style="text-decoration: none;">
-                                            <i class="fas fa-download"></i> Télécharger
+                                            <i class="fas fa-download"></i> Download
                                         </a>
                                     {% else %}
-                                        <span class="status-badge status-pending">Aucun fichier</span>
+                                        <span class="status-badge status-pending">No file</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -99,7 +99,7 @@
                         {% else %}
                             <tr>
                                 <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
-                                    Aucun examen trouvé pour ce cours.
+                                    No exams found for this course.
                                 </td>
                             </tr>
                         {% endfor %}
@@ -112,18 +112,18 @@
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h2>Confirmer la suppression</h2>
+                <h2>Confirm Deletion</h2>
                 <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cet examen ? Cette action est irréversible.</p>
+                <p>Are you sure you want to delete this exam? This action is irreversible.</p>
                 <form id="deleteForm" method="post" action="">
                     <input type="hidden" name="_token" id="deleteToken" value="">
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Annuler</button>
-                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Supprimer</button>
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Delete</button>
             </div>
         </div>
     </div>
