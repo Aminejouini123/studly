@@ -41,6 +41,27 @@ class Event
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $startTime = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $endTime = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $color = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $category = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $notes = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $allDay = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $reminderMinutes = null;
+
     #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
@@ -219,6 +240,90 @@ class Event
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getStartTime(): ?\DateTime
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(?\DateTime $startTime): static
+    {
+        $this->startTime = $startTime;
+
+        return $this;
+    }
+
+    public function getEndTime(): ?\DateTime
+    {
+        return $this->endTime;
+    }
+
+    public function setEndTime(?\DateTime $endTime): static
+    {
+        $this->endTime = $endTime;
+
+        return $this;
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): static
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?string $category): static
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): static
+    {
+        $this->notes = $notes;
+
+        return $this;
+    }
+
+    public function isAllDay(): ?bool
+    {
+        return $this->allDay;
+    }
+
+    public function setAllDay(?bool $allDay): static
+    {
+        $this->allDay = $allDay;
+
+        return $this;
+    }
+
+    public function getReminderMinutes(): ?int
+    {
+        return $this->reminderMinutes;
+    }
+
+    public function setReminderMinutes(?int $reminderMinutes): static
+    {
+        $this->reminderMinutes = $reminderMinutes;
 
         return $this;
     }
