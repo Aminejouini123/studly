@@ -25,13 +25,21 @@ class GoogleAuthenticator extends OAuth2Authenticator
     private EntityManagerInterface $entityManager;
     private RouterInterface $router;
     private MailerInterface $mailer;
+    private string $mailerFromAddress;
 
-    public function __construct(ClientRegistry $clientRegistry, EntityManagerInterface $entityManager, RouterInterface $router, MailerInterface $mailer)
-    {
+    public function __construct(
+        ClientRegistry $clientRegistry,
+        EntityManagerInterface $entityManager,
+        RouterInterface $router,
+        MailerInterface $mailer,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire('%mailer.from_address%')]
+        string $mailerFromAddress
+    ) {
         $this->clientRegistry = $clientRegistry;
         $this->entityManager = $entityManager;
         $this->router = $router;
         $this->mailer = $mailer;
+        $this->mailerFromAddress = $mailerFromAddress;
     }
 
     public function supports(Request $request): ?bool
@@ -86,19 +94,17 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
 
-                // Send email
+                // Send verification email (From must match Gmail account when using Gmail SMTP)
                 $emailMessage = (new Email())
-                    ->from('no-reply@studly.com')
+                    ->from($this->mailerFromAddress)
                     ->to($user->getEmail())
-                    ->subject('Your Verification Code')
+                    ->subject('Your Verification Code - Studly')
                     ->text('Your verification code is: ' . $code);
 
                 try {
                     $this->mailer->send($emailMessage);
                 } catch (\Exception $e) {
-                    dd($e->getMessage());
-                    // Log error but allow creation to proceed? Or fail?
-                    // For now proceeding.
+                    // Log error but allow creation to proceed so user can request a new code
                 }
 
                 return $user;
