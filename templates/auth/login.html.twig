@@ -237,6 +237,25 @@
         background: linear-gradient(90deg, #003366, #0056b3);
     }
 
+    .forgot-password {
+        margin-top: 4px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+        text-align: right;
+        width: 100%;
+        max-width: 380px;
+        cursor: pointer;
+    }
+
+    .forgot-password a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: underline;
+    }
+
+    .forgot-password a:hover {
+        color: var(--primary-light);
+    }
+
     .social-text {
         padding: 0.7rem 0;
         font-size: 1rem;
@@ -565,6 +584,10 @@
                     <i class="fas fa-lock"></i>
                     <input type="password" name="password" placeholder="Password" required />
                 </div>
+
+                <p class="forgot-password">
+                    <a href="{{ path('app_forgot_password') }}">Forgot your password?</a>
+                </p>
                 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
