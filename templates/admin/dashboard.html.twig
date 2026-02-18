@@ -288,29 +288,29 @@
                 </div>
                 <div class="stat-card">
                     <div>
-                        <p class="stat-label">Students</p>
-                        <h3 class="stat-value">{{ students }}</h3>
+                        <p class="stat-label">Total Courses</p>
+                        <h3 class="stat-value">{{ totalCourses }}</h3>
                     </div>
                     <div class="stat-icon bg-green-light">
-                        <i class="fas fa-user-graduate"></i>
+                        <i class="fas fa-book"></i>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div>
-                        <p class="stat-label">Active Users</p>
-                        <h3 class="stat-value">{{ activeUsers }}</h3>
+                        <p class="stat-label">Total Activities</p>
+                        <h3 class="stat-value">{{ totalActivities }}</h3>
                     </div>
                     <div class="stat-icon bg-purple-light">
-                        <i class="fas fa-bolt"></i>
+                        <i class="fas fa-tasks"></i>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div>
-                        <p class="stat-label">Revenue</p>
-                        <h3 class="stat-value">$12.4k</h3>
+                        <p class="stat-label">Groups</p>
+                        <h3 class="stat-value">{{ totalGroups }}</h3>
                     </div>
                     <div class="stat-icon bg-orange-light">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-users-cog"></i>
                     </div>
                 </div>
             </div>
@@ -333,18 +333,18 @@
 
                 <!-- Traffic Source / Donut -->
                 <div class="content-card">
-                    <div class="card-title">User Distribution</div>
+                    <div class="card-title">Tasks Status</div>
                     <div class="chart-container" style="height: 250px; position: relative;">
                         <canvas id="userTypeChart"></canvas>
                     </div>
                     <div style="margin-top: 20px; display: flex; justify-content: space-around;">
                         <div style="text-align: center;">
-                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ ((students / totalUsers) * 100)|round }}%</h4>
-                            <span style="font-size: 0.8rem; color: #64748b;">Students</span>
+                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ totalTasks }}</h4>
+                            <span style="font-size: 0.8rem; color: #64748b;">Total Tasks</span>
                         </div>
                         <div style="text-align: center;">
-                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ ((admins / totalUsers) * 100)|round }}%</h4>
-                            <span style="font-size: 0.8rem; color: #64748b;">Admins</span>
+                            <h4 style="margin:0; font-size: 1.1rem; font-weight:700;">{{ completedTasks }}</h4>
+                            <span style="font-size: 0.8rem; color: #64748b;">Completed</span>
                         </div>
                     </div>
                 </div>
@@ -399,6 +399,66 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Courses Management Overview -->
+            <div class="content-card" style="margin-top: 25px;">
+                <div class="card-title">
+                    Courses Overview
+                    <div>
+                        <a href="{{ path('app_course_new') }}" style="margin-right: 10px; font-size: 0.85rem; color: var(--accent-color); text-decoration: none;">
+                            <i class="fas fa-plus"></i> New Course
+                        </a>
+                        <a href="{{ path('app_admin_courses') }}" style="font-size: 0.85rem; color: var(--accent-color); text-decoration: none;">
+                            Manage All
+                        </a>
+                    </div>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Teacher Email</th>
+                            <th>Owner</th>
+                            <th>Semester</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in allCourses %}
+                            <tr>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.teacherEmail }}</td>
+                                <td>
+                                    {% if course.user %}
+                                        {{ course.user.firstName }} {{ course.user.lastName }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ course.semester }}</td>
+                                <td>
+                                    {% if course.createdAt %}
+                                        {{ course.createdAt|date('M d, Y') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_admin_course_show', {id: course.id}) }}" style="font-size: 0.8rem; margin-right: 8px;">View</a>
+                                    <a href="{{ path('app_admin_course_edit', {id: course.id}) }}" style="font-size: 0.8rem;">Edit</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; font-size: 0.9rem;">
+                                    No courses found.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>
@@ -439,10 +499,10 @@
     new Chart(ctx2, {
         type: 'doughnut',
         data: {
-            labels: ['Students', 'Admins', 'Others'],
+            labels: ['Completed', 'Pending', 'Other'],
             datasets: [{
-                data: [{{ students }}, {{ admins }}, {{ totalUsers - students - admins }}],
-                backgroundColor: ['#3b82f6', '#8b5cf6', '#e2e8f0']
+                data: [{{ completedTasks }}, {{ pendingTasks }}, {{ totalTasks - completedTasks - pendingTasks }}],
+                backgroundColor: ['#22c55e', '#f97316', '#e2e8f0']
             }]
         },
         options: {
