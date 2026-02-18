@@ -551,12 +551,6 @@
             <form action="{{ path('app_auth') }}" method="post" class="sign-in-form">
                 <h2 class="title">Sign in</h2>
                 
-                {% for message in app.flashes('error') %}
-                    <div style="color: #ff4757; margin-bottom: 10px; font-weight: 500;">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-
                 {% if error %}
                     <div style="color: #ff4757; margin-bottom: 10px; font-weight: 500;">
                         {{ error.messageKey|trans(error.messageData, 'security') }}
@@ -580,22 +574,24 @@
                 <div class="social-media">
                     <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-icon"><i class="fab fa-google"></i></a>
+                    <a href="{{ path('connect_google') }}" class="social-icon"><i class="fab fa-google"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </form>
 
             <form action="{{ path('app_register') }}" method="post" class="sign-up-form" style="padding-top: 10px;">
                 <h2 class="title" style="margin-bottom: 10px; font-size: 2.2rem;">Sign up</h2>
-                
-                {% set registration_data = app.session.get('registration_data', {}) %}
-                
-                {% for message in app.flashes('error') %}
+
+                {% set registration_data = registrationData ?? {} %}
+                {% set reg_errors = registrationErrors ?? {'global': [], 'fields': {}} %}
+
+                {# Global registration errors at top of Sign Up form #}
+                {% for message in reg_errors.global %}
                     <div style="color: #ff4757; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; text-align: center; background: rgba(255, 71, 87, 0.1); padding: 8px; border-radius: 10px;">
                         {{ message }}
                     </div>
                 {% endfor %}
-                
+
                 {% for message in app.flashes('success') %}
                     <div style="color: #2ed573; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; text-align: center; background: rgba(46, 213, 115, 0.1); padding: 8px; border-radius: 10px;">
                         {{ message }}
@@ -606,30 +602,85 @@
                     <i class="fas fa-user"></i>
                     <input type="text" name="firstName" placeholder="First Name" value="{{ registration_data.firstName ?? '' }}" required />
                 </div>
+                {% if reg_errors.fields.firstName is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.firstName %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field">
                     <i class="fas fa-user"></i>
                     <input type="text" name="lastName" placeholder="Last Name" value="{{ registration_data.lastName ?? '' }}" required />
                 </div>
+                {% if reg_errors.fields.lastName is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.lastName %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field">
                     <i class="fas fa-envelope"></i>
                     <input type="email" name="email" placeholder="Email" value="{{ registration_data.email ?? '' }}" required />
                 </div>
+                {% if reg_errors.fields.email is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.email %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field">
                     <i class="fas fa-lock"></i>
                     <input type="password" name="password" placeholder="Password" required />
                 </div>
+                {% if reg_errors.fields.password is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.password %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field">
                     <i class="fas fa-calendar"></i>
                     <input type="date" name="dateOfBirth" placeholder="Date of Birth" value="{{ registration_data.dateOfBirth ?? '' }}" required style="color: #333;" />
                 </div>
+                {% if reg_errors.fields.dateOfBirth is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.dateOfBirth %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field">
                     <i class="fas fa-phone"></i>
                     <input type="text" name="phoneNumber" placeholder="Phone Number" value="{{ registration_data.phoneNumber ?? '' }}" />
                 </div>
+                {% if reg_errors.fields.phoneNumber is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.phoneNumber %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="input-field" style="height: auto; padding: 8px;">
                     <i class="fas fa-map-marker-alt" style="line-height: normal; margin-top: 6px;"></i>
                     <textarea name="address" placeholder="Address" style="background: none; border: none; outline: none; width: 100%; font-weight: 600; font-size: 1.1rem; color: #333; resize: none; margin-left: 10px; font-family: 'Poppins', sans-serif;" rows="1">{{ registration_data.address ?? '' }}</textarea>
                 </div>
+                {% if reg_errors.fields.address is defined %}
+                    <div style="color: #ff4757; font-size: 0.8rem; margin-top: 2px; margin-bottom: 4px; max-width: 380px;">
+                        {% for msg in reg_errors.fields.address %}
+                            <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
                 <input type="submit" class="btn solid" value="Sign up" />
                 
@@ -637,7 +688,7 @@
                 <div class="social-media" style="margin-bottom: 10px;">
                     <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-icon"><i class="fab fa-google"></i></a>
+                    <a href="{{ path('connect_google') }}" class="social-icon"><i class="fab fa-google"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </form>
