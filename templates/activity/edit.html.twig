@@ -36,6 +36,12 @@
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
                      {{ form_errors(form.status) }}
                 </div>
+
+                <div class="form-group">
+                    {{ form_label(form.type, 'Activity Type', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.type) }}
+                </div>
             </div>
             
             <div class="form-group full-width" style="margin-top: 1.5rem;">
@@ -67,6 +73,28 @@
             </div>
         </div>
 
+        <!-- content & Instructions Section -->
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-list-ol"></i> Content & Details</h3>
+            <div class="form-group full-width">
+                {{ form_label(form.instructions, 'Detailed Instructions', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.instructions, {'attr': {'class': 'form-input form-textarea', 'rows': 6, 'placeholder': 'Detailed steps for the student...'}}) }}
+                {{ form_errors(form.instructions) }}
+            </div>
+            <div class="form-grid" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    {{ form_label(form.expectedOutput, 'Expected Output', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.expectedOutput, {'attr': {'class': 'form-input', 'placeholder': 'What should they produce?'}}) }}
+                    {{ form_errors(form.expectedOutput) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.hints, 'Hints', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.hints, {'attr': {'class': 'form-input', 'placeholder': 'Helpful tips...'}}) }}
+                    {{ form_errors(form.hints) }}
+                </div>
+            </div>
+        </div>
+
         <!-- Resources Section -->
         <div class="form-section">
             <h3 class="section-title"><i class="fas fa-paperclip"></i> Resources & Links</h3>
@@ -79,14 +107,14 @@
                 
                 <div class="form-group">
                     {{ form_label(form.file, 'Attached File', {'label_attr': {'class': 'form-label'}}) }}
-                     <div class="file-current-info">
+                     <div class="file-current-info" style="margin-bottom: 0.5rem;">
                         {% if activity.file %}
-                            <small class="text-muted"><i class="fas fa-file-alt"></i> Current: {{ activity.file }}</small>
+                            <small class="text-muted" style="color: #6c757d; font-size: 0.85rem;"><i class="fas fa-file-alt"></i> Current: <strong>{{ activity.file }}</strong></small>
                         {% endif %}
                     </div>
                     {{ form_widget(form.file, {'attr': {'class': 'form-input', 'style': 'padding: 0.7rem;'}}) }}
                     {{ form_errors(form.file) }}
-                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Accepted formats: PDF, Docx. Max: 5MB.</small>
+                    <small class="text-muted" style="margin-top: 0.5rem; display: block; font-size: 0.85rem; color: #6c757d;">Accepted formats: PDF, Docx, JPEG, PNG. Max: 10MB.</small>
                 </div>
             </div>
         </div>

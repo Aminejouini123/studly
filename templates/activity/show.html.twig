@@ -81,6 +81,54 @@
                     </div>
                 </div>
 
+                <!-- Instructions / Content Card -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-ol icon-gradient"></i>
+                        <h2>Instructions & Content</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="instruction-content">
+                            {% if activity.instructions %}
+                                {{ activity.instructions|nl2br }}
+                            {% else %}
+                                <p class="empty-info-p">No specific instructions provided.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expected Output Card -->
+                {% if activity.expectedOutput %}
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-check-double icon-gradient"></i>
+                        <h2>Expected Output</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="expected-output-text">
+                            {{ activity.expectedOutput|nl2br }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Hints Card -->
+                {% if activity.hints %}
+                <div class="glass-card hints-card">
+                    <div class="card-header">
+                        <i class="fas fa-lightbulb icon-gradient"></i>
+                        <h2>Helpful Hints</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="hints-text">
+                            <i class="fas fa-magic spark-icon"></i>
+                            {{ activity.hints|nl2br }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Resources Card -->
                 {% if activity.link or activity.file %}
                 <div class="glass-card">
@@ -472,11 +520,55 @@
         margin: 0;
     }
 
+    /* Instructions and Content */
+    .instruction-content, .expected-output-text, .hints-text {
+        color: #334155;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .hints-card {
+        border-left: 5px solid #7c3aed;
+        background: linear-gradient(to right, #f5f3ff 0%, #ffffff 100%);
+    }
+
+    .hints-text {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px dashed #c084fc;
+        color: #7c3aed;
+        position: relative;
+    }
+
+    .spark-icon {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        color: #c084fc;
+        opacity: 0.3;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+    }
+
+    .empty-info-p {
+        color: var(--secondary);
+        font-style: italic;
+    }
+
     /* Description Text */
     .description-text {
         color: #475569;
         line-height: 1.8;
-        font-size: 1.05rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
     }
 
     /* Resources */
