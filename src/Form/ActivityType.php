@@ -104,10 +104,38 @@ class ActivityType extends AbstractType
         });
 
         $builder
+            ->add('type', ChoiceType::class, [
+                'label' => 'Activity Type',
+                'choices' => [
+                    'Quiz' => 'quiz',
+                    'Challenge' => 'challenge',
+                    'Mini Project' => 'mini_project',
+                ],
+                'placeholder' => 'Select type',
+                'required' => true,
+            ])
+            ->add('instructions', TextareaType::class, [
+                'label' => 'Step-by-Step Instructions',
+                'required' => false,
+                'attr' => ['rows' => 6, 'placeholder' => 'Detailed steps for the student...']
+            ])
+            ->add('expectedOutput', TextareaType::class, [
+                'label' => 'Expected Output',
+                'required' => false,
+                'attr' => ['rows' => 3, 'placeholder' => 'What should the student produce?']
+            ])
+            ->add('hints', TextareaType::class, [
+                'label' => 'Hints',
+                'required' => false,
+                'attr' => ['rows' => 2, 'placeholder' => 'Tips to help them out...']
+            ])
             ->add('link', UrlType::class, [
                 'label' => 'External Link (Resource)',
                 'required' => false,
-                'attr' => ['placeholder' => 'https://...']
+                'attr' => [
+                    'placeholder' => 'https://...',
+                    'class' => 'form-input'
+                ]
             ])
         ;
     }

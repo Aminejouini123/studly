@@ -58,7 +58,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="status-badge {{ course.status == 'published' or course.status == 'active' ? 'status-active' : 'status-pending' }}">
+                                <span class="status-badge {{ course.status|lower in ['published', 'active', 'completed', 'in progress'] ? 'status-active' : 'status-pending' }}">
                                     {{ course.status }}
                                 </span>
                             </td>

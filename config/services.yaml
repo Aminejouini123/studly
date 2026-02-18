@@ -5,6 +5,10 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
+    openrouter.api_key: '%env(OPENROUTER_API_KEY)%'
+    openrouter.model: '%env(resolve:OPENROUTER_MODEL)%'
+    openrouter.app_url: '%env(resolve:OPENROUTER_APP_URL)%'
+    openrouter.app_title: '%env(resolve:OPENROUTER_APP_TITLE)%'
 
 services:
     # default configuration for services in *this* file
@@ -23,3 +27,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Service\OpenRouterClient:
+        arguments:
+            $apiKey: '%openrouter.api_key%'
+            $model: '%openrouter.model%'
+            $appUrl: '%openrouter.app_url%'
+            $appTitle: '%openrouter.app_title%'

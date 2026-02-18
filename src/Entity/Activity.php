@@ -29,7 +29,6 @@ class Activity
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\NotBlank(message: "Link is required")]
     #[Assert\Url(message: "Link must be a valid URL")]
     #[Assert\Length(max: 255, maxMessage: "Link cannot be longer than {{ limit }} characters")]
     private ?string $link = null;
@@ -54,6 +53,19 @@ class Activity
     #[Assert\NotBlank(message: "Level is required")]
     #[Assert\Length(max: 255, maxMessage: "Level cannot be longer than {{ limit }} characters")]
     private ?string $level = null;
+
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Type is required")]
+    private ?string $type = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $instructions = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $expectedOutput = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $hints = null;
 
     #[ORM\ManyToOne(inversedBy: 'activities')]
     private ?Course $course = null;
@@ -167,6 +179,54 @@ class Activity
     public function setCourse(?Course $course): static
     {
         $this->course = $course;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getInstructions(): ?string
+    {
+        return $this->instructions;
+    }
+
+    public function setInstructions(?string $instructions): static
+    {
+        $this->instructions = $instructions;
+
+        return $this;
+    }
+
+    public function getExpectedOutput(): ?string
+    {
+        return $this->expectedOutput;
+    }
+
+    public function setExpectedOutput(?string $expectedOutput): static
+    {
+        $this->expectedOutput = $expectedOutput;
+
+        return $this;
+    }
+
+    public function getHints(): ?string
+    {
+        return $this->hints;
+    }
+
+    public function setHints(?string $hints): static
+    {
+        $this->hints = $hints;
 
         return $this;
     }

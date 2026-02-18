@@ -1,0 +1,15 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Studly Chatbot{% endblock %}
+
+{% block content %}
+    <div style="height: 80vh; display: flex; align-items: center; justify-content: center; color: #64748b;">
+        <div style="text-align: center;">
+            <i class="fa-solid fa-robot" style="font-size: 4rem; margin-bottom: 2rem; opacity: 0.2;"></i>
+            <h2 style="font-weight: 700;">Studly Assistant</h2>
+            <p>Cliquez sur la bulle en bas à droite pour commencer à discuter.</p>
+        </div>
+    </div>
+    
+    {% include 'chat/_chat_widget.html.twig' %}
+{% endblock %}
