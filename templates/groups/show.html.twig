@@ -71,10 +71,91 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- Internal Chat -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-comments icon-gradient"></i>
+                        <h2>Chat Interne</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-container" id="chat-messages" style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                            {% for message in messages %}
+                                <div class="message {{ message.sender == app.user ? 'own-message' : '' }}" style="margin-bottom: 10px; padding: 8px; border-radius: 8px; background: {{ message.sender == app.user ? '#dcf8c6' : '#fff' }}; align-self: {{ message.sender == app.user ? 'flex-end' : 'flex-start' }}; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">{{ message.sender.firstName }}</div>
+                                    <div style="color: #1e293b;">{{ message.content }}</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">{{ message.createdAt|date('H:i') }}</div>
+                                </div>
+                            {% else %}
+                                <p style="text-align: center; color: #94a3b8;">Aucun message. Commencez la discussion !</p>
+                            {% endfor %}
+                        </div>
+                        <form action="{{ path('app_groups_send_message', {id: group.id}) }}" method="POST" style="display: flex; gap: 10px;">
+                            <input type="text" name="content" class="form-control" placeholder="Votre message..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer;">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Projects & Tasks -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-project-diagram icon-gradient"></i>
+                        <h2>Projets du groupe</h2>
+                    </div>
+                    <div class="card-body">
+                        {% for project in group.projects %}
+                            <div class="project-item" style="margin-bottom: 20px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                <h3 style="font-size: 1.1rem; color: #0059A9; margin-bottom: 10px;">{{ project.title }}</h3>
+                                <p style="font-size: 0.9rem; margin-bottom: 15px;">{{ project.description }}</p>
+                                
+                                <div class="tasks-list">
+                                    <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 8px;">Tâches :</h4>
+                                    {% for task in project.projectTasks %}
+                                        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8fafc; border-radius: 8px; margin-bottom: 5px;">
+                                            <span>{{ task.title }}</span>
+                                            <span class="badge" style="background: {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#64748b') }}; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                                {{ task.status }}
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <p style="font-size: 0.85rem; color: #94a3b8;">Aucune tâche.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <p style="text-align: center; color: #94a3b8;">Aucun projet pour le moment.</p>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
 
-            <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
+                    <h3 class="sidebar-heading">Membres</h3>
+                    <div class="meta-list">
+                        <div class="meta-row">
+                            <span class="meta-label">{{ group.creator.firstName }} (Créateur)</span>
+                            <span class="meta-value">{{ group.creator.score }} pts</span>
+                        </div>
+                        {% for member in group.members %}
+                            <div class="meta-row">
+                                <span class="meta-label">{{ member.firstName }}</span>
+                                <span class="meta-value">{{ member.score }} pts</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if group.creator == app.user %}
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #f1f5f9;">
+                        <h3 class="sidebar-heading">Inviter un membre</h3>
+                        <form action="{{ path('app_groups_invite', {id: group.id}) }}" method="POST">
+                            <input type="email" name="email" class="form-control" placeholder="Email de l'utilisateur" required style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;">
+                            <button type="submit" class="btn-primary" style="width: 100%; padding: 8px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer; font-weight: 600;">Inviter</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="glass-card sidebar-compact" style="margin-top: 1rem;">
                     <h3 class="sidebar-heading">Métadonnées</h3>
                     <div class="meta-list">
                         <div class="meta-row">
@@ -85,13 +166,8 @@
                             <span class="meta-label">Créé le</span>
                             <span class="meta-value">{{ group.createdAt|date('d M Y') }}</span>
                         </div>
-                        <div class="meta-row">
-                            <span class="meta-label">Créateur</span>
-                            <span class="meta-value">{{ group.creator.firstName }} {{ group.creator.lastName }}</span>
-                        </div>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 </div>

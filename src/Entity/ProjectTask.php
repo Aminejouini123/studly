@@ -3,11 +3,16 @@
 namespace App\Entity;
 
 use App\Repository\ProjectTaskRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProjectTaskRepository::class)]
 class ProjectTask
 {
+    public const STATUS_TO_DO = 'TO_DO';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_DONE = 'DONE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -24,6 +29,15 @@ class ProjectTask
 
     #[ORM\ManyToOne(inversedBy: 'projectTasks')]
     private ?Project $project = null;
+
+    #[ORM\ManyToOne(inversedBy: 'assignedProjectTasks')]
+    private ?User $assignedUser = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deadline = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
 
     public function getId(): ?int
     {
@@ -74,6 +88,42 @@ class ProjectTask
     public function setProject(?Project $project): static
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): static
+    {
+        $this->assignedUser = $assignedUser;
+
+        return $this;
+    }
+
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(?\DateTimeInterface $deadline): static
+    {
+        $this->deadline = $deadline;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }

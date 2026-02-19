@@ -7,9 +7,7 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Group>
- */
+
 class GroupRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -17,9 +15,7 @@ class GroupRepository extends ServiceEntityRepository
         parent::__construct($registry, Group::class);
     }
 
-    /**
-     * Find all groups created by a specific user
-     */
+    
     public function findByCreator(User $creator): array
     {
         return $this->createQueryBuilder('g')
@@ -31,9 +27,7 @@ class GroupRepository extends ServiceEntityRepository
         ;
     }
 
-    /**
-     * Find all groups ordered by creation date
-     */
+   
     public function findAllOrderedByCreation(): array
     {
         return $this->createQueryBuilder('g')
@@ -43,9 +37,7 @@ class GroupRepository extends ServiceEntityRepository
         ;
     }
 
-    /**
-     * Find all groups sorted by a specific field
-     */
+    
     public function findAllSorted(string $sortField, string $direction = 'ASC'): array
     {
         $validFields = ['category', 'createdAt', 'capacity', 'id'];
@@ -59,9 +51,7 @@ class GroupRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Search groups by category
-     */
+    
     public function searchByCategory(string $category): array
     {
         return $this->createQueryBuilder('g')
@@ -74,28 +64,5 @@ class GroupRepository extends ServiceEntityRepository
     }
 
 
-    //    /**
-//     * @return Group[] Returns an array of Group objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('g.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-    //    public function findOneBySomeField($value): ?Group
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    
 }
