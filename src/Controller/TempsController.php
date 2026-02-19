@@ -130,5 +130,16 @@ final class TempsController extends AbstractController
         return $this->redirectToRoute('app_temps');
     }
 
+    #[Route('/temps/calendar', name: 'app_temps_calendar')]
+    public function calendar(EventRepository $eventRepository): Response
+    {
+        $user = $this->getUser();
+        $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+
+        return $this->render('temps/calendar.html.twig', [
+            'events' => $events,
+        ]);
+    }
+
 
 }
