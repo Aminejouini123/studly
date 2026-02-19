@@ -1,0 +1,424 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Mon Calendrier - Student Hub{% endblock %}
+
+{% block content %}
+<style>
+/* Notion Calendar Styles */
+.notion-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+    min-height: 80vh;
+    background: linear-gradient(135deg, #f5f9fd 0%, #eef4f9 100%);
+}
+.notion-container {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    max-width: 1200px;
+    align-items: flex-start;
+}
+.notion-calendar {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 700px;
+    padding: 24px 20px 20px;
+    border: 1px solid #e9e9e9;
+    flex-shrink: 0;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+.calendar-header h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #1f1f1f;
+    margin: 0;
+}
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+.nav-buttons button {
+    background: white;
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #4a4a4a;
+    transition: background 0.15s;
+}
+.nav-buttons button:hover {
+    background: #f1f1f1;
+    border-color: #c6c6c6;
+}
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #787878;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.day-cell {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 6px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #1f1f1f;
+    cursor: pointer;
+    border: 1px solid transparent;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transition: background 0.1s, border-color 0.1s;
+}
+.day-cell:hover {
+    background: #f4f5f7;
+    border-color: #d0d4dc;
+}
+.day-cell.today {
+    background: #f0f2f5;
+    border: 1px solid #a0aec0;
+}
+.day-cell.empty {
+    background: transparent;
+    cursor: default;
+    border-color: transparent;
+}
+.day-cell.empty:hover {
+    background: transparent;
+    border-color: transparent;
+}
+.day-number {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+.event-dot {
+    width: 6px;
+    height: 6px;
+    background: #3b82f6;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+.events-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e9e9e9;
+    padding: 20px;
+    flex-grow: 1;
+    min-width: 250px;
+    height: fit-content;
+}
+.events-panel h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1f1f1f;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+.events-panel #selectedDateTitle {
+    color: #3b82f6;
+    font-weight: 400;
+}
+.event-item {
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.event-item .event-title {
+    font-weight: 500;
+}
+.event-item .event-desc {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 2px;
+}
+.delete-event-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0 4px;
+}
+.delete-event-btn:hover {
+    color: #e00;
+}
+.no-events {
+    color: #a0a0a0;
+    font-style: italic;
+    padding: 10px 0;
+    text-align: center;
+}
+.footer-note {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    text-align: right;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 14px;
+}
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #0059A9;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.back-btn:hover {
+    text-decoration: underline;
+}
+</style>
+
+<div class="notion-wrapper">
+    <div style="width:100%; max-width:1200px;">
+        <a href="{{ path('app_temps') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Retour à la gestion du temps
+        </a>
+        
+        <div class="notion-container">
+            <div class="notion-calendar">
+                <div class="calendar-header">
+                    <h2 id="monthYearDisplay"></h2>
+                    <div class="nav-buttons">
+                        <button id="prevMonthBtn" aria-label="Mois précédent">←</button>
+                        <button id="nextMonthBtn" aria-label="Mois suivant">→</button>
+                    </div>
+                </div>
+                <div class="weekdays">
+                    <div>lun</div>
+                    <div>mar</div>
+                    <div>mer</div>
+                    <div>jeu</div>
+                    <div>ven</div>
+                    <div>sam</div>
+                    <div>dim</div>
+                </div>
+                <div class="days-grid" id="daysGrid"></div>
+                <div class="footer-note">
+                    ⚡ Clic pour voir les détails
+                </div>
+            </div>
+            <div class="events-panel">
+                <h3>Événements du <span id="selectedDateTitle"></span></h3>
+                <div id="eventsListPanel"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Notion Calendar Logic
+(function() {
+    // Inject events from Twig
+    const events = {};
+    {% for event in events %}
+        {% if event.date %}
+            var dKey = "{{ event.date|date('Y-m-d') }}";
+            if (!events[dKey]) events[dKey] = [];
+            events[dKey].push({
+                id: "{{ event.id }}",
+                title: "{{ event.title|e('js') }}",
+                description: "{{ event.description|e('js') }}",
+                deleteUrl: "{{ path('app_temps_delete', {id: event.id}) }}",
+                csrfToken: "{{ csrf_token('delete' ~ event.id) }}"
+            });
+        {% endif %}
+    {% endfor %}
+
+    // Date actuelle
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    // Éléments DOM
+    const monthYearDisplay = document.getElementById('monthYearDisplay');
+    const daysGrid = document.getElementById('daysGrid');
+    const prevBtn = document.getElementById('prevMonthBtn');
+    const nextBtn = document.getElementById('nextMonthBtn');
+    const selectedDateTitle = document.getElementById('selectedDateTitle');
+    const eventsListDiv = document.getElementById('eventsListPanel');
+
+    // Mois en français
+    const monthNames = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+
+    // Helper : nombre de jours dans un mois
+    function getDaysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+    }
+
+    // Helper : index du premier jour (0 = lundi)
+    function getFirstDayIndex(year, month) {
+        let day = new Date(year, month, 1).getDay(); // 0 dim, 1 lun...
+        return day === 0 ? 6 : day - 1;
+    }
+
+    // Helper : format YYYY-MM-DD
+    function formatDate(year, month, day) {
+        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    // Helper : vérifier si une date est aujourd'hui
+    function isToday(year, month, day) {
+        const d = new Date();
+        return year === d.getFullYear() && month === d.getMonth() && day === d.getDate();
+    }
+
+    // Afficher les événements d'une date dans le panneau latéral
+    function displayEventsForDate(dateKey) {
+        if (!dateKey) {
+            if(selectedDateTitle) selectedDateTitle.textContent = '';
+            if(eventsListDiv) eventsListDiv.innerHTML = '<div class="no-events">Sélectionnez un jour</div>';
+            return;
+        }
+        // Extraire et afficher la date lisible
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const formatted = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if(selectedDateTitle) selectedDateTitle.textContent = formatted;
+
+        const dayEvents = events[dateKey] || [];
+        if (dayEvents.length === 0) {
+            if(eventsListDiv) eventsListDiv.innerHTML = '<div class="no-events">Aucun événement</div>';
+            return;
+        }
+
+        let html = '';
+        dayEvents.forEach(ev => {
+            html += `
+                <div class="event-item" data-event-id="${ev.id}" data-date="${dateKey}">
+                    <div>
+                        <div class="event-title">${ev.title}</div>
+                        ${ev.description ? `<div class="event-desc">${ev.description}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        if(eventsListDiv) eventsListDiv.innerHTML = html;
+    }
+
+    // Rendu du calendrier
+    function renderCalendar() {
+        if(!monthYearDisplay || !daysGrid) return;
+        
+        monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+        const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+        const firstDayIndex = getFirstDayIndex(currentYear, currentMonth);
+
+        let gridHtml = '';
+
+        // Cellules vides avant le 1er jour
+        for (let i = 0; i < firstDayIndex; i++) {
+            gridHtml += `<div class="day-cell empty"></div>`;
+        }
+
+        // Jours du mois
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateKey = formatDate(currentYear, currentMonth, d);
+            const hasEvent = events.hasOwnProperty(dateKey) && events[dateKey].length > 0;
+            const todayClass = isToday(currentYear, currentMonth, d) ? 'today' : '';
+            const eventDot = hasEvent ? '<div class="event-dot"></div>' : '';
+
+            gridHtml += `
+                <div class="day-cell ${todayClass}" data-date="${dateKey}">
+                    <span class="day-number">${d}</span>
+                    ${eventDot}
+                </div>
+            `;
+        }
+
+        // Compléter pour avoir 6 lignes (42 cellules) – maintient la hauteur
+        const totalCells = Math.ceil((firstDayIndex + daysInMonth) / 7) * 7;
+        const remaining = totalCells - (firstDayIndex + daysInMonth);
+        for (let i = 0; i < remaining; i++) {
+            gridHtml += `<div class="day-cell empty"></div>`;
+        }
+
+        daysGrid.innerHTML = gridHtml;
+
+        // Ajouter les écouteurs
+        document.querySelectorAll('.day-cell:not(.empty)').forEach(cell => {
+            // Clic simple : afficher les événements du jour
+            cell.addEventListener('click', function(e) {
+                const date = this.dataset.date;
+                displayEventsForDate(date);
+            });
+        });
+    }
+
+    // Navigation mois précédent
+    function goToPrevMonth() {
+        if (currentMonth === 0) {
+            currentMonth = 11;
+            currentYear -= 1;
+        } else {
+            currentMonth -= 1;
+        }
+        renderCalendar();
+        displayEventsForDate(null);
+    }
+
+    // Navigation mois suivant
+    function goToNextMonth() {
+        if (currentMonth === 11) {
+            currentMonth = 0;
+            currentYear += 1;
+        } else {
+            currentMonth += 1;
+        }
+        renderCalendar();
+        displayEventsForDate(null);
+    }
+
+    if(prevBtn) prevBtn.addEventListener('click', goToPrevMonth);
+    if(nextBtn) nextBtn.addEventListener('click', goToNextMonth);
+
+    // Initialisation
+    renderCalendar();
+    
+    // Si aujourd'hui a des événements, les afficher
+    const todayKey = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+    if (events[todayKey]) {
+        displayEventsForDate(todayKey);
+    }
+})();
+</script>
+{% endblock %}

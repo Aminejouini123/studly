@@ -19,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class TempsController extends AbstractController
 {
     #[Route('/', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function index(EventRepository $eventRepository): Response
     {
         return $this->render('admin/temps/index.html.twig', [
