@@ -19,7 +19,11 @@ final class Version20260209120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // Check if columns don't already exist before adding them
+        // Only add columns if the table exists
+        if (!$schema->hasTable('group')) {
+            return;
+        }
+        
         $table = $schema->getTable('group');
         
         if (!$table->hasColumn('created_at')) {

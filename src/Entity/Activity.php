@@ -51,6 +51,12 @@ class Activity
     #[ORM\ManyToOne(inversedBy: 'activities')]
     private ?Course $course = null;
 
+    #[ORM\ManyToOne(inversedBy: 'assignedActivities')]
+    private ?User $assignedUser = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -160,6 +166,30 @@ class Activity
     public function setCourse(?Course $course): static
     {
         $this->course = $course;
+
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): static
+    {
+        $this->assignedUser = $assignedUser;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }
