@@ -33,3 +33,7 @@ services:
             $model: '%openrouter.model%'
             $appUrl: '%openrouter.app_url%'
             $appTitle: '%openrouter.app_title%'
+
+    App\Service\FaceRecognitionService:
+        arguments:
+            $faceApiUrl: '%env(FACE_API_URL)%'
