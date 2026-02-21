@@ -591,7 +591,22 @@
                 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <input type="submit" value="Login" class="btn solid" />
+                <div style="display: flex; gap: 10px; width: 100%; max-width: 380px; margin: 12px 0;">
+                    <input type="submit" value="Login" class="btn solid" style="margin: 0; flex: 1;" />
+                    <button type="button" id="toggle-face-login" class="btn solid" style="margin: 0; flex: 1; background: #0080ff;">
+                        <i class="fas fa-expand-scan"></i> Face ID
+                    </button>
+                </div>
+
+                <!-- Face Login Container -->
+                <div id="face-login-container" style="display: none; width: 100%; max-width: 380px; margin-bottom: 15px; text-align: center;">
+                    <div id="face-login-video-wrapper" style="position: relative; border-radius: 15px; overflow: hidden; border: 2px solid rgba(0, 198, 255, 0.5);">
+                        <video id="face-login-video" width="100%" height="auto" autoplay muted></video>
+                    </div>
+                    <div id="face-login-feedback" style="margin-top: 10px; font-size: 0.9rem; color: #fff; font-weight: 500;">
+                        Initializing Face ID...
+                    </div>
+                </div>
                 
                 <p class="social-text">Or Sign in with social platforms</p>
                 <div class="social-media">
@@ -748,6 +763,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const sign_in_btn = document.querySelector("#sign-in-btn");
@@ -772,6 +788,110 @@
                 container.classList.add("sign-up-mode");
             }
         {% endif %}
+
+        // Face ID Login Logic
+        const toggleFaceLogin = document.getElementById('toggle-face-login');
+        const faceLoginContainer = document.getElementById('face-login-container');
+        const faceLoginVideo = document.getElementById('face-login-video');
+        const faceLoginFeedback = document.getElementById('face-login-feedback');
+        let faceLoginStream = null;
+        let scanInterval = null;
+        let isAuthenticating = false;
+
+        if (toggleFaceLogin) {
+            toggleFaceLogin.addEventListener('click', async () => {
+                if (faceLoginContainer.style.display === 'none') {
+                    faceLoginContainer.style.display = 'block';
+                    toggleFaceLogin.disabled = true;
+                    toggleFaceLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+                    
+                    try {
+                        faceLoginFeedback.innerHTML = 'Loading AI Models...';
+                        await Promise.all([
+                            faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+                            faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+                            faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+                        ]);
+
+                        faceLoginFeedback.innerHTML = 'Starting camera...';
+                        faceLoginStream = await navigator.mediaDevices.getUserMedia({ video: {} });
+                        faceLoginVideo.srcObject = faceLoginStream;
+
+                        faceLoginVideo.onloadedmetadata = () => {
+                            faceLoginFeedback.innerHTML = '<span style="color: #4facfe;">Scanning for face...</span>';
+                            toggleFaceLogin.innerHTML = '<i class="fas fa-times"></i> Cancel Face ID';
+                            toggleFaceLogin.disabled = false;
+                            toggleFaceLogin.style.background = '#ff4757';
+                            
+                            // Start auto-scan every 2 seconds
+                            scanInterval = setInterval(scanFace, 2000);
+                        };
+
+                    } catch (err) {
+                        console.error(err);
+                        faceLoginFeedback.innerHTML = '<span style="color: #ff4757;">Failed to access camera or models.</span>';
+                        toggleFaceLogin.innerHTML = '<i class="fas fa-expand-scan"></i> Face ID';
+                        toggleFaceLogin.disabled = false;
+                        toggleFaceLogin.style.background = '#0080ff';
+                    }
+                } else {
+                    // Cancel Face ID
+                    stopFaceLogin();
+                }
+            });
+        }
+
+        function stopFaceLogin() {
+            if (scanInterval) clearInterval(scanInterval);
+            if (faceLoginStream) {
+                faceLoginStream.getTracks().forEach(track => track.stop());
+            }
+            faceLoginContainer.style.display = 'none';
+            toggleFaceLogin.innerHTML = '<i class="fas fa-expand-scan"></i> Face ID';
+            toggleFaceLogin.style.background = '#0080ff';
+            isAuthenticating = false;
+        }
+
+        async function scanFace() {
+            if (isAuthenticating) return;
+
+            try {
+                const detection = await faceapi.detectSingleFace(faceLoginVideo).withFaceLandmarks().withFaceDescriptor();
+                if (!detection) return; // Silent fail, keep trying
+
+                // Face detected, attempt login
+                isAuthenticating = true;
+                faceLoginFeedback.innerHTML = '<span style="color: #fee140;"><i class="fas fa-spinner fa-spin"></i> Verifying Face ID...</span>';
+
+                const response = await fetch('{{ path('app_face_login') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        descriptor: Array.from(detection.descriptor)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    faceLoginFeedback.innerHTML = `<span style="color: #43e97b;"><i class="fas fa-check-circle"></i> Match Found (${data.confidence}%). Redirecting...</span>`;
+                    clearInterval(scanInterval);
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000);
+                } else {
+                    faceLoginFeedback.innerHTML = `<span style="color: #ff4757;"><i class="fas fa-times-circle"></i> ${data.error || 'Face not recognized.'}</span>`;
+                    isAuthenticating = false; // Allow retrying, wait for next interval
+                }
+
+            } catch (err) {
+                console.error(err);
+                faceLoginFeedback.innerHTML = '<span style="color: #ff4757;"><i class="fas fa-exclamation-triangle"></i> Error during verification.</span>';
+                isAuthenticating = false;
+            }
+        }
     });
 </script>
 {% endblock %}

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+numpy
+scipy
+sqlalchemy
+pymysql
+python-dotenv
+slowapi
+pydantic

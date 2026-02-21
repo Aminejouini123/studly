@@ -47,6 +47,8 @@ security:
         - { path: ^/back, roles: ROLE_ADMIN }
         - { path: ^/front, roles: ROLE_ETUDIANT }
         - { path: ^/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/face/login, roles: PUBLIC_ACCESS }
+        - { path: ^/face/register, roles: ROLE_USER }
 
 when@test:
     security:
