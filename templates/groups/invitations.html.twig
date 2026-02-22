@@ -1,0 +1,34 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Mes Invitations{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+    <h1 style="margin-bottom: 2rem; color: #1e293b; font-weight: 700;">Mes Invitations en attente</h1>
+
+    {% for invitation in invitations %}
+        <div class="glass-card" style="background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 14px rgba(0,0,0,0.05); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9;">
+            <div>
+                <h3 style="margin: 0; color: #0059A9; font-size: 1.2rem;">Invitation pour {{ invitation.group.category }}</h3>
+                <p style="margin: 5px 0 0; color: #64748b; font-size: 0.95rem;">
+                    Envoyée par <strong>{{ invitation.sender.firstName }} {{ invitation.sender.lastName }}</strong> le {{ invitation.createdAt|date('d/m/Y') }}
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <form action="{{ path('app_groups_invitation_accept', {id: invitation.id}) }}" method="POST">
+                    <button type="submit" style="background: #22c55e; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">Accepter</button>
+                </form>
+                <form action="{{ path('app_groups_invitation_refuse', {id: invitation.id}) }}" method="POST">
+                    <button type="submit" style="background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">Refuser</button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="glass-card" style="text-align: center; padding: 3rem;">
+            <i class="fas fa-envelope-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 1rem;"></i>
+            <p style="color: #64748b;">Vous n'avez aucune invitation en attente.</p>
+            <a href="{{ path('app_groups_index') }}" style="color: #0059A9; font-weight: 600; text-decoration: none;">Retourner aux groupes</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

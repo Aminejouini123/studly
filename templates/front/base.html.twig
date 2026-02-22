@@ -402,6 +402,12 @@
                     <span>Groups</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ path('app_groups_invitations') }}" class="{{ app.current_route == 'app_groups_invitations' ? 'active' : '' }}">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <span>Invitations</span>
+                </a>
+            </li>
             <li class="nav-item" style="margin-top: auto;">
                 <a href="{{ path('app_logout') }}">
                     <i class="fas fa-sign-out-alt"></i>
@@ -420,10 +426,18 @@
                 <input type="text" id="event-search-input" placeholder="Search for events...">
             </div>
             <div class="user-actions">
-                <div class="icon-btn">
+                <a href="{{ path('app_groups_invitations') }}" class="icon-btn" title="Mes Invitations">
                     <i class="fas fa-bell"></i>
-                    <span class="notification-dot"></span>
-                </div>
+                    {% if app.user and app.user.receivedInvitations|filter(i => i.status == 'PENDING')|length > 0 %}
+                        <span class="notification-dot"></span>
+                    {% endif %}
+                </a>
+                <a href="{{ path('app_recommendations') }}" class="icon-btn" title="AI Recommendations">
+                    <i class="fas fa-robot"></i>
+                    {% if app.user and app.user.notifications|filter(n => not n.isRead and n.content starts with '[AI]')|length > 0 %}
+                        <span class="notification-dot" style="background:#00c6ff; border-color: #fff;"></span>
+                    {% endif %}
+                </a>
                 <div class="profile-card" onclick="window.location.href='{{ path('app_user_profile') }}'">
                     <div class="avatar">
                         {% if app.user and app.user.profilePicture %}
