@@ -3,7 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Group;
-use App\Entity\MemberGroup;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -39,10 +38,6 @@ class GroupType extends AbstractType
                     new Assert\NotBlank(),
                     new Assert\Length(['min' => 2, 'max' => 255]),
                 ],
-            ])
-            ->add('memberGroup', EntityType::class, [
-                'class' => MemberGroup::class,
-                'choice_label' => 'id',
             ])
         ;
     }

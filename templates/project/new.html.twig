@@ -1,0 +1,95 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Nouveau Projet - {{ group.category }}{% endblock %}
+
+{% block content %}
+<div class="course-form-container">
+    <div class="form-header">
+        <div style="margin-bottom: 20px;">
+            <a href="{{ path('app_groups_show', {id: group.id}) }}" class="btn-back-custom">
+                <i class="fas fa-arrow-left"></i> Retour au groupe
+            </a>
+        </div>
+        <div class="header-content">
+            <h1 class="page-title">Créer un Nouveau Projet</h1>
+            <p class="page-subtitle">Définissez les objectifs et les ressources pour votre équipe</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'class': 'course-form', 'novalidate': true}}) }}
+
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-briefcase"></i> Détails du Projet</h3>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    {{ form_label(form.title, 'Titre du Projet') }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'ex: Développement Landing Page'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="form-group full-width">
+                    {{ form_label(form.description, 'Description') }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 4}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.status, 'Statut') }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.status) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.type, 'Type de Projet') }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-input', 'placeholder': 'ex: Web, Design, Rapport'}}) }}
+                    {{ form_errors(form.type) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.deadline, 'Date Limite') }}
+                    {{ form_widget(form.deadline, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.deadline) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.resource, 'Lien vers les ressources') }}
+                    {{ form_widget(form.resource, {'attr': {'class': 'form-input', 'placeholder': 'https://...'}}) }}
+                    {{ form_errors(form.resource) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-plus-circle"></i> Créer le Projet
+            </button>
+            <a href="{{ path('app_groups_show', {id: group.id}) }}" class="btn-secondary-custom">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<style>
+    .course-form-container { padding: 0; background-color: #f8f9fa; min-height: 100vh; padding-bottom: 4rem; padding-top: 2rem; }
+    .form-header { display: flex; flex-direction: column; background: radial-gradient(circle at 10% 20%, rgb(0, 89, 169) 0%, rgb(0, 31, 63) 90%); padding: 3rem 2rem 8rem 2rem; color: white; margin: 0 auto; width: 95%; max-width: 1250px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 51, 102, 0.15); }
+    .form-header > div:first-child { margin-bottom: 1.5rem; }
+    .header-content { text-align: center; max-width: 800px; margin: 0 auto; }
+    .header-content h1 { font-size: 2.5rem; color: #fff; margin-bottom: 0.8rem; font-weight: 700; }
+    .page-subtitle { color: rgba(255,255,255,0.9); font-size: 1.1rem; }
+    .btn-back-custom { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; }
+    .btn-back-custom:hover { color: #fff; }
+    .form-card { background: #fff; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); padding: 4rem; width: 95%; max-width: 1250px; margin: -5rem auto 0 auto; position: relative; z-index: 10; border: 1px solid rgba(0,0,0,0.02); }
+    .form-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #00c6ff, #0072ff); border-radius: 20px 20px 0 0; }
+    .form-section { border-bottom: 1px solid #e9ecef; padding-bottom: 2.5rem; margin-bottom: 1rem; }
+    .section-title { font-size: 1.25rem; color: #003366; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.8rem; border-left: 4px solid #00c6ff; padding-left: 0.5rem; }
+    .section-title i { color: #00c6ff; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem 3rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.7rem; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label { font-weight: 600; color: #344767; font-size: 0.95rem; }
+    .form-input { padding: 1rem 1.2rem; border: 1px solid #d2d6da; border-radius: 12px; font-size: 1rem; }
+    .form-input:focus { outline: none; border-color: #0059A9; box-shadow: 0 0 0 3px rgba(0, 89, 169, 0.1); }
+    .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+    .btn-submit { padding: 1rem 2rem; background: #0059A9; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-submit:hover { background: #001F3F; }
+    .btn-secondary-custom { padding: 1rem 2rem; border: 1px solid #d2d6da; border-radius: 12px; color: #344767; text-decoration: none; font-weight: 600; }
+    .btn-secondary-custom:hover { background: #f8f9fa; }
+</style>
+{% endblock %}

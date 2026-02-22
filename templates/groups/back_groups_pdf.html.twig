@@ -38,7 +38,7 @@
                     <small>{{ group.creator.email }}</small>
                 </td>
                 <td>{{ group.createdAt|date('d/m/Y H:i') }}</td>
-                <td>{{ group.memberGroup ? 'Assigned' : 'Unassigned' }}</td>
+                <td>{{ not group.members.isEmpty ? 'Assigned' : 'Unassigned' }}</td>
             </tr>
         {% endfor %}
         </tbody>
