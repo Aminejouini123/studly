@@ -16,6 +16,8 @@ class ProjectTaskType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $group = $options['group'];
+
         $builder
             ->add('title')
             ->add('description')
@@ -37,6 +39,15 @@ class ProjectTaskType extends AbstractType
                 },
                 'placeholder' => 'Assign to...',
                 'required' => false,
+                'query_builder' => function (\Doctrine\ORM\EntityRepository $er) use ($group) {
+                    return $er->createQueryBuilder('u')
+                        ->join('u.groups', 'g')
+                        ->where('g.id = :group_id')
+                        ->orWhere('u.id = :creator_id')
+                        ->setParameter('group_id', $group ? $group->getId() : 0)
+                        ->setParameter('creator_id', $group ? $group->getCreator()->getId() : 0)
+                        ->distinct();
+                },
             ])
             ->add('project', EntityType::class, [
                 'class' => Project::class,
@@ -49,6 +60,7 @@ class ProjectTaskType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ProjectTask::class,
+            'group' => null,
         ]);
     }
 }

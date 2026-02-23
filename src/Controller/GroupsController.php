@@ -26,15 +26,25 @@ final class GroupsController extends AbstractController
      */
     #[Route('/', name: 'app_groups_index', methods: ['GET'])]
     #[IsGranted('ROLE_ETUDIANT')]
-    public function index(GroupRepository $groupRepository): Response
+    public function index(GroupRepository $groupRepository, Request $request): Response
     {
         $user = $this->getUser();
-        
-        $groups = $groupRepository->findByCreator($user);
+        $searchTerm = $request->query->get('q');
+
+        if ($searchTerm) {
+            // For search, we might want to see all groups OR just ours?
+            // The story says "Un étudiant peut... rechercher et lister des groupes".
+            // Let's assume they search within their own groups first, or globally?
+            // Usually search is global. Let's make it global but filter by creator if no search.
+            $groups = $groupRepository->searchByCategory($searchTerm);
+        } else {
+            $groups = $groupRepository->findByCreator($user);
+        }
+
         $assignedCount = 0;
         $totalCapacity = 0;
         foreach ($groups as $g) {
-            if ($g->getMemberGroup() !== null) {
+            if (!$g->getMembers()->isEmpty()) {
                 $assignedCount++;
             }
             $totalCapacity += $g->getCapacity();
@@ -44,6 +54,7 @@ final class GroupsController extends AbstractController
             'groups' => $groups,
             'assigned_count' => $assignedCount,
             'total_capacity' => $totalCapacity,
+            'search_term' => $searchTerm,
         ]);
     }
 
@@ -139,7 +150,7 @@ final class GroupsController extends AbstractController
                 $group->getCapacity(),
                 $group->getCreator() ? $group->getCreator()->getEmail() : 'Unknown',
                 $group->getCreatedAt() ? $group->getCreatedAt()->format('Y-m-d H:i:s') : '',
-                $group->getMemberGroup() ? 'Assigned' : 'Unassigned' // Simplified for now as MemberGroup seems to be 1-to-1 or similar
+                !$group->getMembers()->isEmpty() ? 'Assigned' : 'Unassigned'
             ]);
         }
         

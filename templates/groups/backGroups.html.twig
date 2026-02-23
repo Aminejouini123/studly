@@ -52,11 +52,6 @@
                                 {{ form_widget(form.capacity, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 30'}}) }}
                                 {{ form_errors(form.capacity) }}
                             </div>
-                            <div class="form-group">
-                                {{ form_label(form.memberGroup, 'Assigned Member', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.memberGroup, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_errors(form.memberGroup) }}
-                            </div>
                         </div>
 
                         <div class="form-group">
@@ -141,7 +136,7 @@
                             </td>
                             <td>{{ group.createdAt|date('d/m/Y H:i') }}</td>
                             <td>
-                                {% if group.memberGroup %}
+                                {% if not group.members.isEmpty %}
                                     <span class="status-badge status-active">Assigned</span>
                                 {% else %}
                                     <span class="status-badge status-pending">Unassigned</span>
