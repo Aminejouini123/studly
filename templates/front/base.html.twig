@@ -432,6 +432,12 @@
                         <span class="notification-dot"></span>
                     {% endif %}
                 </a>
+                <a href="{{ path('app_recommendations') }}" class="icon-btn" title="AI Recommendations">
+                    <i class="fas fa-robot"></i>
+                    {% if app.user and app.user.notifications|filter(n => not n.isRead and n.content starts with '[AI]')|length > 0 %}
+                        <span class="notification-dot" style="background:#00c6ff; border-color: #fff;"></span>
+                    {% endif %}
+                </a>
                 <div class="profile-card" onclick="window.location.href='{{ path('app_user_profile') }}'">
                     <div class="avatar">
                         {% if app.user and app.user.profilePicture %}
