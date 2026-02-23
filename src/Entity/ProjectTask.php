@@ -32,6 +32,7 @@ class ProjectTask
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'projectTasks')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(inversedBy: 'assignedProjectTasks')]
@@ -42,6 +43,15 @@ class ProjectTask
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $completedAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $deliverable = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $grade = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $attachment = null;
 
     public function getId(): ?int
     {
@@ -128,6 +138,42 @@ class ProjectTask
     public function setCompletedAt(?\DateTimeInterface $completedAt): static
     {
         $this->completedAt = $completedAt;
+
+        return $this;
+    }
+
+    public function getDeliverable(): ?string
+    {
+        return $this->deliverable;
+    }
+
+    public function setDeliverable(?string $deliverable): static
+    {
+        $this->deliverable = $deliverable;
+
+        return $this;
+    }
+
+    public function getGrade(): ?int
+    {
+        return $this->grade;
+    }
+
+    public function setGrade(?int $grade): static
+    {
+        $this->grade = $grade;
+
+        return $this;
+    }
+
+    public function getAttachment(): ?string
+    {
+        return $this->attachment;
+    }
+
+    public function setAttachment(?string $attachment): static
+    {
+        $this->attachment = $attachment;
 
         return $this;
     }

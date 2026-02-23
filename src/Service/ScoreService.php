@@ -8,6 +8,8 @@ use App\Entity\Activity;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
+use Doctrine\Common\Collections\Collection;
+
 class ScoreService
 {
     private EntityManagerInterface $entityManager;
@@ -15,6 +17,17 @@ class ScoreService
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+    }
+
+    /**
+     * Reset scores for a collection of users
+     */
+    public function resetScores(Collection $users): void
+    {
+        foreach ($users as $user) {
+            $user->setScore(0);
+        }
+        $this->entityManager->flush();
     }
 
     /**

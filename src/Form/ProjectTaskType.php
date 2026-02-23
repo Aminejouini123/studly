@@ -40,13 +40,17 @@ class ProjectTaskType extends AbstractType
                 'placeholder' => 'Assign to...',
                 'required' => false,
                 'query_builder' => function (\Doctrine\ORM\EntityRepository $er) use ($group) {
-                    return $er->createQueryBuilder('u')
-                        ->join('u.groups', 'g')
-                        ->where('g.id = :group_id')
-                        ->orWhere('u.id = :creator_id')
-                        ->setParameter('group_id', $group ? $group->getId() : 0)
-                        ->setParameter('creator_id', $group ? $group->getCreator()->getId() : 0)
-                        ->distinct();
+                    $qb = $er->createQueryBuilder('u');
+                    if ($group) {
+                        return $qb
+                            ->leftJoin('u.memberGroups', 'mg')
+                            ->leftJoin('u.groups', 'cg')
+                            ->where('mg.id = :group_id')
+                            ->orWhere('cg.id = :group_id')
+                            ->setParameter('group_id', $group->getId())
+                            ->distinct();
+                    }
+                    return $qb;
                 },
             ])
             ->add('project', EntityType::class, [

@@ -19,7 +19,7 @@ class Message
     private ?User $sender = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Group $group = null;
 
     #[ORM\Column(type: Types::TEXT)]

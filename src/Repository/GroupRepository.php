@@ -27,6 +27,22 @@ class GroupRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * Find all groups where the user is either the creator OR a member
+     */
+    public function findUserGroups(User $user): array
+    {
+        return $this->createQueryBuilder('g')
+            ->leftJoin('g.members', 'm')
+            ->where('g.creator = :user')
+            ->orWhere('m.id = :user')
+            ->setParameter('user', $user)
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
    
     public function findAllOrderedByCreation(): array
     {
