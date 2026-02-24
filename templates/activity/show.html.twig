@@ -9,40 +9,32 @@
         <!-- Breadcrumb / Top Bar -->
         <div class="top-bar fade-in-down">
             <a href="{{ path('app_course_activities', {id: activity.course.id}) }}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back to Activities
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
-            <div class="top-actions">
-                <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="btn-icon-action edit" title="Edit">
-                    <i class="fas fa-pen"></i>
-                </a>
-                <form method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" onsubmit="return confirm('Confirm deletion?')" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
-                    <button type="submit" class="btn-icon-action delete" title="Delete">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </form>
+            <div class="top-actions" style="display: none;">
+                {# Actions moved to sidebar management card #}
             </div>
         </div>
 
-        <!-- Hero Header -->
+        <!-- Hero Header (Network Blue Design) -->
         <div class="hero-header fade-in-up">
             <div class="hero-content">
                 <div class="hero-meta">
-                    <span class="badge-pill status status-{{ activity.status == 'active' ? 'en-cours' : 'terminé' }}">
-                        {{ activity.status|upper }}
+                    <span class="badge-pill type">{{ activity.type|upper }}</span>
+                    <span class="badge-pill difficulty difficulty-{{ activity.difficulty|lower }}">
+                        <i class="fas fa-signal"></i> {{ activity.level }}
                     </span>
-                    <span class="badge-pill type">{{ activity.difficulty|upper }}</span>
+                    <span class="badge-pill status status-{{ activity.difficulty|lower }}">
+                        <i class="fas fa-layer-group"></i> {{ activity.difficulty }}
+                    </span>
                 </div>
                 <h1 class="hero-title">{{ activity.title }}</h1>
                 <div class="hero-info">
                     <div class="info-pill">
                         <i class="far fa-clock"></i> {{ activity.duration }} min
                     </div>
-                    <div class="info-pill">
-                        <i class="fas fa-layer-group"></i> {{ activity.level }}
-                    </div>
                     <div class="info-pill teacher">
-                        <i class="fas fa-chalkboard"></i> {{ activity.course.name }}
+                        <i class="fas fa-book-open"></i> {{ activity.course.name }}
                     </div>
                 </div>
             </div>
@@ -51,13 +43,12 @@
                 <div class="stat-ring">
                     <svg viewBox="0 0 36 36" class="circular-chart">
                         <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        {# Visual placeholder for progress or difficulty level if applicable #}
-                        {% set difficultyPercent = activity.difficulty == 'Difficile' ? 100 : (activity.difficulty == 'Moyen' ? 66 : 33) %}
-                        <path class="circle" stroke-dasharray="{{ difficultyPercent }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        {# Progress ring - for activity we can use duration ratio or just a fixed style #}
+                        <path class="circle" stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
                     <div class="stat-content">
-                        <span class="stat-value">{{ activity.difficulty|first|upper }}</span>
-                        <span class="stat-label">LEVEL</span>
+                        <span class="stat-value">{{ activity.duration }}</span>
+                        <span class="stat-label">MIN</span>
                     </div>
                 </div>
             </div>
@@ -68,117 +59,186 @@
             <!-- Left Column: Primary Content -->
             <div class="main-column">
                 
-                <!-- Description Card -->
-                <div class="glass-card">
+                <!-- Main Activity Card -->
+                <div class="glass-card resource-section">
                     <div class="card-header">
-                        <i class="fas fa-align-left icon-gradient"></i>
-                        <h2>Description</h2>
+                        <i class="fas {{ activity.type == 'quiz' ? 'fa-vial' : 'fa-book-reader' }} icon-gradient"></i>
+                        <h2>{{ activity.type == 'quiz' ? 'Interactive Assessment' : 'Learning Instructions' }}</h2>
                     </div>
                     <div class="card-body">
-                        <div class="description-text">
-                            {{ activity.description|nl2br }}
-                        </div>
-                    </div>
-                </div>
+                        {% if activity.instructions %}
+                            {% if activity.type == 'quiz' %}
+                                <div id="quiz-player" class="quiz-interface-v2" data-questions="{{ activity.instructions|e('html_attr') }}">
+                                    <!-- Quiz views -->
+                                    <div id="quiz-start-view" class="quiz-state-view">
+                                        <div class="quiz-hero-welcome">
+                                            <div class="welcome-badge">Assessment Available</div>
+                                            <h2>Assessment Session</h2>
+                                            <p>Validate your knowledge of <strong>{{ activity.title }}</strong>. Immediate scoring and analytical feedback included.</p>
+                                            <div class="quiz-benefit-row">
+                                                <div class="benefit"><i class="fas fa-bolt"></i> <span>Instant Results</span></div>
+                                                <div class="benefit"><i class="fas fa-brain"></i> <span>Expert Insights</span></div>
+                                            </div>
+                                            <button onclick="quizPlayer.start()" class="btn-launch-quiz-v3">
+                                                <span>Begin Session</span>
+                                                <i class="fas fa-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="quiz-question-view" class="quiz-state-view" style="display: none;">
+                                        <div class="quiz-navbar-v3">
+                                            <span id="question-counter" class="nav-counter">Question 1/X</span>
+                                            <div class="nav-progress-track"><div id="quiz-progress-fill" class="nav-progress-fill"></div></div>
+                                        </div>
+                                        <h3 id="question-text" class="question-title-v3"></h3>
+                                        <div id="options-container" class="options-layout-v3"></div>
+                                        
+                                        <div id="feedback-panel" class="feedback-toast-v3" style="display: none;">
+                                            <div class="toast-content">
+                                                <div class="toast-status"></div>
+                                                <p class="explanation-text"></p>
+                                            </div>
+                                            <button onclick="quizPlayer.next()" class="btn-proceed-v3">
+                                                Continue <i class="fas fa-angle-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
 
-                <!-- Instructions / Content Card -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <i class="fas fa-list-ol icon-gradient"></i>
-                        <h2>Instructions & Content</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="instruction-content">
-                            {% if activity.instructions %}
-                                {{ activity.instructions|nl2br }}
+                                    <div id="quiz-result-view" class="quiz-state-view" style="display: none;">
+                                        <div class="final-report-card-v3 slide-in-bottom">
+                                            <div class="result-header">
+                                                <div id="performance-badge" class="perf-badge">
+                                                    <i class="fas fa-certificate"></i>
+                                                    <span id="badge-text">COMPLETED</span>
+                                                </div>
+                                                <h3>Assessment Finalized</h3>
+                                            </div>
+
+                                            <div class="result-hud-v4">
+                                                <div class="accuracy-ring-container">
+                                                    <svg viewBox="0 0 100 100" class="accuracy-ring">
+                                                        <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+                                                        <circle id="accuracy-progress" class="ring-fill" cx="50" cy="50" r="45"></circle>
+                                                    </svg>
+                                                    <div class="accuracy-content">
+                                                        <span id="final-score" class="score-val">0</span>
+                                                        <span class="score-total">/ <span id="total-questions-count">0</span></span>
+                                                        <span class="accuracy-label">Accuracy</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <p id="perf-message" class="report-text-v4"></p>
+
+                                            <div class="report-actions-v4">
+                                                <button onclick="quizPlayer.start()" class="btn-outline-v4">
+                                                    <i class="fas fa-redo-alt"></i> Retake session
+                                                </button>
+                                                <a href="{{ path('app_course_activities', {id: activity.course.id}) }}" class="btn-primary-v4">
+                                                    <i class="fas fa-home"></i> Return dashboard
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             {% else %}
-                                <p class="empty-info-p">No specific instructions provided.</p>
+                                <div class="markdown-content">
+                                    {{ activity.instructions|nl2br }}
+                                </div>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Expected Output Card -->
-                {% if activity.expectedOutput %}
-                <div class="glass-card">
-                    <div class="card-header">
-                        <i class="fas fa-check-double icon-gradient"></i>
-                        <h2>Expected Output</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="expected-output-text">
-                            {{ activity.expectedOutput|nl2br }}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Hints Card -->
-                {% if activity.hints %}
-                <div class="glass-card hints-card">
-                    <div class="card-header">
-                        <i class="fas fa-lightbulb icon-gradient"></i>
-                        <h2>Helpful Hints</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="hints-text">
-                            <i class="fas fa-magic spark-icon"></i>
-                            {{ activity.hints|nl2br }}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Resources Card -->
-                {% if activity.link or activity.file %}
-                <div class="glass-card">
-                    <div class="card-header">
-                        <i class="fas fa-folder-open icon-gradient"></i>
-                        <h2>Resources</h2>
-                    </div>
-                    <div class="card-body resources-grid">
-                        {% if activity.link %}
-                            <a href="{{ activity.link }}" target="_blank" class="resource-tile link">
-                                <div class="tile-icon"><i class="fas fa-link"></i></div>
-                                <div class="tile-info">
-                                    <span class="tile-title">External Link</span>
-                                    <span class="tile-subtitle">Access resource</span>
-                                </div>
-                                <i class="fas fa-external-link-alt tile-arrow"></i>
-                            </a>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-file-signature"></i>
+                                <p>Detailed instructions for this activity are pending.</p>
+                            </div>
                         {% endif %}
-                        {% if activity.file %}
-                            <a href="{{ asset('uploads/activities/' ~ activity.file) }}" download class="resource-tile file">
-                                <div class="tile-icon"><i class="fas fa-file-pdf"></i></div>
-                                <div class="tile-info">
-                                    <span class="tile-title">Attached File</span>
-                                    <span class="tile-subtitle">Download document</span>
+                    </div>
+                </div>
+
+                <!-- Secondary Tabs (if applicable) -->
+                {% if activity.description or activity.hints or activity.expectedOutput %}
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-layer-group icon-gradient"></i>
+                        <h2>Additional Context</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="activity-desc-v3">{{ activity.description }}</p>
+                        
+                        {% if activity.hints %}
+                            <div class="expert-note-v3">
+                                <i class="fas fa-lightbulb"></i>
+                                <div class="note-text">
+                                    <strong>Professor's Tip:</strong>
+                                    <span>{{ activity.hints }}</span>
                                 </div>
-                                <i class="fas fa-download tile-arrow"></i>
-                            </a>
+                            </div>
+                        {% endif %}
+
+                        {% if activity.expectedOutput %}
+                            <div class="goal-box-v3">
+                                <i class="fas fa-bullseye"></i>
+                                <div class="goal-text">
+                                    <strong>Success Criteria:</strong>
+                                    <span>{{ activity.expectedOutput }}</span>
+                                </div>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
                 {% endif %}
-
             </div>
 
-            <!-- Right Column: Meta Info -->
+            <!-- Right Column: Sidebar Meta Info -->
             <div class="sidebar-column">
+                <!-- Management Card -->
+                <div class="glass-card sidebar-compact management-card">
+                    <h3 class="sidebar-heading">Workflow</h3>
+                    <div class="action-buttons-vertical">
+                        <a href="{{ path('app_activity_edit', {id: activity.id}) }}" class="sidebar-action-btn edit">
+                            <i class="fas fa-pen-nib"></i> Modify Details
+                        </a>
+                        <form id="delete-activity-form" method="POST" action="{{ path('app_activity_delete', {id: activity.id}) }}" style="width: 100%;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
+                            <button type="button" class="sidebar-action-btn delete" onclick="openDeleteModal()">
+                                <i class="fas fa-trash-alt"></i> Discard Activity
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Activity Info Card -->
                 <div class="glass-card sidebar-compact">
-                    <h3 class="sidebar-heading">Metadata</h3>
+                    <h3 class="sidebar-heading">Properties</h3>
                     <div class="meta-list">
-                         <div class="meta-row">
-                            <span class="meta-label">Activity ID</span>
+                        <div class="meta-row">
+                            <span class="meta-label">ID</span>
                             <span class="meta-value">#{{ activity.id }}</span>
                         </div>
                         <div class="meta-row">
-                            <span class="meta-label">Difficulty</span>
-                            <span class="meta-value">{{ activity.difficulty }}</span>
+                            <span class="meta-label">Type</span>
+                            <span class="meta-value">{{ activity.type|capitalize }}</span>
                         </div>
-                         <div class="meta-row">
-                            <span class="meta-label">Level</span>
-                            <span class="meta-value">{{ activity.level }}</span>
+                        <div class="meta-row">
+                            <span class="meta-label">Duration</span>
+                            <span class="meta-value">{{ activity.duration }}m</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Difficulty</span>
+                            <span class="meta-value status-{{ activity.difficulty|lower }}">{{ activity.difficulty }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Connector -->
+                <div class="glass-card sidebar-compact">
+                    <h3 class="sidebar-heading">Context</h3>
+                    <div class="course-connector-box">
+                        <div class="course-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="course-link-info">
+                            <span class="course-lbl">Associated Course</span>
+                            <a href="{{ path('app_course_show', {id: activity.course.id}) }}" class="course-title-link">{{ activity.course.name }}</a>
                         </div>
                     </div>
                 </div>
@@ -188,30 +248,20 @@
 </div>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
 
     :root {
-        --primary: #0059A9; /* Sidebar Blue */
+        --primary: #0059A9;
         --primary-dark: #004481;
         --secondary: #64748b;
         --accent: #2563eb;
-        --bg-grad-1: #f3f6ff;
-        --bg-grad-2: #ffffff;
         --glass-bg: rgba(255, 255, 255, 0.95);
-        --glass-border: rgba(255, 255, 255, 0.6);
-        --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
-        --shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.08);
         --radius-lg: 24px;
         --radius-md: 16px;
+        --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-        font-family: 'Outfit', sans-serif;
-        background-color: #f8fafc;
-        color: #1e293b;
-    }
+    body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #1e293b; }
 
     .course-detail-container {
         min-height: 100vh;
@@ -223,459 +273,502 @@
         background-attachment: fixed;
     }
 
-    .detail-wrapper {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
+    .detail-wrapper { max-width: 1300px; margin: 0 auto; padding: 0 1rem; }
 
     /* Top Bar */
-    .top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
     .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        text-decoration: none;
-        color: var(--secondary);
-        font-weight: 500;
-        font-size: 0.95rem;
-        padding: 0.5rem 1rem;
-        background: white;
-        border-radius: 99px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--secondary);
+        font-weight: 500; font-size: 0.95rem; padding: 0.5rem 1rem; background: white; border-radius: 99px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: all 0.3s;
     }
+    .back-link:hover { transform: translateX(-4px); color: var(--primary); }
 
-    .back-link:hover {
-        transform: translateX(-4px);
-        color: var(--primary);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
-    .top-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    .btn-icon-action {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: none;
-        background: white;
-        color: var(--secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-icon-action:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-    .btn-icon-action.edit:hover { background: var(--primary); color: white; }
-    .btn-icon-action.delete:hover { background: #ef4444; color: white; }
-
-    /* Hero Header - Network Blue Design */
+    /* Hero Header */
     .hero-header {
         background: linear-gradient(135deg, var(--primary) 0%, #004481 100%);
-        border-radius: var(--radius-lg);
-        padding: 2.5rem 3rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 10px 25px -5px rgba(0, 89, 169, 0.4);
-        margin-bottom: 2.5rem;
-        position: relative;
-        overflow: hidden;
-        color: white;
+        border-radius: var(--radius-lg); padding: 2.5rem 3rem; display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(0, 89, 169, 0.4); margin-bottom: 2.5rem; position: relative; overflow: hidden; color: white;
     }
-
-    /* Network Pattern Overlay */
     .hero-header::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-image: 
-            radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-            radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
-        background-size: 30px 30px;
-        background-position: 0 0, 15px 15px;
-        opacity: 0.6;
-        z-index: 0;
+        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.6;
     }
+    .hero-content { flex: 1; position: relative; z-index: 1; }
+    .hero-title { font-size: 3rem; font-weight: 800; margin: 1rem 0; color: white; line-height: 1.1; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hero-meta { display: flex; gap: 0.75rem; }
+    .badge-pill { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.4rem 1rem; border-radius: 99px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); }
+    .badge-pill.difficulty { background: rgba(37, 99, 235, 0.2); }
+    .hero-info { display: flex; align-items: center; gap: 2rem; margin-top: 2rem; }
+    .info-pill { display: flex; align-items: center; gap: 0.75rem; color: rgba(255,255,255,0.95); font-weight: 500; }
 
-    /* Additional Glow Effect */
-    .hero-header::after {
-        content: '';
-        position: absolute;
-        width: 100%; height: 100%;
-        top: 0; left: 0;
-        background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 60%);
-        z-index: 0;
-    }
-
-    .hero-content {
-        flex: 1;
-        padding-right: 2rem;
-        position: relative;
-        z-index: 1;
-    }
-
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        margin: 1rem 0;
-        color: white;
-        line-height: 1.1;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .hero-meta {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        position: relative;
-        z-index: 1;
-    }
-
-    .badge-pill {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        padding: 0.4rem 1rem;
-        border-radius: 99px;
-        letter-spacing: 0.05em;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* Adjusted Badge Colors for Blue Background */
-    .badge-pill.type { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px); }
-    .badge-pill.status-en-cours { background: #dcfce7; color: #16a34a; }
-    .badge-pill.status-en-attente { background: #fff7ed; color: #c2410c; }
-    .badge-pill.status-terminé { background: rgba(255,255,255,0.9); color: var(--primary); }
-
-    .hero-info {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        margin-top: 2rem;
-        flex-wrap: wrap;
-        position: relative;
-        z-index: 1;
-    }
-
-    .info-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: rgba(255,255,255,0.95);
-        font-size: 1rem;
-        font-weight: 500;
-    }
-
-    .info-pill.teacher { color: white; font-weight: 600; }
-    .info-pill i { font-size: 1.1em; opacity: 0.9; color: white; }
-
-    /* Circular Stat - White Card Style */
-    .hero-stat {
-        position: relative;
-        z-index: 1;
-    }
-
-    .stat-ring {
-        width: 110px;
-        height: 110px;
-        position: relative;
-        background: white;
-        border-radius: 50%;
-        padding: 6px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-
-    .circular-chart {
-        display: block;
-        margin: 0 auto;
-        max-width: 100%;
-        max-height: 100%;
-    }
-
-    .circle-bg {
-        fill: none;
-        stroke: #e2e8f0;
-        stroke-width: 2.5;
-    }
-
-    .circle {
-        fill: none;
-        stroke: var(--primary); /* Blue stroke */
-        stroke-width: 2.5;
-        stroke-linecap: round;
-        animation: progress 1.5s ease-out forwards;
-    }
-
-    .stat-content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--primary); /* Blue text inside white circle */
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: var(--secondary);
-        letter-spacing: 0.05em;
-        margin-top: 4px;
-        text-transform: uppercase;
-    }
-
-    @keyframes progress {
-        0% { stroke-dasharray: 0 100; }
-    }
+    .hero-stat { position: relative; z-index: 1; }
+    .stat-ring { width: 110px; height: 110px; background: white; border-radius: 50%; padding: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 100%; }
+    .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 2.5; }
+    .circle { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-linecap: round; }
+    .stat-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; display: flex; flex-direction: column; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
+    .stat-label { font-size: 0.65rem; font-weight: 700; color: var(--secondary); letter-spacing: 0.05em; margin-top: 4px; text-transform: uppercase; }
 
     /* Content Grid */
-    .content-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
-    }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 2.8fr) minmax(300px, 1fr); gap: 2.5rem; align-items: start; }
+    .glass-card { background: white; border: 1px solid #f1f5f9; border-radius: var(--radius-md); padding: 2.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-soft); transition: 0.3s; }
+    .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
 
-    /* Glass Cards */
-    .glass-card {
-        background: white;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-        border-radius: var(--radius-md);
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        position: relative;
-        overflow: hidden;
+    .card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
+    .icon-gradient {
+        font-size: 1.5rem; color: var(--primary); background: #eff6ff; width: 48px; height: 48px;
+        display: flex; align-items: center; justify-content: center; border-radius: 12px;
     }
+    .card-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+    /* Quiz v3 styling */
+    .quiz-hero-welcome { text-align: center; padding: 3rem 1rem; }
+    .welcome-badge { display: inline-block; padding: 0.4rem 1rem; background: #eff6ff; color: var(--primary); border-radius: 100px; font-weight: 800; font-size: 0.75rem; margin-bottom: 1.5rem; }
+    .quiz-hero-welcome h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem; }
+    .quiz-hero-welcome p { font-size: 1.1rem; color: #64748b; margin-bottom: 2rem; }
+    .quiz-benefit-row { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2.5rem; }
+    .benefit { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #475569; }
+    .benefit i { color: #fbbf24; }
+
+    .btn-launch-quiz-v3 {
+        background: var(--primary); color: white; border: none; padding: 1rem 2.5rem; border-radius: 14px;
+        font-size: 1.1rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.75rem; transition: 0.3s;
+    }
+    .btn-launch-quiz-v3:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+    .question-title-v3 { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 2rem 0; line-height: 1.3; }
+    .options-layout-v3 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-option {
+        background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 12px;
+        text-align: left; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 1rem;
+    }
+    .btn-option:hover { border-color: var(--primary); background: #eff6ff; }
+    .btn-option.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
+    .btn-option.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+    .opt-alpha { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: var(--secondary); border: 1px solid #e2e8f0; }
+    .btn-option.correct .opt-alpha { background: #22c55e; color: white; border-color: #22c55e; }
+    .btn-option.wrong .opt-alpha { background: #ef4444; color: white; border-color: #ef4444; }
+
+    .quiz-navbar-v3 { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; }
+    .nav-counter { font-weight: 800; font-size: 0.85rem; color: var(--primary); }
+    .nav-progress-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+    .nav-progress-fill { height: 100%; background: var(--primary); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    .feedback-toast-v3 { margin-top: 2rem; padding: 1.5rem; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .feedback-toast-v3.correct { background: #f0fdf4; border-color: #dcfce7; }
+    .feedback-toast-v3.wrong { background: #fff1f2; border-color: #ffe4e6; }
+    .toast-status { font-weight: 800; margin-bottom: 0.5rem; }
+    .btn-proceed-v3 { background: #0f172a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 1rem; }
+
+    .final-report-card-v3 { text-align: center; padding: 2rem 1rem; }
     
-    .glass-card::top {
-        content: '';
-        position: absolute;
+    .result-header { margin-bottom: 2.5rem; }
+    .perf-badge { 
+        display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; 
+        background: #f1f5f9; color: #475569; border-radius: 99px; font-weight: 800; font-size: 0.75rem;
+        text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 0.05em; border: 1px solid #e2e8f0;
+    }
+    .perf-badge.master { background: #fefce8; color: #854d0e; border-color: #fef08a; }
+    .perf-badge.scholar { background: #f0fdf4; color: #166534; border-color: #dcfce7; }
+    
+    .result-hud-v4 { display: flex; justify-content: center; margin-bottom: 2.5rem; }
+    .accuracy-ring-container { position: relative; width: 180px; height: 180px; }
+    .accuracy-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 8; }
+    .ring-fill { 
+        fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round;
+        stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .accuracy-content { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .score-val { font-size: 3.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .score-total { font-size: 1.25rem; font-weight: 700; color: #94a3b8; }
+    .accuracy-label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+
+    .report-text-v4 { font-size: 1.1rem; color: #475569; max-width: 400px; margin: 0 auto 2.5rem; line-height: 1.6; }
+
+    .report-actions-v4 { display: flex; justify-content: center; gap: 1rem; }
+    .btn-primary-v4, .btn-outline-v4 {
+        padding: 0.85rem 1.75rem; border-radius: 14px; font-weight: 700; font-size: 0.95rem;
+        cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none;
+    }
+    .btn-primary-v4 { background: var(--primary); color: white; border: none; box-shadow: 0 4px 15px rgba(0, 89, 169, 0.3); }
+    .btn-primary-v4:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 89, 169, 0.4); }
+    
+    .btn-outline-v4 { background: white; color: #475569; border: 1px solid #e2e8f0; }
+    .btn-outline-v4:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; transform: translateY(-2px); }
+
+    .slide-in-bottom { animation: slideInBottom 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+    @keyframes slideInBottom { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* Sidebar Components */
+    .sidebar-compact { padding: 2rem; }
+    .sidebar-heading { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9; font-weight: 800; }
+    .action-buttons-vertical { display: flex; flex-direction: column; gap: 0.75rem; }
+    .sidebar-action-btn { 
+        width: 100%; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: white; 
+        color: #475569; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; transition: 0.3s; 
+    }
+    .sidebar-action-btn:hover { transform: translateX(4px); border-color: var(--primary); color: var(--primary); }
+    .sidebar-action-btn.delete:hover { border-color: #ef4444; color: #ef4444; }
+
+    .meta-list { display: flex; flex-direction: column; gap: 1rem; }
+    .meta-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
+    .meta-label { color: var(--secondary); }
+    .meta-value { font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .meta-value.status-difficile { color: #ef4444; }
+    .meta-value.status-facile { color: #22c55e; }
+
+    .course-connector-box { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 12px; border: 1px solid #e0f2fe; }
+    .course-icon { width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+    .course-link-info { display: flex; flex-direction: column; }
+    .course-lbl { font-size: 0.7rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; }
+    .course-title-link { font-weight: 800; color: #0f172a; text-decoration: none; font-size: 0.95rem; }
+    .course-title-link:hover { color: var(--primary); text-decoration: underline; }
+
+    /* Other styles */
+    .expert-note-v3, .goal-box-v3 { display: flex; gap: 1rem; padding: 1.5rem; border-radius: 16px; margin-top: 1.5rem; }
+    .expert-note-v3 { background: #fef9c3; border: 1px solid #fef08a; color: #854d0e; }
+    .goal-box-v3 { background: #f0fdf4; border: 1px solid #dcfce7; color: #166534; }
+    .expert-note-v3 i, .goal-box-v3 i { font-size: 1.5rem; }
+    .note-text strong, .goal-text strong { display: block; margin-bottom: 0.25rem; font-weight: 800; }
+
+    .fade-in-up { animation: fadeInUp 0.8s ease forwards; opacity: 0; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 1100px) {
+        .content-grid { grid-template-columns: 1fr; }
+        .hero-header { flex-direction: column; align-items: flex-start; gap: 2rem; padding: 2rem; }
+        .hero-stat { position: absolute; top: 1.5rem; right: 1.5rem; }
+        .hero-title { font-size: 2.2rem; }
+    }
+</style>
+
+<!-- Premium Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this activity? This will remove all associated content. This action is irreversible.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Delete Activity</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Modal Styles */
+    .modal-overlay {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .glass-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .glass-card:hover::top, .glass-card:hover::before {
-        opacity: 1;
-    }
-
-    .card-header {
-        display: flex;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        display: none;
+        justify-content: center;
         align-items: center;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #f1f5f9;
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
     }
 
-    .icon-gradient {
-        font-size: 1.5rem;
-        color: var(--primary);
-        background: #eff6ff;
-        width: 48px;
-        height: 48px;
+    .modal-content {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 24px;
+        width: 90%;
+        max-width: 450px;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-icon {
+        width: 70px;
+        height: 70px;
+        background: #fee2e2;
+        color: #ef4444;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 12px;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem auto;
     }
 
-    .card-header h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
+    .modal-content h3 {
         color: #0f172a;
-        margin: 0;
-    }
-
-    /* Instructions and Content */
-    .instruction-content, .expected-output-text, .hints-text {
-        color: #334155;
-        line-height: 1.8;
-        font-size: 1.05rem;
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-radius: 16px;
-        border: 1px solid #f1f5f9;
-    }
-
-    .hints-card {
-        border-left: 5px solid #7c3aed;
-        background: linear-gradient(to right, #f5f3ff 0%, #ffffff 100%);
-    }
-
-    .hints-text {
-        background: rgba(255, 255, 255, 0.5);
-        border: 1px dashed #c084fc;
-        color: #7c3aed;
-        position: relative;
-    }
-
-    .spark-icon {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
         font-size: 1.5rem;
-        color: #c084fc;
-        opacity: 0.3;
-        animation: pulse 2s infinite;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
     }
 
-    @keyframes pulse {
-        0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 0.6; transform: scale(1.1); }
+    .modal-content p {
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        font-size: 1rem;
     }
 
-    .empty-info-p {
-        color: var(--secondary);
-        font-style: italic;
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
     }
 
-    /* Description Text */
-    .description-text {
-        color: #475569;
-        line-height: 1.8;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Resources */
-    .resources-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .resource-tile {
+    .btn-cancel, .btn-confirm {
+        flex: 1;
+        padding: 1rem;
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.95rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        text-decoration: none;
-        transition: all 0.3s ease;
+        justify-content: center;
+        gap: 0.5rem;
     }
 
-    .resource-tile:hover {
-        border-color: var(--primary);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
         transform: translateY(-2px);
     }
 
-    .tile-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
+    .btn-confirm {
+        background: #ef4444;
+        color: white;
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
     }
 
-    .resource-tile.link .tile-icon { background: #ecfdf5; color: #059669; }
-    .resource-tile.file .tile-icon { background: #eff6ff; color: #2563eb; }
-
-    .tile-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .tile-title { font-weight: 700; color: #0f172a; font-size: 1rem; }
-    .tile-subtitle { font-size: 0.85rem; color: var(--secondary); margin-top: 2px; }
-    .tile-arrow { color: #cbd5e1; transition: transform 0.3s; }
-    
-    .resource-tile:hover .tile-arrow {
-        color: var(--primary);
-        transform: translateX(4px);
-    }
-
-    /* Sidebar Compact */
-    .sidebar-compact {
-        padding: 2rem;
-    }
-
-    .sidebar-heading {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--secondary);
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f1f5f9;
-        font-weight: 700;
-    }
-
-    .meta-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1.25rem;
-        font-size: 0.95rem;
-    }
-    
-    .meta-label { color: var(--secondary); }
-    .meta-value { font-weight: 600; color: #0f172a; font-family: 'Courier New', monospace; background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; }
-
-    /* Animations */
-    .fade-in-down { animation: fadeInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
-    .fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
-    .delay-1 { animation-delay: 0.15s; }
-
-    @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-        .content-grid { grid-template-columns: 1fr; }
-        .hero-header { flex-direction: column; align-items: flex-start; gap: 2rem; }
-        .hero-stat { position: absolute; top: 2rem; right: 2rem; }
-    }
-    
-    @media (max-width: 600px) {
-        .hero-stat { position: relative; top: auto; right: auto; align-self: center; margin-top: 1rem; }
-        .course-detail-container { padding: 1rem; }
-        .hero-title { font-size: 2.25rem; }
+    .btn-confirm:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 15px 20px -3px rgba(239, 68, 68, 0.4);
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+    const quizPlayer = {
+        elIds: {
+            start: 'quiz-start-view',
+            question: 'quiz-question-view',
+            result: 'quiz-result-view',
+            text: 'question-text',
+            options: 'options-container',
+            feedback: 'feedback-panel',
+            counter: 'question-counter',
+            progress: 'quiz-progress-fill',
+            finalScore: 'final-score',
+            perfMsg: 'perf-message'
+        },
+        questions: [],
+        currentIndex: 0,
+        score: 0,
+
+        init() {
+            const container = document.getElementById('quiz-player');
+            if (!container) {
+                return;
+            }
+            try {
+                this.questions = JSON.parse(container.dataset.questions);
+                const totalDisplay = document.getElementById('total-questions-count');
+                if (totalDisplay) totalDisplay.innerText = this.questions.length;
+            } catch (e) {
+                console.error('Invalid quiz data', e);
+            }
+        },
+
+        setupTabs() {
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.nav-tab, .tab-pane').forEach(el => el.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tabId = btn.dataset.tab + '-tab';
+                    const target = document.getElementById(tabId);
+                    if (target) target.classList.add('active');
+                };
+            });
+        },
+
+        start() {
+            this.currentIndex = 0;
+            this.score = 0;
+            this.showView('question');
+            this.renderQuestion();
+        },
+
+        showView(view) {
+            ['start', 'question', 'result'].forEach(v => {
+                const el = document.getElementById(this.elIds[v]);
+                if (el) el.style.display = (v === view) ? 'block' : 'none';
+            });
+        },
+
+        renderQuestion() {
+            const q = this.questions[this.currentIndex];
+            document.getElementById(this.elIds.text).innerText = q.question;
+            document.getElementById(this.elIds.counter).innerText = `Question ${this.currentIndex + 1}/${this.questions.length}`;
+            document.getElementById(this.elIds.progress).style.width = `${((this.currentIndex) / this.questions.length) * 100}%`;
+            
+            const optionsBox = document.getElementById(this.elIds.options);
+            optionsBox.innerHTML = '';
+            document.getElementById(this.elIds.feedback).style.display = 'none';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerHTML = `<span class="opt-alpha">${String.fromCharCode(65 + idx)}</span> <span class="opt-val">${opt}</span>`;
+                btn.onclick = () => this.handleAnswer(idx, btn);
+                optionsBox.appendChild(btn);
+            });
+        },
+
+        handleAnswer(choice, btn) {
+            const q = this.questions[this.currentIndex];
+            const options = document.querySelectorAll('.btn-option');
+            options.forEach(b => b.disabled = true);
+
+            const isCorrect = choice === q.correct_answer_index;
+            if (isCorrect) {
+                this.score++;
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+                options[q.correct_answer_index].classList.add('correct');
+            }
+
+            const feedback = document.getElementById(this.elIds.feedback);
+            feedback.style.display = 'block';
+            feedback.className = `feedback-toast-v3 ${isCorrect ? 'correct' : 'wrong'}`;
+            feedback.querySelector('.toast-content').querySelector('.toast-status').innerText = isCorrect ? '✨ Excellent !' : '❌ Pas tout à fait...';
+            feedback.querySelector('.explanation-text').innerText = q.explanation || '';
+        },
+
+        next() {
+            this.currentIndex++;
+            if (this.currentIndex < this.questions.length) {
+                this.renderQuestion();
+            } else {
+                this.finish();
+            }
+        },
+
+        triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2563eb', '#6366f1', '#fbbf24']
+            });
+        },
+
+        finish() {
+            document.getElementById(this.elIds.progress).style.width = '100%';
+            this.showView('result');
+            
+            const countTo = this.score;
+            const total = this.questions.length;
+            const ratio = countTo / total;
+            
+            // Animate Score Counter
+            let current = 0;
+            const scoreEl = document.getElementById(this.elIds.finalScore);
+            const duration = 1500;
+            const startTime = performance.now();
+
+            const animateScore = (now) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const val = Math.floor(progress * countTo);
+                scoreEl.innerText = val;
+                if (progress < 1) requestAnimationFrame(animateScore);
+            };
+            requestAnimationFrame(animateScore);
+
+            // Animate Accuracy Ring
+            const ringFill = document.getElementById('accuracy-progress');
+            if (ringFill) {
+                const circumference = 2 * Math.PI * 45; // r=45
+                ringFill.style.strokeDasharray = circumference;
+                setTimeout(() => {
+                    const offset = circumference - (ratio * circumference);
+                    ringFill.style.strokeDashoffset = offset;
+                }, 100);
+            }
+
+            // Badge & Message Logic
+            const badge = document.getElementById('performance-badge');
+            const badgeTxt = document.getElementById('badge-text');
+            let msg = "Continuez vos efforts, la maîtrise vient avec la pratique !";
+            
+            badge.className = 'perf-badge';
+            if (ratio === 1) {
+                badge.classList.add('master');
+                badgeTxt.innerText = 'Mastery Unlocked';
+                msg = "Score parfait ! Vous maîtrisez parfaitement ce sujet ! 🏆";
+                this.triggerConfetti();
+            } else if (ratio >= 0.8) {
+                badge.classList.add('scholar');
+                badgeTxt.innerText = 'Excellent Scholar';
+                msg = "Excellent travail ! Votre compréhension est solide. 🌟";
+                this.triggerConfetti();
+            } else if (ratio >= 0.6) {
+                badgeTxt.innerText = 'Steady Progress';
+                msg = "Bon résultat ! Vous êtes sur la bonne voie.";
+            } else {
+                badgeTxt.innerText = 'Explorer';
+                msg = "Bilan session : Continuez vos efforts, la maîtrise vient avec la pratique !";
+            }
+
+            document.getElementById(this.elIds.perfMsg).innerText = msg;
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        quizPlayer.init();
+
+        // --- Premium Modal Logic ---
+        const modal = document.getElementById('deleteModal');
+        
+        window.openDeleteModal = function() {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeDeleteModal = function() {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        window.confirmDelete = function() {
+            const form = document.getElementById('delete-activity-form');
+            if (form) form.submit();
+        };
+
+        // Close on click outside
+        modal?.addEventListener('click', function(e) {
+            if (e.target === modal) closeDeleteModal();
+        });
+    });
+</script>
 {% endblock %}
