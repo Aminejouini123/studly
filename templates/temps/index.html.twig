@@ -425,9 +425,7 @@
             <p class="page-subtitle">Créez et gérez vos événements et plannings</p>
         </div>
         <div style="display:flex; gap:10px;">
-            <a href="{{ path('app_temps_calendar') }}" class="btn-primary btn-lg form-toggle-btn" style="background: white; color: var(--primary-dark); border: 1px solid var(--border-color); display:inline-flex; text-decoration:none;">
-                <i class="fas fa-calendar-alt"></i> Voir le Calendrier
-            </a>
+            <button id="toggle-view-btn" class="btn-primary" style="background: var(--sidebar-bg);"><i class="fas fa-calendar-alt"></i> <span>Voir Calendrier</span></button>
             <button type="button" id="toggle-event-form" class="btn-primary btn-lg form-toggle-btn">
                 <i class="fas fa-calendar-plus"></i> Ajouter un événement
             </button>
@@ -463,6 +461,11 @@
                 <div class="stat-label">Total</div>
             </div>
         </div>
+    </div>
+    
+    <!-- Unified Visual Calendar -->
+    <div id="calendar-view-container" class="courses-section" style="display: none; margin-bottom: 2rem;">
+        <div id="calendar"></div>
     </div>
 
     {# Create form template (not rendered until Add clicked) #}
@@ -629,6 +632,11 @@
                                     {% if event.status %}
                                         <span class="badge status"><i class="fas fa-info-circle"></i> {{ event.status }}</span>
                                     {% endif %}
+                                    {% if event.googleEventId %}
+                                        <span class="badge" style="background: rgba(66, 133, 244, 0.1); color: #4285F4;" title="Linked with Google Calendar">
+                                            <i class="fab fa-google"></i> Synced
+                                        </span>
+                                    {% endif %}
                                     {% if event.pomodoroSessions|length > 0 %}
                                         <div class="pomodoro-summary" style="margin-top:10px;">
                                             <details>
@@ -661,6 +669,12 @@
                                                 <i class="fas fa-stopwatch"></i>
                                                 <span>Focus</span>
                                             </a>
+                                            {% if not event.googleEventId and app.user and app.user.googleAccessToken %}
+                                                <a href="{{ path('app_temps_sync', {id: event.id}) }}" class="btn-motivation" style="background: #4285F4;" title="Sync to Google">
+                                                    <i class="fab fa-google"></i>
+                                                    <span>Sync</span>
+                                                </a>
+                                            {% endif %}
                                         </div>
 
                                         <div class="event-actions-secondary">
@@ -685,6 +699,39 @@
                     </div>
                 {% endif %}
             </div>
+
+            {% if google_events is not empty %}
+                <div class="section-header" style="margin-top: 40px;">
+                    <h2 style="margin:0; font-size:1.5rem; color:#1F1F1F; display: flex; align-items: center; gap: 10px;">
+                        <i class="fab fa-google" style="color: #4285F4;"></i> Google Calendar (Cette semaine)
+                    </h2>
+                </div>
+                <div class="events-grid">
+                    {% for g_event in google_events %}
+                        <div class="event-card" style="border-left: 5px solid #4285F4;">
+                            <div class="event-header">
+                                <h3 class="event-title">{{ g_event.summary }}</h3>
+                                <div class="event-date">
+                                    <i class="fas fa-clock"></i> {{ g_event.start|date('M d, H:i') }}
+                                </div>
+                            </div>
+                            <div class="event-description">
+                                {{ g_event.description|default('No description provided.') }}
+                                {% if g_event.location %}
+                                    <div style="margin-top: 8px; font-size: 0.85rem;">
+                                        <i class="fas fa-map-marker-alt" style="color: #ea4335;"></i> {{ g_event.location }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="event-badges">
+                                <span class="badge" style="background: rgba(66, 133, 244, 0.1); color: #4285F4;">
+                                    <i class="fab fa-google"></i> External Event
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         {# Weekly stats card – API visualisation #}
@@ -705,6 +752,11 @@
     </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -860,6 +912,8 @@
             var ctx = document.getElementById('weekly-time-chart');
             if(!ctx) return;
             
+            var googleEventsData = {{ google_events|default([])|json_encode|raw }};
+            
             // Gather data from DOM
             var events = [];
             document.querySelectorAll('.event-card').forEach(function(card){
@@ -868,11 +922,20 @@
                 var duration = parseInt(durationText) || 0; // minutes
                 
                 if(dateText && duration > 0){
-                    // approximate parsing "M d, Y" e.g. "Feb 17, 2026"
                     var date = new Date(dateText);
                     if(!isNaN(date.getTime())){
                         events.push({date: date, duration: duration});
                     }
+                }
+            });
+
+            // Add Google Events to data
+            googleEventsData.forEach(function(ev){
+                var start = new Date(ev.start);
+                var end = new Date(ev.end);
+                if(!isNaN(start.getTime()) && !isNaN(end.getTime())){
+                    var duration = Math.round((end - start) / (1000 * 60)); // minutes
+                    events.push({date: start, duration: duration, isGoogle: true});
                 }
             });
 
@@ -945,6 +1008,159 @@
         
         initWeeklyStats();
 
+        // View Toggling logic
+        var toggleViewBtn = document.getElementById('toggle-view-btn');
+        var listView = document.getElementById('events-list').closest('.courses-section');
+        var googleView = document.querySelector('.section-header + .events-grid'); // Search for the Google grid
+        var calendarContainer = document.getElementById('calendar-view-container');
+        var isCalendar = false;
+
+        toggleViewBtn.addEventListener('click', function() {
+            isCalendar = !isCalendar;
+            if (isCalendar) {
+                listView.style.display = 'none';
+                if (googleView) googleView.previousElementSibling.style.display = 'none';
+                if (googleView) googleView.style.display = 'none';
+                calendarContainer.style.display = 'block';
+                toggleViewBtn.innerHTML = '<i class="fas fa-arrow-left"></i> <span>Retour</span>';
+                calendar.render();
+            } else {
+                listView.style.display = 'block';
+                if (googleView) googleView.previousElementSibling.style.display = 'block';
+                if (googleView) googleView.style.display = 'grid';
+                calendarContainer.style.display = 'none';
+                toggleViewBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> <span>Voir Calendrier</span>';
+            }
+        });
+
+        // FullCalendar Initialization
+        var calendarEl = document.getElementById('calendar');
+        var localEventsData = [
+            {% for event in events %}
+            {
+                id: "{{ event.id }}",
+                title: "{{ event.title|escape('js') }}",
+                start: "{{ event.date|date('Y-m-d') }}{% if event.startTime %}T{{ event.startTime|date('H:i:s') }}{% endif %}",
+                {% if event.endTime %}
+                end: "{{ event.endTime|date('Y-m-d H:i:s') }}",
+                {% elseif event.duration %}
+                end: moment("{{ event.date|date('Y-m-d') }}").add({{ event.duration }}, 'minutes').toISOString(),
+                {% endif %}
+                allDay: {% if event.startTime %}false{% else %}true{% endif %},
+                color: '#0059A9',
+                extendedProps: {
+                    type: 'local',
+                    description: "{{ event.description|default('')|escape('js') }}",
+                    deleteUrl: "{{ path('app_temps_delete', {id: event.id}) }}",
+                    csrfToken: "{{ csrf_token('delete' ~ event.id) }}"
+                }
+            },
+            {% endfor %}
+        ];
+
+        var googleEventsData = {{ google_events|default([])|json_encode|raw }};
+        var mappedGoogleEvents = googleEventsData.map(function(ev) {
+            return {
+                id: ev.id,
+                title: ev.summary,
+                start: ev.start,
+                end: ev.end,
+                allDay: !ev.start.includes('T'),
+                color: '#4285F4',
+                extendedProps: {
+                    type: 'google',
+                    description: ev.description || ''
+                }
+            };
+        });
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            displayEventTime: true,
+            eventDisplay: 'block',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: localEventsData.concat(mappedGoogleEvents),
+            dateClick: function(info) {
+                Swal.fire({
+                    title: 'Ajouter un événement ?',
+                    text: 'Voulez-vous créer un nouvel événement pour le ' + info.dateStr + ' ?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0059A9',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-plus"></i> Oui, ajouter',
+                    cancelButtonText: 'Annuler',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Switch to List View if in Calendar
+                        if (isCalendar) {
+                            toggleViewBtn.click();
+                        }
+                        // Open add form if not open
+                        if (container.children.length === 0) {
+                            document.getElementById('toggle-event-form').click();
+                        }
+                        // Pre-fill date
+                        var dateInput = container.querySelector('input[type="date"]');
+                        if (dateInput) {
+                            dateInput.value = info.dateStr;
+                            // Trigger live preview update
+                            dateInput.dispatchEvent(new Event('input'));
+                        }
+                        // Scroll to form
+                        container.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            },
+            eventClick: function(info) {
+                var event = info.event;
+                var props = event.extendedProps;
+                
+                if (props.type === 'local') {
+                    Swal.fire({
+                        title: 'Supprimer l\'événement ?',
+                        text: 'Voulez-vous vraiment supprimer "' + event.title + '" ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fas fa-trash"></i> Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Create a temporary form to submit the delete request
+                            var form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = props.deleteUrl;
+                            
+                            var tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = '_token';
+                            tokenInput.value = props.csrfToken;
+                            
+                            form.appendChild(tokenInput);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                } else if (props.type === 'google') {
+                    Swal.fire({
+                        title: 'Événement Google',
+                        text: 'Cet événement provient de Google Calendar. Pour le supprimer, utilisez la vue liste ou demandez à l\'assistant Studly.',
+                        icon: 'info',
+                        confirmButtonColor: '#4285F4',
+                        confirmButtonText: 'Compris'
+                    });
+                }
+            }
+        });
 
     });
 })();

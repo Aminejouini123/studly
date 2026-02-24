@@ -16,7 +16,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class TempsController extends AbstractController
 {
     #[Route('/temps', name: 'app_temps')]
-    public function index(EventRepository $eventRepository, Request $request, EntityManagerInterface $em, \App\Service\PomodoroService $pomodoroService): Response
+    public function index(
+        EventRepository $eventRepository, 
+        Request $request, 
+        EntityManagerInterface $em, 
+        \App\Service\PomodoroService $pomodoroService,
+        \App\Service\GoogleCalendarService $calendarService
+    ): Response
     {
         $user = $this->getUser();
         $sort = $request->query->get('sort');
@@ -26,6 +32,20 @@ final class TempsController extends AbstractController
         } else {
             // Default sort by date
             $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+        }
+
+        $googleEvents = [];
+        if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            try {
+                // Fetch events for the current week to show in stats/chart
+                $timeMin = (new \DateTime('monday this week'))->format(\DateTime::RFC3339);
+                $timeMax = (new \DateTime('sunday this week'))->format(\DateTime::RFC3339);
+                $googleEvents = $calendarService->listEvents($user, $timeMin, $timeMax, 50);
+                // Save possible token update
+                $em->flush();
+            } catch (\Exception $e) {
+                // Silently fail or log if Google API is unreachable
+            }
         }
 
         $event = new Event();
@@ -51,6 +71,16 @@ final class TempsController extends AbstractController
             }
 
             $event->setUser($user);
+            
+            // Sync with Google if connected
+            if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+                try {
+                    $googleId = $calendarService->syncEvent($user, $event);
+                    $event->setGoogleEventId($googleId);
+                } catch (\Exception $e) {
+                    // Log or handle sync error
+                }
+            }
             
             // Auto-generate Pomodoro sessions
             $pomodoroService->generateSessionsForEvent($event);
@@ -86,21 +116,39 @@ final class TempsController extends AbstractController
 
         return $this->render('temps/index.html.twig', [
             'events' => $events,
+            'google_events' => $googleEvents,
             'form' => $form->createView(),
             'completed_count' => $completedCount,
         ]);
     }
 
     #[Route('/temps/{id}/edit', name: 'app_temps_edit')]
-    public function edit(Event $event, Request $request, EntityManagerInterface $em, \App\Service\PomodoroService $pomodoroService): Response
+    public function edit(
+        Event $event, 
+        Request $request, 
+        EntityManagerInterface $em, 
+        \App\Service\PomodoroService $pomodoroService,
+        \App\Service\GoogleCalendarService $calendarService
+    ): Response
     {
         $this->denyAccessUnlessGranted('edit', $event);
+        $user = $this->getUser();
 
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             
+            // Sync with Google if connected
+            if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+                try {
+                    $googleId = $calendarService->syncEvent($user, $event);
+                    $event->setGoogleEventId($googleId);
+                } catch (\Exception $e) {
+                    // Log sync error
+                }
+            }
+
             // Regenerate/Update Pomodoro sessions if duration changed
             $pomodoroService->generateSessionsForEvent($event);
 
@@ -115,30 +163,61 @@ final class TempsController extends AbstractController
         ]);
     }
 
+    #[Route('/temps/{id}/sync', name: 'app_temps_sync')]
+    public function sync(
+        Event $event, 
+        EntityManagerInterface $em, 
+        \App\Service\GoogleCalendarService $calendarService
+    ): Response
+    {
+        $this->denyAccessUnlessGranted('edit', $event);
+        $user = $this->getUser();
+
+        if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            try {
+                $googleId = $calendarService->syncEvent($user, $event);
+                $event->setGoogleEventId($googleId);
+                $em->flush();
+                $this->addFlash('success', 'Event synchronized with Google Calendar!');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Error during synchronization: ' . $e->getMessage());
+            }
+        } else {
+            $this->addFlash('error', 'Please link your Google account first.');
+        }
+
+        return $this->redirectToRoute('app_temps');
+    }
+
     #[Route('/temps/{id}/delete', name: 'app_temps_delete', methods: ['POST'])]
-    public function delete(Event $event, EntityManagerInterface $em, Request $request): Response
+    public function delete(
+        Event $event, 
+        EntityManagerInterface $em, 
+        Request $request,
+        \App\Service\GoogleCalendarService $calendarService
+    ): Response
     {
         $this->denyAccessUnlessGranted('delete', $event);
+        $user = $this->getUser();
 
         $token = $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $token)) {
+            
+            // Delete from Google if linked
+            if ($event->getGoogleEventId() && $user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+                try {
+                    $calendarService->deleteEvent($user, $event->getGoogleEventId());
+                } catch (\Exception $e) {
+                    // Log or handle error (404 is fine as it's already gone)
+                }
+            }
+
             $em->remove($event);
             $em->flush();
             $this->addFlash('success', 'Event deleted successfully!');
         }
 
         return $this->redirectToRoute('app_temps');
-    }
-
-    #[Route('/temps/calendar', name: 'app_temps_calendar')]
-    public function calendar(EventRepository $eventRepository): Response
-    {
-        $user = $this->getUser();
-        $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
-
-        return $this->render('temps/calendar.html.twig', [
-            'events' => $events,
-        ]);
     }
 
 

@@ -36,6 +36,12 @@
                     {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
                      {{ form_errors(form.status) }}
                 </div>
+
+                <div class="form-group">
+                    {{ form_label(form.type, 'Activity Type', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.type) }}
+                </div>
             </div>
             
             <div class="form-group full-width" style="margin-top: 1.5rem;">
@@ -63,6 +69,28 @@
                     {{ form_label(form.level, 'Level', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.level, {'attr': {'class': 'form-input'}}) }}
                     {{ form_errors(form.level) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- content & Instructions Section -->
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-list-ol"></i> Content & Details</h3>
+            <div class="form-group full-width">
+                {{ form_label(form.instructions, 'Detailed Instructions', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.instructions, {'attr': {'class': 'form-input form-textarea', 'rows': 6, 'placeholder': 'Detailed steps for the student...'}}) }}
+                {{ form_errors(form.instructions) }}
+            </div>
+            <div class="form-grid" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    {{ form_label(form.expectedOutput, 'Expected Output', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.expectedOutput, {'attr': {'class': 'form-input', 'placeholder': 'What should they produce?'}}) }}
+                    {{ form_errors(form.expectedOutput) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.hints, 'Hints', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.hints, {'attr': {'class': 'form-input', 'placeholder': 'Helpful tips...'}}) }}
+                    {{ form_errors(form.hints) }}
                 </div>
             </div>
         </div>

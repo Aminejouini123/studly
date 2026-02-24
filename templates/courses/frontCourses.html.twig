@@ -23,15 +23,15 @@
             <div class="stat-label">Total Courses</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en cours')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'in progress')|length }}</div>
             <div class="stat-label">In Progress</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'terminé')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'completed')|length }}</div>
             <div class="stat-label">Completed</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'en attente')|length }}</div>
+            <div class="stat-number">{{ courses|filter(c => c.status|lower == 'pending')|length }}</div>
             <div class="stat-label">Pending</div>
         </div>
         </div>
@@ -45,9 +45,9 @@
                 <input type="text" id="searchInput" class="search-box" placeholder=" Search for a course...">
                 <select id="statusFilter" class="filter-select">
                     <option value="">All statuses</option>
-                    <option value="en cours">In Progress</option>
-                    <option value="terminé">Completed</option>
-                    <option value="en attente">Pending</option>
+                    <option value="in progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
                 </select>
             </div>
         </div>
@@ -410,9 +410,9 @@
         letter-spacing: 0.5px;
     }
 
-    .status-en-attente { background: #fff0f0; color: #c62828; }
-    .status-en-cours { background: #fff8e1; color: #f57f17; }
-    .status-terminé { background: #e8f5e9; color: #2e7d32; }
+    .status-pending { background: #fff0f0; color: #c62828; }
+    .status-in-progress { background: #fff8e1; color: #f57f17; }
+    .status-completed { background: #e8f5e9; color: #2e7d32; }
 
     /* Teacher Info */
     .teacher-info {

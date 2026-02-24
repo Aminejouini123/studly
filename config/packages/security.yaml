@@ -24,6 +24,7 @@ security:
                 password_parameter: password
                 enable_csrf: false
                 success_handler: App\Security\AuthenticationSuccessHandler
+            custom_authenticator: App\Security\GoogleAuthenticator
 
             logout:
                 path: app_logout

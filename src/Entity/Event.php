@@ -62,6 +62,9 @@ class Event
     #[ORM\Column(nullable: true)]
     private ?int $reminderMinutes = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleEventId = null;
+
     #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
@@ -325,6 +328,17 @@ class Event
     {
         $this->reminderMinutes = $reminderMinutes;
 
+        return $this;
+    }
+
+    public function getGoogleEventId(): ?string
+    {
+        return $this->googleEventId;
+    }
+
+    public function setGoogleEventId(?string $googleEventId): static
+    {
+        $this->googleEventId = $googleEventId;
         return $this;
     }
 }

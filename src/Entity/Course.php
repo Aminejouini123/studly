@@ -18,51 +18,65 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le nom du cours est obligatoire")]
-    #[Assert\Length(min: 3, minMessage: "Le nom doit contenir au moins 3 caractères")]
+    #[Assert\NotBlank(message: "Course name is required")]
+    #[Assert\Length(min: 3, max: 255, minMessage: "Name must be at least 3 characters long", maxMessage: "Name cannot be longer than {{ limit }} characters")]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $courseFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "Le lien doit être une URL valide")]
+    #[Assert\NotBlank(message: "Link is required")]
+    #[Assert\Url(message: "The link must be a valid URL")]
+    #[Assert\Length(max: 255, maxMessage: "Link cannot be longer than {{ limit }} characters")]
     private ?string $courseLink = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "L'email du professeur est obligatoire")]
-    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
+    #[Assert\NotBlank(message: "Teacher email is required")]
+    #[Assert\Email(message: "The email '{{ value }}' is not valid.")]
+    #[Assert\Length(max: 255, maxMessage: "Email cannot be longer than {{ limit }} characters")]
     private ?string $teacherEmail = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le semestre est obligatoire")]
+    #[Assert\NotBlank(message: "Semester is required")]
+    #[Assert\Length(max: 255, maxMessage: "Semester cannot be longer than {{ limit }} characters")]
     private ?string $semester = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le niveau de difficulté est obligatoire")]
+    #[Assert\NotBlank(message: "Difficulty level is required")]
+    #[Assert\Length(max: 255, maxMessage: "Difficulty level cannot be longer than {{ limit }} characters")]
     private ?string $difficultyLevel = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le type de cours est obligatoire")]
+    #[Assert\NotBlank(message: "Course type is required")]
+    #[Assert\Length(max: 255, maxMessage: "Type cannot be longer than {{ limit }} characters")]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "La priorité est obligatoire")]
+    #[Assert\NotBlank(message: "Priority is required")]
+    #[Assert\Length(max: 255, maxMessage: "Priority cannot be longer than {{ limit }} characters")]
     private ?string $priority = null;
 
     #[ORM\Column]
-    #[Assert\Positive(message: "Le coefficient doit être positif")]
+    #[Assert\NotBlank(message: "Coefficient is required")]
+    #[Assert\Positive(message: "Coefficient must be positive")]
+    #[Assert\Type(type: 'float', message: "Coefficient must be a valid number")]
     private ?float $coefficient = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+    #[Assert\NotBlank(message: "Status is required")]
+    #[Assert\Length(max: 50, maxMessage: "Status cannot be longer than {{ limit }} characters")]
     private ?string $status = null;
 
     #[ORM\Column]
-    #[Assert\Positive(message: "La durée doit être positive")]
+    #[Assert\NotBlank(message: "Duration is required")]
+    #[Assert\Positive(message: "Duration must be positive")]
+    #[Assert\Type(type: 'integer', message: "Duration must be an integer")]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: "Comment is required")]
+    #[Assert\Length(max: 2000, maxMessage: "Comment cannot be longer than {{ limit }} characters")]
     private ?string $comment = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -96,7 +110,7 @@ class Course
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
@@ -132,7 +146,7 @@ class Course
         return $this->teacherEmail;
     }
 
-    public function setTeacherEmail(string $teacherEmail): static
+    public function setTeacherEmail(?string $teacherEmail): static
     {
         $this->teacherEmail = $teacherEmail;
 
@@ -144,7 +158,7 @@ class Course
         return $this->semester;
     }
 
-    public function setSemester(string $semester): static
+    public function setSemester(?string $semester): static
     {
         $this->semester = $semester;
 
@@ -156,7 +170,7 @@ class Course
         return $this->difficultyLevel;
     }
 
-    public function setDifficultyLevel(string $difficultyLevel): static
+    public function setDifficultyLevel(?string $difficultyLevel): static
     {
         $this->difficultyLevel = $difficultyLevel;
 
@@ -168,7 +182,7 @@ class Course
         return $this->type;
     }
 
-    public function setType(string $type): static
+    public function setType(?string $type): static
     {
         $this->type = $type;
 
@@ -180,7 +194,7 @@ class Course
         return $this->priority;
     }
 
-    public function setPriority(string $priority): static
+    public function setPriority(?string $priority): static
     {
         $this->priority = $priority;
 
@@ -192,7 +206,7 @@ class Course
         return $this->coefficient;
     }
 
-    public function setCoefficient(float $coefficient): static
+    public function setCoefficient(?float $coefficient): static
     {
         $this->coefficient = $coefficient;
 
@@ -204,7 +218,7 @@ class Course
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(?string $status): static
     {
         $this->status = $status;
 
@@ -216,7 +230,7 @@ class Course
         return $this->duration;
     }
 
-    public function setDuration(int $duration): static
+    public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
 

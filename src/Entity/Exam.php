@@ -15,36 +15,44 @@ class Exam
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le titre de l'examen est obligatoire")]
-    #[Assert\Length(min: 3, minMessage: "Le titre doit contenir au moins 3 caractères")]
+    #[Assert\NotBlank(message: "Exam title is required")]
+    #[Assert\Length(min: 3, max: 255, minMessage: "Title must be at least 3 characters long", maxMessage: "Title cannot be longer than {{ limit }} characters")]
     private ?string $title = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "La date de l'examen est obligatoire")]
-    #[Assert\GreaterThan("today", message: "La date de l'examen doit être dans le futur")]
+    #[Assert\NotBlank(message: "Exam date is required")]
+    #[Assert\GreaterThan("today", message: "Exam date must be in the future")]
     private ?\DateTime $date = null;
 
     #[ORM\Column]
-    #[Assert\Positive(message: "La durée doit être positive")]
+    #[Assert\NotBlank(message: "Duration is required")]
+    #[Assert\Positive(message: "Duration must be positive")]
+    #[Assert\Type(type: 'integer', message: "Duration must be an integer")]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note doit être comprise entre {{ min }} et {{ max }}")]
+    #[Assert\NotBlank(message: "Grade is required")]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "Grade must be between {{ min }} and {{ max }}")]
+    #[Assert\Type(type: 'float', message: "Grade must be a valid number")]
     private ?float $grade = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
+    #[Assert\NotBlank(message: "Difficulty is required")]
+    #[Assert\Length(max: 50, maxMessage: "Difficulty cannot be longer than {{ limit }} characters")]
     private ?string $difficulty = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+    #[Assert\NotBlank(message: "Status is required")]
+    #[Assert\Length(max: 50, maxMessage: "Status cannot be longer than {{ limit }} characters")]
     private ?string $status = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: "Le lien doit être une URL valide")]
+    #[Assert\NotBlank(message: "Link is required")]
+    #[Assert\Url(message: "Link must be a valid URL")]
+    #[Assert\Length(max: 255, maxMessage: "Link cannot be longer than {{ limit }} characters")]
     private ?string $link = null;
 
     #[ORM\ManyToOne(inversedBy: 'exams')]
@@ -60,7 +68,7 @@ class Exam
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
         $this->title = $title;
 
@@ -72,7 +80,7 @@ class Exam
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(?\DateTime $date): static
     {
         $this->date = $date;
 
@@ -84,7 +92,7 @@ class Exam
         return $this->duration;
     }
 
-    public function setDuration(int $duration): static
+    public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
 
@@ -108,7 +116,7 @@ class Exam
         return $this->difficulty;
     }
 
-    public function setDifficulty(string $difficulty): static
+    public function setDifficulty(?string $difficulty): static
     {
         $this->difficulty = $difficulty;
 
@@ -120,7 +128,7 @@ class Exam
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(?string $status): static
     {
         $this->status = $status;
 

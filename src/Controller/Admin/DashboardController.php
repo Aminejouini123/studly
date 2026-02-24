@@ -2,6 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Repository\ActivityRepository;
+use App\Repository\CourseRepository;
+use App\Repository\EventRepository;
+use App\Repository\GroupRepository;
+use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,9 +18,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_admin_dashboard')]
-    public function index(UserRepository $userRepository): Response
-    {
-        // Real gathered stats
+    public function index(
+        UserRepository $userRepository,
+        CourseRepository $courseRepository,
+        ActivityRepository $activityRepository,
+        TaskRepository $taskRepository,
+        GroupRepository $groupRepository,
+        EventRepository $eventRepository,
+    ): Response {
+        // Users
         $totalUsers = $userRepository->count([]);
 
         // Mocking role counts since countByRole might not exist yet in Repo
@@ -24,20 +35,46 @@ class DashboardController extends AbstractController
         $students = 0;
         $admins = 0;
         foreach ($allUsers as $u) {
-            if (in_array('ROLE_ETUDIANT', $u->getRoles()))
+            if (in_array('ROLE_ETUDIANT', $u->getRoles())) {
                 $students++;
-            if (in_array('ROLE_ADMIN', $u->getRoles()))
+            }
+            if (in_array('ROLE_ADMIN', $u->getRoles())) {
                 $admins++;
+            }
         }
 
         $recentUsers = $userRepository->findBy([], ['createdAt' => 'DESC'], 5);
+
+        // Courses & learning data
+        $totalCourses = $courseRepository->count([]);
+        $totalActivities = $activityRepository->count([]);
+
+        // Tasks (done vs not done)
+        // NOTE: adjust the status values below to match what you use in forms (e.g. 'Completed', 'En cours', etc.).
+        $totalTasks = $taskRepository->count([]);
+        $completedTasks = $taskRepository->count(['status' => 'COMPLETED']);
+        $pendingTasks = $taskRepository->count(['status' => 'PENDING']);
+
+        // Groups & events
+        $totalGroups = $groupRepository->count([]);
+        $totalEvents = $eventRepository->count([]);
+
+        // All courses for management overview
+        $allCourses = $courseRepository->findAll();
 
         return $this->render('admin/dashboard.html.twig', [
             'totalUsers' => $totalUsers,
             'students' => $students,
             'admins' => $admins,
             'recentUsers' => $recentUsers,
-            'revenueData' => [1200, 1900, 3000, 5000, 2000, 3000], // Example data
+            'totalCourses' => $totalCourses,
+            'totalActivities' => $totalActivities,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'pendingTasks' => $pendingTasks,
+            'totalGroups' => $totalGroups,
+            'totalEvents' => $totalEvents,
+            'allCourses' => $allCourses,
         ]);
     }
 }

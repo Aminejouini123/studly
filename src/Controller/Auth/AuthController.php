@@ -14,16 +14,29 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 final class AuthController extends AbstractController
 {
     #[Route('/auth', name: 'app_auth')]
-    public function index(AuthenticationUtils $authenticationUtils): Response
+    public function index(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
+        $session = $request->getSession();
+
+        $registrationData = $session->get('registration_data', []);
+        $registrationErrors = $session->get('registration_errors', [
+            'global' => [],
+            'fields' => [],
+        ]);
+
+        // Optionally clear errors after displaying once
+        $session->remove('registration_errors');
+
         return $this->render('auth/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'registrationData' => $registrationData,
+            'registrationErrors' => $registrationErrors,
         ]);
     }
 
@@ -66,9 +79,22 @@ final class AuthController extends AbstractController
         $errors = $validator->validate($user, null, ['Default', 'create']);
 
         if (count($errors) > 0) {
-            // Collect all validation errors
+            $fieldErrors = [];
+            $globalErrors = [];
+
             foreach ($errors as $error) {
-                $this->addFlash('error', $error->getMessage());
+                $path = $error->getPropertyPath();
+
+                // Map internal property names to input names when needed
+                if ($path === 'plainPassword') {
+                    $path = 'password';
+                }
+
+                if ($path) {
+                    $fieldErrors[$path][] = $error->getMessage();
+                } else {
+                    $globalErrors[] = $error->getMessage();
+                }
             }
 
             // Store form data in session to repopulate the form
@@ -79,6 +105,12 @@ final class AuthController extends AbstractController
                 'dateOfBirth' => $request->request->get('dateOfBirth'),
                 'phoneNumber' => $request->request->get('phoneNumber'),
                 'address' => $request->request->get('address'),
+            ]);
+
+            // Store structured errors in session so Twig can display them on the Sign Up form
+            $request->getSession()->set('registration_errors', [
+                'global' => $globalErrors,
+                'fields' => $fieldErrors,
             ]);
 
             return $this->redirectToRoute('app_auth');

@@ -58,7 +58,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="status-badge {{ course.status == 'published' or course.status == 'active' ? 'status-active' : 'status-pending' }}">
+                                <span class="status-badge {{ course.status|lower in ['published', 'active', 'completed', 'in progress'] ? 'status-active' : 'status-pending' }}">
                                     {{ course.status }}
                                 </span>
                             </td>
@@ -71,11 +71,11 @@
                             </td>
                             <td>
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <a href="{{ path('app_course_activities', {'id': course.id}) }}" class="badge-content badge-activity" title="Gérer les activités">
-                                        Activités: {{ course.activities|length }}
+                                    <a href="{{ path('app_course_activities', {'id': course.id}) }}" class="badge-content badge-activity" title="Manage activities">
+                                        Activities: {{ course.activities|length }}
                                     </a>
-                                    <a href="{{ path('app_course_exams', {'id': course.id}) }}" class="badge-content badge-exam" title="Gérer les examens">
-                                        Examens: {{ course.exams|length }}
+                                    <a href="{{ path('app_course_exams', {'id': course.id}) }}" class="badge-content badge-exam" title="Manage exams">
+                                        Exams: {{ course.exams|length }}
                                     </a>
                                 </div>
                             </td>
@@ -106,18 +106,18 @@
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h2>Confirmer la suppression</h2>
+                <h2>Confirm Deletion</h2>
                 <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.</p>
+                <p>Are you sure you want to delete this course? This action is irreversible.</p>
                 <form id="deleteForm" method="post" action="">
                     <input type="hidden" name="_token" id="deleteToken" value="">
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Annuler</button>
-                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Supprimer</button>
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-action" style="background-color: #ef4444;" onclick="document.getElementById('deleteForm').submit()">Delete</button>
             </div>
         </div>
     </div>

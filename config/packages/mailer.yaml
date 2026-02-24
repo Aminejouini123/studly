@@ -1,3 +1,8 @@
+parameters:
+    # Use MAILER_FROM in .env (for Gmail, set to your Gmail address)
+    mailer.from_address: '%env(default:default_mailer_from:MAILER_FROM)%'
+    default_mailer_from: 'noreply@studly.com'
+
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'

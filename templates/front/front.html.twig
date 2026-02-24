@@ -29,8 +29,8 @@
                 <i class="fas fa-book-open"></i>
             </div>
             <div class="stat-info">
-                <h3>4</h3>
-                <p>Active Courses</p>
+                <h3>{{ userCoursesCount }}</h3>
+                <p>Your Courses</p>
             </div>
             <div class="stat-chart">
                 <!-- Mini sparkline or visual decoration -->
@@ -43,8 +43,8 @@
                 <i class="fas fa-clock"></i>
             </div>
             <div class="stat-info">
-                <h3>12h</h3>
-                <p>Study Time</p>
+                <h3>{{ userEventsCount }}</h3>
+                <p>Your Events</p>
             </div>
             <div class="stat-chart">
                 <div class="progress-bar-mini" style="width: 45%"></div>
@@ -56,8 +56,13 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <div class="stat-info">
-                <h3>85%</h3>
-                <p>Avg. Score</p>
+                {% if topCourse %}
+                    <h3>{{ topCourse.name }}</h3>
+                    <p>Top course (by coefficient)</p>
+                {% else %}
+                    <h3>-</h3>
+                    <p>No courses yet</p>
+                {% endif %}
             </div>
             <div class="stat-chart">
                 <div class="progress-bar-mini" style="width: 85%"></div>
