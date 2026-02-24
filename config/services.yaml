@@ -9,6 +9,7 @@ parameters:
     openrouter.model: '%env(resolve:OPENROUTER_MODEL)%'
     openrouter.app_url: '%env(resolve:OPENROUTER_APP_URL)%'
     openrouter.app_title: '%env(resolve:OPENROUTER_APP_TITLE)%'
+    voicerss.api_key: '%env(VOICERSS_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -33,3 +34,21 @@ services:
             $model: '%openrouter.model%'
             $appUrl: '%openrouter.app_url%'
             $appTitle: '%openrouter.app_title%'
+
+    # Dedicated client for Quiz Generation
+    app.quiz_api_client:
+        class: App\Service\OpenRouterClient
+        arguments:
+            $apiKey: '%env(QUIZ_API_KEY)%'
+            $model: '%env(QUIZ_MODEL)%'
+            $appUrl: '%openrouter.app_url%'
+            $appTitle: "Studly Quiz Generator"
+
+    App\Service\AiActivityGeneratorService:
+        arguments:
+            $client: '@app.quiz_api_client'
+
+
+    App\Service\VoiceRssService:
+        arguments:
+            $apiKey: '%voicerss.api_key%'
