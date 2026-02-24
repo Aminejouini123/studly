@@ -579,7 +579,53 @@
 
         <div id="event-form-container"></div>
 
-        {# Events list - same section style as Courses #}
+        <!-- Section IA Planning -->
+        <div class="courses-section ai-card" style="background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); border: 1px solid #cce5ff; cursor: pointer;" id="ai-planning-header">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 0;">
+                <div>
+                    <h2 style="margin:0; font-size:1.5rem; color:#0059A9;"><i class="fas fa-robot"></i> Planification Intelligente (IA)</h2>
+                    <p style="margin:5px 0 0; color:#555;">Cliquez pour organiser votre journée selon votre état émotionnel <i class="fas fa-chevron-down" id="ai-caret" style="margin-left: 10px; transition: transform 0.3s;"></i></p>
+                </div>
+                <div id="ai-download-container" onclick="event.stopPropagation();">
+                    {% if app.session.get('last_planning_pdf') %}
+                        <a href="{{ path('app_temps_download_planning') }}" id="btn-download-planning" class="btn-primary" style="background: #27ae60;">
+                            <i class="fas fa-file-pdf"></i> Télécharger mon dernier planning
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="ai-planning-body" style="display: none; margin-top: 25px; border-top: 1px solid #cce5ff; padding-top: 20px;">
+                <form id="ai-planning-form" action="{{ path('app_temps_analyze') }}" method="POST">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div class="form-group">
+                            <label for="energy"><i class="fas fa-battery-three-quarters"></i> Niveau d'énergie (1-10)</label>
+                            <input type="range" name="energy" id="energy" min="1" max="10" value="5" class="form-control js-ai-input" oninput="this.nextElementSibling.value = this.value">
+                            <output style="text-align: center; font-weight: bold; color: #0059A9;">5</output>
+                        </div>
+                        <div class="form-group">
+                            <label for="stress"><i class="fas fa-brain"></i> Niveau de stress (1-10)</label>
+                            <input type="range" name="stress" id="stress" min="1" max="10" value="5" class="form-control js-ai-input" oninput="this.nextElementSibling.value = this.value">
+                            <output style="text-align: center; font-weight: bold; color: #e74c3c;">5</output>
+                        </div>
+                        <div class="form-group">
+                            <label for="sleep"><i class="fas fa-bed"></i> Qualité du sommeil (1-10)</label>
+                            <input type="range" name="sleep" id="sleep" min="1" max="10" value="5" class="form-control js-ai-input" oninput="this.nextElementSibling.value = this.value">
+                            <output style="text-align: center; font-weight: bold; color: #f1c40f;">5</output>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="mood"><i class="fas fa-smile"></i> Comment vous sentez-vous aujourd'hui ? (Analyse de sentiment)</label>
+                        <textarea name="mood" id="mood" rows="2" class="form-control js-ai-input" placeholder="Ex: Je me sens un peu fatigué mais motivé pour finir mon projet..."></textarea>
+                    </div>
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button type="submit" class="btn-primary" style="padding: 12px 25px; font-size: 1rem;">
+                            <i class="fas fa-magic"></i> Analyser et Générer mon Planning
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div class="courses-section">
             <div class="section-header">
                 <h2 style="margin:0; font-size:1.5rem; color:#1F1F1F;">Liste des événements</h2>
@@ -1162,6 +1208,46 @@
             }
         });
 
+        // AI Planning Button Visibility Logic
+        var aiForm = document.getElementById('ai-planning-form');
+        var downloadBtn = document.getElementById('btn-download-planning');
+        var downloadContainer = document.getElementById('ai-download-container');
+        var aiInputs = document.querySelectorAll('.js-ai-input');
+
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                // Hide the button when clicked
+                downloadContainer.style.display = 'none';
+            });
+        }
+
+        if (aiForm) {
+            aiInputs.forEach(function(input) {
+                input.addEventListener('input', function() {
+                    if (downloadContainer && downloadContainer.style.display === 'none') {
+                        downloadContainer.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // Collapsible Card Logic
+        var aiHeader = document.getElementById('ai-planning-header');
+        var aiBody = document.getElementById('ai-planning-body');
+        var aiCaret = document.getElementById('ai-caret');
+
+        if (aiHeader && aiBody) {
+            aiHeader.addEventListener('click', function() {
+                var isHidden = aiBody.style.display === 'none';
+                aiBody.style.display = isHidden ? 'block' : 'none';
+                if (aiCaret) {
+                    aiCaret.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+                
+                // Adjust header border
+                aiHeader.style.borderBottom = isHidden ? '1px solid #cce5ff' : 'none';
+            });
+        }
     });
 })();
 </script>

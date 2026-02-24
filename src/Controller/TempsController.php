@@ -220,5 +220,72 @@ final class TempsController extends AbstractController
         return $this->redirectToRoute('app_temps');
     }
 
+    #[Route('/temps/analyze', name: 'app_temps_analyze', methods: ['POST'])]
+    public function analyze(
+        Request $request, 
+        \App\Service\SmartPlanningService $planningService,
+        EventRepository $eventRepository
+    ): Response
+    {
+        $user = $this->getUser();
+        $energy = (int)$request->request->get('energy', 5);
+        $stress = (int)$request->request->get('stress', 5);
+        $sleep = (int)$request->request->get('sleep', 5);
+        $mood = $request->request->get('mood', '');
+
+        // Fetch user's non-completed events to optimize
+        $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+        $tasksData = [];
+        foreach ($events as $event) {
+            if ($event->getStatus() !== 'Completed' && $event->getStatus() !== 'Terminé') {
+                $tasksData[] = [
+                    'id' => $event->getId(),
+                    'title' => $event->getTitle(),
+                    'difficulty' => $event->getDifficulty(),
+                    'initial_duration' => $event->getDuration()
+                ];
+            }
+        }
+
+        try {
+            $userState = [
+                'energy' => $energy,
+                'stress' => $stress,
+                'sleep_quality' => $sleep,
+                'mood_text' => $mood,
+                'date' => (new \DateTime())->format('d-m-Y')
+            ];
+
+            $result = $planningService->analyze($userState, $tasksData);
+
+            if ($result['status'] === 'success') {
+                $this->addFlash('success', 'Intelligence Artificielle : Planning optimisé avec succès (Niveau de motivation : ' . $result['motivation']['level'] . ')');
+                
+                // Store path in session to allow download
+                $request->getSession()->set('last_planning_pdf', $result['pdf_path']);
+                
+                return $this->redirectToRoute('app_temps');
+            } else {
+                $this->addFlash('error', 'Erreur IA : ' . ($result['message'] ?? 'Erreur inconnue'));
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur de service : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_temps');
+    }
+
+    #[Route('/temps/download-planning', name: 'app_temps_download_planning')]
+    public function downloadPlanning(Request $request): Response
+    {
+        $pdfPath = $request->getSession()->get('last_planning_pdf');
+
+        if (!$pdfPath || !file_exists($pdfPath)) {
+            $this->addFlash('error', 'Aucun planning généré récemment.');
+            return $this->redirectToRoute('app_temps');
+        }
+
+        return $this->file($pdfPath, 'planning_etudiant.pdf');
+    }
 
 }
