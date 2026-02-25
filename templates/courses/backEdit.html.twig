@@ -3,15 +3,15 @@
 {% block title %}Edit Course{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_courses') }}" style="color: var(--admin-text-muted); text-decoration: none;">Courses</a> / <span>Edit</span>
+    <a href="{{ path('app_admin_courses') }}">Courses</a> / <span>Edit</span>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-content">
 
-    <div style="margin-bottom: 24px;">
+    <div style="margin-bottom: 32px;">
         <h1 class="page-title" style="margin-bottom: 8px;">Edit Course</h1>
-        <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Update the details for <strong>{{ course.name }}</strong></p>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Update the details for <strong>{{ course.name }}</strong></p>
     </div>
 
     {{ form_start(form, {'attr': {'class': 'admin-form', 'novalidate': true}}) }}
@@ -22,39 +22,40 @@
             <div class="card-header">
                 <h3>Course Information</h3>
             </div>
-            <div class="card-body" style="padding: 24px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div class="form-group">
+            <div class="card-body" style="padding: 32px;">
+                <div class="form-grid">
+                    <div class="admin-form-group">
                         {{ form_label(form.name, 'Course Title', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Enter course name'}}) }}
-                        {{ form_errors(form.name) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.name) }}</small>
                     </div>
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.teacherEmail, 'Instructor Email', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.teacherEmail, {'attr': {'class': 'form-control', 'placeholder': 'tutor@studly.com'}}) }}
-                        {{ form_errors(form.teacherEmail) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.teacherEmail) }}</small>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 20px;">
+                <div class="admin-form-group">
                     {{ form_label(form.comment, 'Description / Notes', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.comment, {'attr': {'class': 'form-control', 'rows': '5', 'placeholder': 'Add details about the course content...'}}) }}
-                    {{ form_errors(form.comment) }}
+                    <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.comment) }}</small>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="form-group">
+                <div class="form-grid">
+                    <div class="admin-form-group">
                         {{ form_label(form.courseFile, 'Attach File', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.courseFile, {'attr': {'class': 'form-control', 'style': 'padding: 8px;'}}) }}
-                        <small style="display: block; margin-top: 5px; color: var(--admin-text-muted);">
-                            Current: {{ course.courseFile ? course.courseFile : 'None' }}
-                        </small>
-                        {{ form_errors(form.courseFile) }}
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Current: {{ course.courseFile|default('None') }}</span>
+                        </div>
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.courseFile) }}</small>
                     </div>
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.courseLink, 'External Resource Link', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.courseLink, {'attr': {'class': 'form-control', 'placeholder': 'https://...'}}) }}
-                        {{ form_errors(form.courseLink) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.courseLink) }}</small>
                     </div>
                 </div>
             </div>
@@ -66,60 +67,59 @@
                 <div class="card-header">
                     <h3>Settings</h3>
                 </div>
-                <div class="card-body" style="padding: 24px;">
+                <div class="card-body" style="padding: 32px;">
                     
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.status, 'Status', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.status) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.status) }}</small>
                     </div>
 
-                    <div style="border-top: 1px solid var(--admin-border); margin: 20px 0;"></div>
+                    <div style="border-top: 1px solid var(--border); margin: 24px 0;"></div>
 
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.type, 'Type', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.type) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.type) }}</small>
                     </div>
 
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.semester, 'Semester', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.semester, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.semester) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.semester) }}</small>
                     </div>
 
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.difficultyLevel, 'Difficulty', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.difficultyLevel, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.difficultyLevel) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.difficultyLevel) }}</small>
                     </div>
 
-                    <div class="form-group">
+                    <div class="admin-form-group">
                         {{ form_label(form.priority, 'Priority', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.priority, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.priority) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.priority) }}</small>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group">
+                    <div class="form-grid">
+                        <div class="admin-form-group">
                             {{ form_label(form.duration, 'Duration (h)', {'label_attr': {'class': 'form-label', 'style': 'font-size: 0.8rem;'}}) }}
                             {{ form_widget(form.duration, {'attr': {'class': 'form-control'}}) }}
                         </div>
-                        <div class="form-group">
+                        <div class="admin-form-group">
                             {{ form_label(form.coefficient, 'Coeff.', {'label_attr': {'class': 'form-label', 'style': 'font-size: 0.8rem;'}}) }}
                             {{ form_widget(form.coefficient, {'attr': {'class': 'form-control'}}) }}
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <div class="content-card">
-                <div class="card-body" style="padding: 24px;">
-                    <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+                <div class="card-body" style="padding: 32px;">
+                    <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; margin-bottom: 12px;">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
-                    <a href="{{ path('app_admin_courses') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border); width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+                    <a href="{{ path('app_admin_courses') }}" class="btn-secondary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem;">
                         Cancel
                     </a>
                 </div>

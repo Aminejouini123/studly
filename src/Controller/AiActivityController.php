@@ -28,6 +28,10 @@ class AiActivityController extends AbstractController
         $quizType = $requestData['quizType'] ?? 'multiple_choice';
         $difficulty = $requestData['difficulty'] ?? null;
 
+        if ($questionCount !== null && $questionCount < 1) {
+            return $this->json(['error' => 'Question count must be at least 1'], 400);
+        }
+
         try {
             $activity = $aiService->generateActivityForCourse($course, $questionCount, $quizType, $difficulty, $activityName);
 

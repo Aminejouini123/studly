@@ -3,7 +3,7 @@
 {% block title %}Course Details{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_courses') }}" style="color: var(--admin-text-muted); text-decoration: none;">Courses</a> / <span>Details</span>
+    <a href="{{ path('app_admin_courses') }}">Courses</a> / <span>Details</span>
 {% endblock %}
 
 {% block content %}
@@ -13,16 +13,17 @@
         <div>
             <h1 class="page-title" style="margin-bottom: 8px;">{{ course.name }}</h1>
             <div style="display: flex; gap: 12px; align-items: center;">
-                <span class="status-badge {{ course.status == 'published' or course.status == 'active' ? 'status-active' : 'status-pending' }}">
+                <span class="status-badge {{ course.status|lower in ['published', 'active', 'completed'] ? 'status-active' : 'status-pending' }}">
+                    <i class="fas {{ course.status|lower in ['published', 'active'] ? 'fa-check-circle' : 'fa-clock' }}" style="font-size: 0.7rem; margin-right: 4px;"></i>
                     {{ course.status|default('Draft') }}
                 </span>
-                <span style="color: var(--admin-text-muted); font-size: 0.9rem;">
+                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
                     <i class="fas fa-calendar-alt"></i> Created on {{ course.createdAt ? course.createdAt|date('M d, Y') : 'N/A' }}
                 </span>
             </div>
         </div>
         <div style="display: flex; gap: 12px;">
-            <a href="{{ path('app_admin_courses') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border);">
+            <a href="{{ path('app_admin_courses') }}" class="btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
             <a href="{{ path('app_admin_course_edit', {'id': course.id}) }}" class="btn-action">
@@ -31,31 +32,31 @@
         </div>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+    <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon blue"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-icon blue" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);"><i class="fas fa-layer-group"></i></div>
             </div>
             <div class="stat-value">{{ course.difficultyLevel }}</div>
             <div class="stat-label">Difficulty Level</div>
         </div>
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon purple"><i class="fas fa-clock"></i></div>
+                <div class="stat-icon purple" style="background: linear-gradient(135deg, #faf5ff, #f3e8ff);"><i class="fas fa-clock"></i></div>
             </div>
             <div class="stat-value">{{ course.duration }}h</div>
             <div class="stat-label">Total Duration</div>
         </div>
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon green"><i class="fas fa-percentage"></i></div>
+                <div class="stat-icon green" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);"><i class="fas fa-percentage"></i></div>
             </div>
             <div class="stat-value">{{ course.coefficient }}</div>
             <div class="stat-label">Coefficient</div>
         </div>
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon orange"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-icon orange" style="background: linear-gradient(135deg, #fff7ed, #ffedd5);"><i class="fas fa-check-circle"></i></div>
             </div>
             <div class="stat-value">{{ course.priority }}</div>
             <div class="stat-label">Priority</div>

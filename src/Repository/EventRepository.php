@@ -83,6 +83,20 @@ class EventRepository extends ServiceEntityRepository
     }
 
 
+    public function findUpcomingByUser(User $user, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.user = :user')
+            ->andWhere('e.date >= :today')
+            ->setParameter('user', $user)
+            ->setParameter('today', new \DateTime('today'))
+            ->orderBy('e.date', 'ASC')
+            ->addOrderBy('e.startTime', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return Event[] Returns an array of Event objects sorted by priority (High > Medium > Low)
      */
@@ -106,5 +120,15 @@ class EventRepository extends ServiceEntityRepository
 //            ->getQuery()
 //            ->getOneOrNullResult()
 //        ;
-//    }
+    public function countCompletedByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->andWhere('e.user = :user')
+            ->andWhere('e.date < :today')
+            ->setParameter('user', $user)
+            ->setParameter('today', new \DateTime('today'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

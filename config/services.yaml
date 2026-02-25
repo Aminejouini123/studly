@@ -8,6 +8,7 @@ parameters:
     gemini.api_key: '%env(GEMINI_API_KEY)%'
     gemini.model: '%env(resolve:GEMINI_MODEL)%'
     voicerss.api_key: '%env(VOICERSS_API_KEY)%'
+    python_exe: '%env(resolve:PYTHON_EXE)%'
 
 services:
     # default configuration for services in *this* file
@@ -56,3 +57,7 @@ services:
     App\Service\VoiceRssService:
         arguments:
             $apiKey: '%voicerss.api_key%'
+
+    App\Service\SmartPlanningService:
+        arguments:
+            $pythonExe: '%python_exe%'

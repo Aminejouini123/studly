@@ -325,6 +325,22 @@ class Course
         return $this;
     }
 
+    public function getProgressPercentage(): int
+    {
+        if ($this->activities->isEmpty()) {
+            return 0;
+        }
+
+        $completedCount = 0;
+        foreach ($this->activities as $activity) {
+            if ($activity->getStatus() === 'completed') {
+                $completedCount++;
+            }
+        }
+
+        return (int) (($completedCount / $this->activities->count()) * 100);
+    }
+
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
