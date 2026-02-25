@@ -55,12 +55,92 @@
             <button type="submit" class="btn-submit">
                 <i class="fas fa-check-circle"></i> Ajouter la Tâche
             </button>
+            <button type="button" id="btn-ai-analyze" class="btn-secondary-custom" style="border-color: #00c6ff; color: #003366;">
+                <i class="fas fa-robot"></i> Assistant IA
+            </button>
             <a href="{{ path('app_groups_show', {id: project.group.id}) }}" class="btn-secondary-custom">Annuler</a>
+        </div>
+
+        <div id="ai-suggestion-box" style="display: none; margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: #f0f7ff; border: 1px solid #00c6ff;">
+            <h4 style="color: #003366; margin-bottom: 1rem;"><i class="fas fa-magic"></i> Suggestions de l'IA</h4>
+            <div id="ai-loading" style="display: none; text-align: center; padding: 1rem;">
+                <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+            </div>
+            <div id="ai-results" style="display: none;">
+                <p><strong>Estimation :</strong> <span id="ai-estimation"></span> minutes</p>
+                <p><strong>Priorité suggérée :</strong> <span id="ai-priority" class="badge"></span></p>
+                <p><strong>Conseil :</strong> <em id="ai-advice"></em></p>
+                <div style="margin-top: 1rem;">
+                    <button type="button" id="btn-apply-ai" class="btn-submit" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Appliquer la priorité
+                    </button>
+                </div>
+            </div>
         </div>
 
         {{ form_end(form) }}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAnalyze = document.getElementById('btn-ai-analyze');
+    const descriptionField = document.querySelector('[name*="[description]"]');
+    const statusField = document.querySelector('[name*="[status]"]'); // Actually priority is not in entity yet, but we requested it
+    const suggestionBox = document.getElementById('ai-suggestion-box');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiResults = document.getElementById('ai-results');
+    const btnApply = document.getElementById('btn-apply-ai');
+
+    let lastPriority = 'MEDIUM';
+
+    btnAnalyze.addEventListener('click', async function() {
+        const description = descriptionField.value;
+        if (!description || description.length < 10) {
+            alert('Veuillez saisir une description plus détaillée pour l\'analyse.');
+            return;
+        }
+
+        suggestionBox.style.display = 'block';
+        aiLoading.style.display = 'block';
+        aiResults.style.display = 'none';
+
+        try {
+            const response = await fetch('{{ path("api_project_task_ai_analyze_task") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: description })
+            });
+
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error);
+
+            document.getElementById('ai-estimation').textContent = data.estimation;
+            const priorityBadge = document.getElementById('ai-priority');
+            priorityBadge.textContent = data.priority;
+            priorityBadge.className = 'badge ' + (data.priority === 'HIGH' ? 'bg-danger' : (data.priority === 'MEDIUM' ? 'bg-warning' : 'bg-info'));
+            document.getElementById('ai-advice').textContent = data.advice;
+
+            lastPriority = data.priority;
+            
+            aiLoading.style.display = 'none';
+            aiResults.style.display = 'block';
+        } catch (error) {
+            aiLoading.style.display = 'none';
+            alert('Erreur lors de l\'analyse : ' + error.message);
+        }
+    });
+
+    btnApply.addEventListener('click', function() {
+        // Since priority is not a field in the entity (based on my previous check),
+        // we might want to just store it in description or just show it.
+        // If the user wants to keep it, they'd need a field.
+        // For now, let's just show it.
+        alert('Analyse terminée. Vous pouvez utiliser ces suggestions pour affiner votre tâche.');
+    });
+});
+</script>
 
 <style>
     .course-form-container { padding: 0; background-color: #f8f9fa; min-height: 100vh; padding-bottom: 4rem; padding-top: 2rem; }

@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Form;
+
+use App\Entity\ProjectTask;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
+
+class ProjectTaskDeliverableType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('deliverable', FileType::class, [
+                'label' => 'Déposer votre travail (PDF, Image, Archive)',
+                'mapped' => false,
+                'required' => true,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '10M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/x-pdf',
+                            'image/*',
+                            'application/zip',
+                            'application/x-zip-compressed',
+                            'application/octet-stream',
+                            'application/x-rar-compressed',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader un fichier valide (PDF, Image, ZIP, Word)',
+                    ])
+                ],
+            ])
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => ProjectTask::class,
+        ]);
+    }
+}
