@@ -28,8 +28,8 @@
             <div class="hero-content">
                 <div class="hero-meta">
                     <span class="badge-pill type">Groupe</span>
-                    <span class="badge-pill status {{ group.memberGroup ? 'status-terminé' : 'status-en-attente' }}">
-                        {{ group.memberGroup ? 'Assigné' : 'Libre' }}
+                    <span class="badge-pill status {{ not group.members.isEmpty ? 'status-terminé' : 'status-en-attente' }}">
+                        {{ not group.members.isEmpty ? 'Assigné' : 'Libre' }}
                     </span>
                 </div>
                 <h1 class="hero-title">{{ group.category }}</h1>
@@ -71,10 +71,146 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- Internal Chat -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-comments icon-gradient"></i>
+                        <h2>Chat Interne</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-container" id="chat-messages" style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                            {% for message in messages %}
+                                <div class="message {{ message.sender == app.user ? 'own-message' : '' }}" style="margin-bottom: 10px; padding: 8px; border-radius: 8px; background: {{ message.sender == app.user ? '#dcf8c6' : '#fff' }}; align-self: {{ message.sender == app.user ? 'flex-end' : 'flex-start' }}; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">{{ message.sender.firstName }}</div>
+                                    <div style="color: #1e293b;">{{ message.content }}</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">{{ message.createdAt|date('H:i') }}</div>
+                                </div>
+                            {% else %}
+                                <p style="text-align: center; color: #94a3b8;">Aucun message. Commencez la discussion !</p>
+                            {% endfor %}
+                        </div>
+                        <form action="{{ path('app_groups_send_message', {id: group.id}) }}" method="POST" style="display: flex; gap: 10px;">
+                            <input type="text" name="content" class="form-control" placeholder="Votre message..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer;">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Projects & Tasks -->
+                <div class="glass-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-project-diagram icon-gradient"></i>
+                            <h2>Projets du groupe</h2>
+                        </div>
+                        {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_project_new', {id: group.id}) }}" class="btn-primary" style="padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; text-decoration: none;">
+                                <i class="fas fa-plus"></i> Ajouter un Projet
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% for project in group.projects %}
+                            <div class="project-item" style="margin-bottom: 25px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <div>
+                                        <h3 style="font-size: 1.2rem; color: #0059A9; margin: 0;">{{ project.title }}</h3>
+                                        <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">{{ project.type }}</span>
+                                    </div>
+                                    {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                                        <div class="project-actions" style="display: flex; gap: 8px;">
+                                            <a href="{{ path('app_project_edit', {id: project.id}) }}" class="text-primary" title="Modifier le projet"><i class="fas fa-edit"></i></a>
+                                            <a href="{{ path('app_project_task_new', {id: project.id}) }}" class="text-success" title="Ajouter une tâche"><i class="fas fa-plus-square"></i></a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px;">{{ project.description }}</p>
+                                
+                                <div class="project-meta" style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.85rem; color: #94a3b8;">
+                                    <span><i class="fas fa-calendar-check"></i> Expire le: {{ project.deadline|date('d/m/Y') }}</span>
+                                    {% if project.resource %}
+                                        <a href="{{ project.resource }}" target="_blank" style="color: #0059A9; text-decoration: none;"><i class="fas fa-link"></i> Ressources</a>
+                                    {% endif %}
+                                </div>
+
+                                <div class="tasks-list">
+                                    <h4 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">Tâches</h4>
+                                    {% for task in project.projectTasks %}
+                                        <div class="task-item" style="display: flex; flex-direction: column; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1') }};">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                                <div style="font-weight: 600; color: #1e293b;">
+                                                    {{ task.title }}
+                                                    {% if task.assignedUser %}
+                                                        <span style="font-size: 0.75rem; color: #64748b; margin-left: 8px; font-weight: 400;">(Assigné à @{{ task.assignedUser.firstName }})</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                                                    {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                                                        <a href="{{ path('app_project_task_edit', {id: task.id}) }}" style="color: #94a3b8; font-size: 0.8rem;"><i class="fas fa-cog"></i></a>
+                                                    {% endif %}
+                                                    <span class="badge" style="background: {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#64748b') }}; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;">
+                                                        {{ task.status }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 10px 0;">{{ task.description }}</p>
+                                            
+                                            <!-- Status Controls for Members -->
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem;">
+                                                <div style="display: flex; gap: 10px;">
+                                                    <a href="{{ path('app_project_task_status', {id: task.id, status: 'TO_DO'}) }}" style="color: #64748b; text-decoration: none;" title="Mettre à faire"><i class="far fa-circle"></i> To Do</a>
+                                                    <a href="{{ path('app_project_task_status', {id: task.id, status: 'IN_PROGRESS'}) }}" style="color: #eab308; text-decoration: none;" title="Mettre en cours"><i class="fas fa-spinner"></i> In Progress</a>
+                                                    <a href="{{ path('app_project_task_status', {id: task.id, status: 'DONE'}) }}" style="color: #22c55e; text-decoration: none;" title="Terminer"><i class="fas fa-check-circle"></i> Done</a>
+                                                </div>
+                                                {% if task.deadline %}
+                                                    <span style="color: #94a3b8; font-size: 0.75rem;"><i class="far fa-clock"></i> {{ task.deadline|date('d/m/Y H:i') }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <p style="font-size: 0.85rem; color: #94a3b8; font-style: italic;">Aucune tâche pour ce projet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div style="text-align: center; padding: 40px 20px;">
+                                <i class="fas fa-folder-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
+                                <p style="color: #94a3b8;">Aucun projet actif. Demandez au créateur d'en créer un !</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
 
-            <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
+                    <h3 class="sidebar-heading">Membres</h3>
+                    <div class="meta-list">
+                        <div class="meta-row">
+                            <span class="meta-label">{{ group.creator.firstName }} (Créateur)</span>
+                            <span class="meta-value">{{ group.creator.score }} pts</span>
+                        </div>
+                        {% for member in group.members %}
+                            <div class="meta-row">
+                                <span class="meta-label">{{ member.firstName }}</span>
+                                <span class="meta-value">{{ member.score }} pts</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if group.creator == app.user %}
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #f1f5f9;">
+                        <h3 class="sidebar-heading">Inviter un membre</h3>
+                        <form action="{{ path('app_groups_invite', {id: group.id}) }}" method="POST">
+                            <input type="email" name="email" class="form-control" placeholder="Email de l'utilisateur" required style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;">
+                            <button type="submit" class="btn-primary" style="width: 100%; padding: 8px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer; font-weight: 600;">Inviter</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="glass-card sidebar-compact" style="margin-top: 1rem;">
                     <h3 class="sidebar-heading">Métadonnées</h3>
                     <div class="meta-list">
                         <div class="meta-row">
@@ -85,13 +221,8 @@
                             <span class="meta-label">Créé le</span>
                             <span class="meta-value">{{ group.createdAt|date('d M Y') }}</span>
                         </div>
-                        <div class="meta-row">
-                            <span class="meta-label">Créateur</span>
-                            <span class="meta-value">{{ group.creator.firstName }} {{ group.creator.lastName }}</span>
-                        </div>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 </div>

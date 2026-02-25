@@ -15,7 +15,7 @@ final class ChatBotController extends AbstractController
     public function chat(
         Request $request, 
         OpenRouterClient $client,
-        \App\Service\PdfScannerService $pdfScanner,
+        \App\Service\FileScannerService $fileScanner,
         \App\Service\GoogleCalendarService $calendarService,
         \Doctrine\ORM\EntityManagerInterface $em
     ): JsonResponse {
@@ -33,9 +33,58 @@ final class ChatBotController extends AbstractController
             return $this->json(['error' => 'Empty message'], 400);
         }
 
-        $systemPrompt = "Tu es un assistant intelligent de gestion du temps intégré dans l'application Studly. 
-Tu as accès à l'API Google Calendar de l'utilisateur et tu agis comme son gestionnaire de planning personnel et professionnel.
+        $systemPrompt = "You are an educational assistant for the 'Studly' platform. Always respond in French naturally.\n";
 
+        if ($context) {
+            $isExam = isset($context['exam_file']) || (isset($context['type']) && strtolower($context['type']) === 'exam');
+            $isCourse = isset($context['course_file']) || (isset($context['semester']));
+            $isActivity = isset($context['activity_file']);
+
+            if ($isExam) {
+                $systemPrompt .= "You are currently helping a student with an EXAM. 
+                Your goals are:
+                1. EXPLAIN the exam content and specific exercises.
+                2. HELP the student solve exercises if they ask.
+                3. CORRECT their answers if they provide them.
+                4. Give tips to succeed in this specific exam.
+                You HAVE full permission to discuss, solve, and analyze the exercises in the provided document.";
+            } elseif ($isCourse) {
+                $systemPrompt .= "You are currently helping a student with a COURSE. 
+                Your goals are:
+                1. Provide HIGH-QUALITY, PROFESSIONAL summaries.
+                2. Use a sophisticated yet pedagogical academic tone.
+                3. ASK insightful testing questions to the student to check their deep understanding.
+                4. Focus on making the student a master of the subject.";
+            } else {
+                $systemPrompt .= "You are an educational assistant. Answer questions clearly and helpfully based on the context provided.";
+            }
+
+            $systemPrompt .= "\n\nCONTEXT INFORMATION:\n" . json_encode($context, JSON_PRETTY_PRINT);
+            
+            $fileName = $context['course_file'] ?? $context['exam_file'] ?? $context['activity_file'] ?? null;
+            $subDir = $isExam ? 'exams' : ($isActivity ? 'activities' : 'courses');
+
+            if (!empty($fileName)) {
+                $fileContent = $fileScanner->extractText($fileName, $subDir);
+                if (!empty($fileContent)) {
+                    $truncatedContent = mb_substr($fileContent, 0, 12000); 
+                    $systemPrompt .= "\n\nDOCUMENT CONTENT (Extracted from " . $subDir . "):\n" . $truncatedContent;
+                    
+                    if ($action === 'summarize_file' || preg_match('/résumer|récapitululer|summary|summarize/i', $userMessage)) {
+                        $systemPrompt .= "\n\nINSTRUCTION FOR SUMMARY:
+                        Please provide a MASTER-LEVEL PROFESSIONAL SUMMARY using this structure:
+                        - **Executive Overview**: A high-level introduction to the core subject.
+                        - **Core Learning Pillars**: Break down the most critical concepts into deep, well-explained points.
+                        - **Practical Applications**: How this knowledge is applied in professional or real-world scenarios.
+                        - **Critical Takeaways**: Key points the student MUST remember.
+                        Use a very polished, professional, and expressive French.";
+                        
+                        if ($userMessage === '') $userMessage = "Résumez ce cours de manière professionnelle et détaillée s'il vous plaît.";
+                    }
+                }
+            }
+        } else {
+            $systemPrompt .= "Tu as accès à l'API Google Calendar de l'utilisateur et tu agis comme son gestionnaire de planning personnel et professionnel.
 TES CAPACITÉS :
 - Lire l'agenda et résumer les événements.
 - Créer, modifier ou supprimer des événements (TOUJOURS demander confirmation avant toute action d'écriture).
@@ -46,6 +95,7 @@ RÈGLES :
 - Parle naturellement en français.
 - Fuseau horaire : Africa/Tunis.
 - Date actuelle : " . (new \DateTime())->format('Y-m-d H:i:s');
+        }
 
         $tools = [
             [
@@ -144,7 +194,6 @@ RÈGLES :
             ['role' => 'user', 'content' => $userMessage],
         ];
 
-        // Loop to handle potential multiple tool calls
         for ($i = 0; $i < 5; $i++) {
             $data = $client->chat($messages, $tools);
             $message = $data['choices'][0]['message'] ?? null;
@@ -177,7 +226,6 @@ RÈGLES :
                                 $result = $calendarService->getFreeSlots($user, $args['timeMin'], $args['timeMax'], $args['durationMinutes'] ?? 60);
                                 break;
                         }
-                        // Save possible token update from getCalendarService
                         $em->flush();
                     } catch (\Exception $e) {
                         $result = ['error' => $e->getMessage()];
@@ -190,7 +238,7 @@ RÈGLES :
                         'content' => json_encode($result),
                     ];
                 }
-                continue; // Call LLM again with tool results
+                continue;
             }
 
             $answer = $message['content'];

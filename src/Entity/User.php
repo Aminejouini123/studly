@@ -89,6 +89,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
     private Collection $groups;
 
+    #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'members')]
+    private Collection $memberGroups;
+
+    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
+    private Collection $assignedTasks;
+
+    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: ProjectTask::class)]
+    private Collection $assignedProjectTasks;
+
+    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Activity::class)]
+    private Collection $assignedActivities;
+
+    #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, orphanRemoval: true)]
+    private Collection $sentInvitations;
+
+    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, orphanRemoval: true)]
+    private Collection $receivedInvitations;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
+    private Collection $notifications;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Choice(choices: ['Active', 'Inactive', 'Pending'], message: "Le statut doit être 'Active', 'Inactive' ou 'Pending'.")]
     private ?string $statut = 'Active';
@@ -116,6 +137,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $skills = [];
 
+    #[ORM\Column(type: Types::INTEGER, nullable: false, options: ['default' => 0])]
+    private int $score = 0;
+
 
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -134,7 +158,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->events = new ArrayCollection();
         $this->motivations = new ArrayCollection();
         $this->groups = new ArrayCollection();
+        $this->memberGroups = new ArrayCollection();
         $this->courses = new ArrayCollection();
+        $this->assignedTasks = new ArrayCollection();
+        $this->assignedProjectTasks = new ArrayCollection();
+        $this->assignedActivities = new ArrayCollection();
+        $this->sentInvitations = new ArrayCollection();
+        $this->receivedInvitations = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -409,6 +440,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->groups;
     }
 
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getAssignedTasks(): Collection
+    {
+        return $this->assignedTasks;
+    }
+
+    public function addAssignedTask(Task $task): static
+    {
+        if (!$this->assignedTasks->contains($task)) {
+            $this->assignedTasks->add($task);
+            $task->setAssignedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedTask(Task $task): static
+    {
+        if ($this->assignedTasks->removeElement($task)) {
+            // set the owning side to null (unless already changed)
+            if ($task->getAssignedUser() === $this) {
+                $task->setAssignedUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ProjectTask>
+     */
+    public function getAssignedProjectTasks(): Collection
+    {
+        return $this->assignedProjectTasks;
+    }
+
+    public function addAssignedProjectTask(ProjectTask $projectTask): static
+    {
+        if (!$this->assignedProjectTasks->contains($projectTask)) {
+            $this->assignedProjectTasks->add($projectTask);
+            $projectTask->setAssignedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedProjectTask(ProjectTask $projectTask): static
+    {
+        if ($this->assignedProjectTasks->removeElement($projectTask)) {
+            // set the owning side to null (unless already changed)
+            if ($projectTask->getAssignedUser() === $this) {
+                $projectTask->setAssignedUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Activity>
+     */
+    public function getAssignedActivities(): Collection
+    {
+        return $this->assignedActivities;
+    }
+
+    public function addAssignedActivity(Activity $activity): static
+    {
+        if (!$this->assignedActivities->contains($activity)) {
+            $this->assignedActivities->add($activity);
+            $activity->setAssignedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedActivity(Activity $activity): static
+    {
+        if ($this->assignedActivities->removeElement($activity)) {
+            // set the owning side to null (unless already changed)
+            if ($activity->getAssignedUser() === $this) {
+                $activity->setAssignedUser(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function addGroup(Group $group): static
     {
         if (!$this->groups->contains($group)) {
@@ -572,4 +693,73 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->googleTokenExpiresAt = $googleTokenExpiresAt;
         return $this;
     }
+
+    public function getScore(): int
+    {
+        return $this->score;
+    }
+
+    public function setScore(int $score): static
+    {
+        $this->score = $score;
+        return $this;
+    }
+
+    public function addScore(int $points): static
+    {
+        $this->score += $points;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getMemberGroups(): Collection
+    {
+        return $this->memberGroups;
+    }
+
+    public function addMemberGroup(Group $memberGroup): static
+    {
+        if (!$this->memberGroups->contains($memberGroup)) {
+            $this->memberGroups->add($memberGroup);
+            $memberGroup->addMember($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMemberGroup(Group $memberGroup): static
+    {
+        if ($this->memberGroups->removeElement($memberGroup)) {
+            $memberGroup->removeMember($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getSentInvitations(): Collection
+    {
+        return $this->sentInvitations;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getReceivedInvitations(): Collection
+    {
+        return $this->receivedInvitations;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
 }

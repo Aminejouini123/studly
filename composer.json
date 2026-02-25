@@ -13,6 +13,7 @@
         "dompdf/dompdf": "^3.1",
         "easycorp/easyadmin-bundle": "^4.28",
         "google/apiclient": "^2.19",
+        "google/cloud-text-to-speech": "*",
         "knpuniversity/oauth2-client-bundle": "*",
         "league/oauth2-google": "*",
         "phpdocumentor/reflection-docblock": "5.3",

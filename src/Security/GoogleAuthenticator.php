@@ -51,7 +51,14 @@ class GoogleAuthenticator extends OAuth2Authenticator
     public function authenticate(Request $request): Passport
     {
         $client = $this->clientRegistry->getClient('google');
-        $accessToken = $this->fetchAccessToken($client);
+        try {
+            $accessToken = $this->fetchAccessToken($client);
+        } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+            // This is likely where "invalid_grant" or "invalid_client" is coming from.
+            $body = $e->getResponseBody();
+            $message = is_array($body) ? json_encode($body) : (string) $body;
+            throw new \Exception("Google OAuth Token Error: " . $message);
+        }
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {
@@ -60,6 +67,31 @@ class GoogleAuthenticator extends OAuth2Authenticator
 
                 $email = $googleUser->getEmail();
 
+                // 1) have they logged in with Google before?
+                $user = $this->entityManager->getRepository(User::class)->findOneBy(['googleId' => $googleUser->getId()]);
+
+                if (!$user) {
+                    // 2) do we have a matching user by email?
+                    $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+                    if ($user) {
+                        $user->setGoogleId($googleUser->getId());
+                    } else {
+                        // 3) New User
+                        $user = new User();
+                        $user->setEmail($email);
+                        $user->setGoogleId($googleUser->getId());
+                        $user->setFirstName($googleUser->getFirstName());
+                        $user->setLastName($googleUser->getLastName());
+                        // Generate a random password since one is required
+                        $user->setPassword(bin2hex(random_bytes(20)));
+                        $user->setIsVerified(false);
+                        $user->setStatut('Pending');
+                        $this->entityManager->persist($user);
+                    }
+                }
+
+                // Add Google token info (from HEAD branch)
                 $user->setGoogleAccessToken($accessToken->getToken());
                 if ($accessToken->getRefreshToken()) {
                     $user->setGoogleRefreshToken($accessToken->getRefreshToken());
@@ -68,46 +100,42 @@ class GoogleAuthenticator extends OAuth2Authenticator
                     $user->setGoogleTokenExpiresAt((new \DateTime())->setTimestamp($accessToken->getExpires()));
                 }
 
-                // 1) have they logged in with Google before?
-                $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['googleId' => $googleUser->getId()]);
-
-                if ($existingUser) {
-                    $existingUser->setGoogleAccessToken($user->getGoogleAccessToken());
-                    if ($user->getGoogleRefreshToken()) {
-                        $existingUser->setGoogleRefreshToken($user->getGoogleRefreshToken());
+                // If user is not verified, ensure they have a code and send email
+                if (!$user->isVerified()) {
+                    if (!$user->getVerificationCode()) {
+                        $code = (string) random_int(100000, 999999);
+                        $user->setVerificationCode($code);
+                    } else {
+                        $code = $user->getVerificationCode();
                     }
-                    $existingUser->setGoogleTokenExpiresAt($user->getGoogleTokenExpiresAt());
+
                     $this->entityManager->flush();
-                    return $existingUser;
-                }
 
-                // 2) do we have a matching user by email?
-                $userByEmail = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+                    // Send verification email
+                    $emailMessage = (new Email())
+                        ->from($this->mailerFromAddress)
+                        ->to($user->getEmail())
+                        ->subject('Your Verification Code - Studly')
+                        ->text('Your verification code is: ' . $code);
 
-                if ($userByEmail) {
-                    $userByEmail->setGoogleId($googleUser->getId());
-                    $userByEmail->setGoogleAccessToken($user->getGoogleAccessToken());
-                    if ($user->getGoogleRefreshToken()) {
-                        $userByEmail->setGoogleRefreshToken($user->getGoogleRefreshToken());
+                    try {
+                        $this->mailer->send($emailMessage);
+                    } catch (\KnpU\OAuth2ClientBundle\Exception\InvalidStateException $e) {
+                        // This happens if the state is invalid - often fixed by clear cookies
+                        throw new \Exception("OAuth state mismatch. Please clear your cookies/cache and try again. " . $e->getMessage());
+                    } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                        // This is likely where "invalid_grant" is coming from.
+                        // We throw a more descriptive error.
+                        $body = $e->getResponseBody();
+                        $message = is_array($body) ? json_encode($body) : (string) $body;
+                        throw new \Exception("Google OAuth Error: " . $message);
+                    } catch (\Exception $e) {
+                        // Re-throw to see the error in dev mode
+                        throw $e;
                     }
-                    $userByEmail->setGoogleTokenExpiresAt($user->getGoogleTokenExpiresAt());
+                } else {
                     $this->entityManager->flush();
-                    return $userByEmail;
                 }
-
-                // 3) New User
-                $user->setEmail($email);
-                $user->setGoogleId($googleUser->getId());
-                $user->setFirstName($googleUser->getFirstName());
-                $user->setLastName($googleUser->getLastName());
-                // Generate a random password since one is required
-                $user->setPassword(bin2hex(random_bytes(20)));
-                $user->setIsVerified(true); // Trust Google
-                $user->setStatut('Active');
-
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
-
                 return $user;
             })
         );

@@ -9,6 +9,9 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
+    role_hierarchy:
+        ROLE_ADMIN:       [ROLE_ETUDIANT]
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -44,6 +47,8 @@ security:
         - { path: ^/back, roles: ROLE_ADMIN }
         - { path: ^/front, roles: ROLE_ETUDIANT }
         - { path: ^/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/face/login, roles: PUBLIC_ACCESS }
+        - { path: ^/face/register, roles: ROLE_USER }
 
 when@test:
     security:

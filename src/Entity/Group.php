@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
 #[ORM\Table(name: '`group`')]
@@ -18,12 +19,18 @@ class Group
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La capacité est obligatoire.')]
+    #[Assert\Positive(message: 'La capacité doit être un nombre positif.')]
+    #[Assert\LessThanOrEqual(value: 200, message: 'La capacité ne peut pas dépasser 200 membres.')]
     private ?int $capacity = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: 'La photo du groupe doit être une URL valide.', requireTld: true)]
     private ?string $groupPhoto = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La catégorie du groupe est obligatoire.')]
+    #[Assert\Length(min: 2, max: 255, minMessage: 'La catégorie doit faire au moins {{ limit }} caractères.', maxMessage: 'La catégorie ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $category = null;
 
     #[ORM\ManyToOne(inversedBy: 'groups')]
@@ -33,19 +40,26 @@ class Group
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\OneToOne(mappedBy: 'group', cascade: ['persist', 'remove'])]
-    private ?MemberGroup $memberGroup = null;
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'memberGroups')]
+    private Collection $members;
 
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group')]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group', cascade: ['remove'], orphanRemoval: true)]
     private Collection $projects;
+
+
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, orphanRemoval: true)]
+    private Collection $messages;
 
     public function __construct()
     {
         $this->projects = new ArrayCollection();
+        $this->members = new ArrayCollection();
+        $this->messages = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+        $this->capacity = 1;
     }
 
     public function getId(): ?int
@@ -58,9 +72,9 @@ class Group
         return $this->capacity;
     }
 
-    public function setCapacity(int $capacity): static
+    public function setCapacity(?int $capacity): static
     {
-        $this->capacity = $capacity;
+        $this->capacity = $capacity ?? 1;
 
         return $this;
     }
@@ -70,7 +84,7 @@ class Group
         return $this->groupPhoto;
     }
 
-    public function setGroupPhoto(string $groupPhoto): static
+    public function setGroupPhoto(?string $groupPhoto): static
     {
         $this->groupPhoto = $groupPhoto;
 
@@ -89,24 +103,26 @@ class Group
         return $this;
     }
 
-    public function getMemberGroup(): ?MemberGroup
+    /**
+     * @return Collection<int, User>
+     */
+    public function getMembers(): Collection
     {
-        return $this->memberGroup;
+        return $this->members;
     }
 
-    public function setMemberGroup(?MemberGroup $memberGroup): static
+    public function addMember(User $member): static
     {
-        // unset the owning side of the relation if necessary
-        if ($memberGroup === null && $this->memberGroup !== null) {
-            $this->memberGroup->setGroup(null);
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
         }
 
-        // set the owning side of the relation if necessary
-        if ($memberGroup !== null && $memberGroup->getGroup() !== $this) {
-            $memberGroup->setGroup($this);
-        }
+        return $this;
+    }
 
-        $this->memberGroup = $memberGroup;
+    public function removeMember(User $member): static
+    {
+        $this->members->removeElement($member);
 
         return $this;
     }
@@ -141,6 +157,7 @@ class Group
         return $this;
     }
 
+
     public function getCreator(): ?User
     {
         return $this->creator;
@@ -163,5 +180,13 @@ class Group
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
     }
 }

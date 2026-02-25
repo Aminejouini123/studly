@@ -53,6 +53,14 @@ class ProfileController extends AbstractController
                 }
             }
 
+            $skillsString = $form->get('skills')->getData();
+            if ($skillsString !== null) {
+                $skillsArray = array_map('trim', explode(',', $skillsString));
+                $user->setSkills(array_values(array_filter($skillsArray)));
+            } else {
+                $user->setSkills([]);
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Profile updated successfully!');
 

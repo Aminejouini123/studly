@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\TaskRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
@@ -33,6 +34,15 @@ class Task
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Objective $objective = null;
+
+    #[ORM\ManyToOne(inversedBy: 'assignedTasks')]
+    private ?User $assignedUser = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deadline = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
 
     public function getId(): ?int
     {
@@ -119,6 +129,42 @@ class Task
     public function setObjective(?Objective $objective): static
     {
         $this->objective = $objective;
+
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): static
+    {
+        $this->assignedUser = $assignedUser;
+
+        return $this;
+    }
+
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(?\DateTimeInterface $deadline): static
+    {
+        $this->deadline = $deadline;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }
