@@ -41,21 +41,25 @@ class Activity
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Status is required")]
+    #[Assert\Choice(choices: ["to do", "in progress", "completed"], message: "Choose a valid status")]
     #[Assert\Length(max: 255, maxMessage: "Status cannot be longer than {{ limit }} characters")]
     private ?string $status = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Difficulty is required")]
+    #[Assert\Choice(choices: ["Easy", "Medium", "Hard"], message: "Choose a valid difficulty")]
     #[Assert\Length(max: 255, maxMessage: "Difficulty cannot be longer than {{ limit }} characters")]
     private ?string $difficulty = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Level is required")]
+    #[Assert\Choice(choices: ["Beginner", "Intermediate", "Advanced"], message: "Choose a valid level")]
     #[Assert\Length(max: 255, maxMessage: "Level cannot be longer than {{ limit }} characters")]
     private ?string $level = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Type is required")]
+    #[Assert\Choice(choices: ["quiz", "challenge", "mini_project"], message: "Choose a valid activity type")]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

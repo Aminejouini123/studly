@@ -112,7 +112,7 @@ class ActivityType extends AbstractType
                     'Mini Project' => 'mini_project',
                 ],
                 'placeholder' => 'Select type',
-                'required' => true,
+                'required' => false,
             ])
             ->add('instructions', TextareaType::class, [
                 'label' => 'Step-by-Step Instructions',
