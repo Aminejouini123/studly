@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Service\OpenRouterClient;
+use App\Service\GeminiClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +14,7 @@ final class ChatBotController extends AbstractController
     #[Route('/api/chat', name: 'api_chat', methods: ['POST'])]
     public function chat(
         Request $request, 
-        OpenRouterClient $client,
+        GeminiClient $client,
         \App\Service\PdfScannerService $pdfScanner
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true) ?? [];
@@ -58,11 +58,16 @@ final class ChatBotController extends AbstractController
         ];
 
         $data = $client->chat($messages);
-        $answer = $data['choices'][0]['message']['content'] ?? null;
+
+        if (isset($data['error'])) {
+            return $this->json(['answer' => 'Erreur de l\'API IA : ' . ($data['error']['message'] ?? 'Erreur inconnue')]);
+        }
+
+        $answer = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         return $this->json([
             'answer' => $answer,
-            'raw' => $data['usage'] ?? null,
+            'raw' => $data['usageMetadata'] ?? null,
         ]);
     }
 

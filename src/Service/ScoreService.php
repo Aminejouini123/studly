@@ -204,6 +204,12 @@ class ScoreService
     private function getOldStatus($entity): ?string
     {
         $uow = $this->entityManager->getUnitOfWork();
+        
+        // Compute changesets if not already done
+        if ($entity instanceof ProjectTask || $entity instanceof Task || $entity instanceof Activity) {
+            $uow->computeChangeSets();
+        }
+        
         $changeset = $uow->getEntityChangeSet($entity);
 
         if (isset($changeset['status'])) {

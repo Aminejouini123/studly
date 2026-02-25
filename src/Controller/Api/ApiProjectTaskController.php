@@ -118,4 +118,28 @@ class ApiProjectTaskController extends AbstractController
             ],
         ], Response::HTTP_OK);
     }
+
+    /**
+     * POST /api/ai/analyze-task
+     * Analyse une description de tâche avec l'IA.
+     * Body JSON attendu : { "description": "Ma tâche..." }
+     */
+    #[Route('/ai/analyze-task', name: 'ai_analyze_task', methods: ['POST'])]
+    public function analyzeTask(
+        Request $request,
+        \App\Service\AiTaskAssistantService $aiService
+    ): JsonResponse {
+        $body = json_decode($request->getContent(), true);
+
+        if (empty($body['description'])) {
+            return $this->json(['error' => 'Le champ "description" est obligatoire.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $analysis = $aiService->analyzeTask($body['description']);
+            return $this->json($analysis, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

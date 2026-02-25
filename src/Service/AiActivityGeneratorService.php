@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class AiActivityGeneratorService
 {
     public function __construct(
-        private OpenRouterClient $client,
+        private GeminiClient $client,
         private EntityManagerInterface $entityManager
     ) {}
 
@@ -23,7 +23,12 @@ class AiActivityGeneratorService
         ];
 
         $response = $this->client->chat($messages);
-        $content = $response['choices'][0]['message']['content'] ?? null;
+        
+        if (isset($response['error'])) {
+            return null;
+        }
+
+        $content = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         if (!$content) {
             return null;

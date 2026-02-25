@@ -175,12 +175,12 @@
                                 <div class="tasks-list">
                                     <h4 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">Tâches</h4>
                                     {% for task in project.projectTasks %}
-                                        <div id="task-card-{{ task.id }}" class="task-item" style="display: flex; flex-direction: column; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1') }};">
+                                        <div id="task-card-{{ task.id }}" class="task-item" style="display: flex; flex-direction: column; padding: 12px; background: {{ task.status == 'DONE' ? '#f0fdf4' : '#f8fafc' }}; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1') }}; transition: all 0.3s ease;">
                                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                                                 <div style="font-weight: 600; color: #1e293b; display: flex; align-items: center;">
                                                     {{ task.title }}
-                                                    {% if task.deliverable and (group.creator == app.user or is_granted('ROLE_ADMIN')) %}
-                                                        <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" title="Télécharger le fichier déposé" style="margin-left: 8px; color: #0059A9;">
+                                                    {% if task.deliverable and (group.creator.id == app.user.id or (task.assignedUser and task.assignedUser.id == app.user.id) or is_granted('ROLE_ADMIN')) %}
+                                                        <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" title="Télécharger le travail" style="margin-left: 8px; color: #22c55e; font-size: 1.1rem;">
                                                             <i class="fas fa-file-download"></i>
                                                         </a>
                                                     {% endif %}
@@ -193,7 +193,7 @@
                                                         <a href="{{ path('app_project_task_edit', {id: task.id}) }}" style="color: #94a3b8; font-size: 0.8rem;"><i class="fas fa-cog"></i></a>
                                                     {% endif %}
                                                     <span id="task-badge-{{ task.id }}" class="badge" style="background: {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#64748b') }}; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;">
-                                                        {{ task.status }}
+                                                        {% if task.status == 'DONE' %}Terminé{% elseif task.status == 'IN_PROGRESS' %}En cours{% else %}À faire{% endif %}
                                                     </span>
                                                 </div>
                                             </div>
@@ -208,19 +208,19 @@
                                                            id="status-link-{{ task.id }}-TO_DO"
                                                            style="color: {{ task.status == 'TO_DO' ? '#64748b' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'TO_DO' ? '700' : '400' }}; transition: all 0.2s;" 
                                                            title="Mettre à faire">
-                                                            <i class="{{ task.status == 'TO_DO' ? 'fas' : 'far' }} fa-clipboard"></i> To Do
+                                                            <i class="{{ task.status == 'TO_DO' ? 'fas' : 'far' }} fa-clipboard"></i> À faire
                                                         </a>
                                                         <a href="javascript:void(0)" onclick="updateTaskStatus({{ task.id }}, 'IN_PROGRESS')"
                                                            id="status-link-{{ task.id }}-IN_PROGRESS"
                                                            style="color: {{ task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'IN_PROGRESS' ? '700' : '400' }}; transition: all 0.2s;" 
                                                            title="Mettre en cours">
-                                                            <i class="fas {{ task.status == 'IN_PROGRESS' ? 'fa-spinner fa-spin' : 'fa-hourglass-half' }}"></i> In Progress
+                                                            <i class="fas {{ task.status == 'IN_PROGRESS' ? 'fa-spinner fa-spin' : 'fa-hourglass-half' }}"></i> En cours
                                                         </a>
                                                         <a href="javascript:void(0)" onclick="updateTaskStatus({{ task.id }}, 'DONE')"
                                                            id="status-link-{{ task.id }}-DONE"
                                                            style="color: {{ task.status == 'DONE' ? '#22c55e' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'DONE' ? '700' : '400' }}; transition: all 0.2s;" 
                                                            title="Terminer">
-                                                            <i class="{{ task.status == 'DONE' ? 'fas' : 'far' }} fa-check-circle"></i> Done
+                                                            <i class="{{ task.status == 'DONE' ? 'fas' : 'far' }} fa-check-circle"></i> Terminé
                                                         </a>
                                                     </div>
                                                     
@@ -230,16 +230,24 @@
                                                         </a>
                                                     {% endif %}
 
-                                                    {% if task.deliverable and (group.creator == app.user or is_granted('ROLE_ADMIN')) %}
-                                                        <button type="button" 
-                                                                onclick="previewFile('{{ asset('uploads/deliverables/' ~ task.deliverable) }}', '{{ task.deliverable|split('.')|last|lower }}')"
-                                                                class="btn btn-sm btn-outline-secondary" 
-                                                                style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px;">
-                                                            <i class="fas fa-eye"></i> Voir ressources
-                                                        </button>
-                                                        <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" class="btn btn-sm btn-outline-primary" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px;" title="Télécharger">
-                                                            <i class="fas fa-download"></i> Télécharger
-                                                        </a>
+                                                    {% if task.deliverable and (group.creator.id == app.user.id or (task.assignedUser and task.assignedUser.id == app.user.id) or is_granted('ROLE_ADMIN')) %}
+                                                        <div style="display: flex; gap: 8px; align-items: center; margin-left: 10px; border-left: 2px solid #22c55e; padding-left: 15px;">
+                                                            <button type="button" 
+                                                                    onclick="previewFile('{{ asset('uploads/deliverables/' ~ task.deliverable) }}', '{{ task.deliverable|split('.')|last|lower }}')"
+                                                                    class="btn btn-sm" 
+                                                                    style="font-size: 0.75rem; padding: 6px 12px; border-radius: 10px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-weight: 700;">
+                                                                <i class="fas fa-eye"></i> Aperçu
+                                                            </button>
+                                                            <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" 
+                                                               class="btn btn-sm" 
+                                                               style="font-size: 0.75rem; padding: 6px 12px; border-radius: 10px; background: #22c55e; color: #fff; border: none; text-decoration: none; font-weight: 700; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);">
+                                                                <i class="fas fa-download"></i> Télécharger le Travail
+                                                            </a>
+                                                        </div>
+                                                    {% elseif not task.deliverable and (group.creator.id == app.user.id or is_granted('ROLE_ADMIN')) %}
+                                                        <span style="font-size: 0.75rem; color: #94a3b8; font-style: italic; margin-left: 10px; display: flex; align-items: center; gap: 5px;">
+                                                            <i class="fas fa-hourglass-half" style="font-size: 0.8rem;"></i> (En attente du dépôt)
+                                                        </span>
                                                     {% endif %}
 
                                                     {% if (group.creator == app.user or is_granted('ROLE_ADMIN')) and task.status == 'DONE' %}
@@ -401,13 +409,15 @@
             
             // 1. Update Badge
             const badge = document.getElementById(`task-badge-${taskId}`);
-            badge.textContent = data.status;
+            const labels = { 'DONE': 'Terminé', 'IN_PROGRESS': 'En cours', 'TO_DO': 'À faire' };
+            badge.textContent = labels[data.status] || data.status;
             badge.className = `badge ${data.badgeClass}`;
             badge.style.background = getStatusColor(data.status);
 
-            // 2. Update Card Border
+            // 2. Update Card Border and Background
             const card = document.getElementById(`task-card-${taskId}`);
             card.style.borderLeftColor = getStatusColor(data.status);
+            card.style.background = data.status === 'DONE' ? '#f0fdf4' : '#f8fafc';
 
             // 3. Update Icons and Links
             updateStatusLinks(taskId, data.status);
@@ -437,9 +447,9 @@
     function updateStatusLinks(taskId, activeStatus) {
         const statuses = ['TO_DO', 'IN_PROGRESS', 'DONE'];
         const config = {
-            'TO_DO': { icon: 'fa-clipboard', color: '#64748b' },
-            'IN_PROGRESS': { icon: 'fa-spinner fa-spin', color: '#eab308' },
-            'DONE': { icon: 'fa-check-circle', color: '#22c55e' }
+            'TO_DO': { icon: 'fa-clipboard', color: '#64748b', label: 'À faire' },
+            'IN_PROGRESS': { icon: 'fa-spinner fa-spin', color: '#eab308', label: 'En cours' },
+            'DONE': { icon: 'fa-check-circle', color: '#22c55e', label: 'Terminé' }
         };
 
         statuses.forEach(status => {
@@ -449,13 +459,7 @@
 
             link.style.color = isActive ? config[status].color : '#cbd5e1';
             link.style.fontWeight = isActive ? '700' : '400';
-            
-            // Icon logic
-            if (status === 'IN_PROGRESS') {
-                icon.className = isActive ? 'fas fa-spinner fa-spin' : 'fas fa-hourglass-half';
-            } else {
-                icon.className = isActive ? 'fas ' + config[status].icon : 'far ' + config[status].icon;
-            }
+            link.innerHTML = `<i class="${isActive ? (status === 'IN_PROGRESS' ? 'fas fa-spinner fa-spin' : 'fas ' + config[status].icon) : (status === 'IN_PROGRESS' ? 'fas fa-hourglass-half' : 'far ' + config[status].icon)}"></i> ${config[status].label}`;
         });
     }
 

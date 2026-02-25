@@ -182,15 +182,23 @@ final class ProjectTaskController extends AbstractController
                     );
                     $projectTask->setDeliverable($newFilename);
                     $projectTask->setStatus(ProjectTask::STATUS_DONE);
-                    // updateScoreForProjectTask will set completedAt and update points
+                    
+                    // Clear any previous completedAt just in case
+                    $projectTask->setCompletedAt(new \DateTime());
+                    
+                    // updateScoreForProjectTask will update points
                     $scoreService->updateScoreForProjectTask($projectTask);
+                    
+                    $entityManager->persist($projectTask);
+                    $entityManager->flush();
+                    
+                    $this->addFlash('success', 'Travail déposé avec succès ! La tâche est désormais "Terminée".');
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Could not upload deliverable.');
+                    $this->addFlash('error', 'Impossible d\'enregistrer le fichier : ' . $e->getMessage());
                 }
+            } else {
+                $this->addFlash('warning', 'Aucun fichier sélectionné.');
             }
-
-            $entityManager->flush();
-            $this->addFlash('success', 'Travail déposé avec succès !');
 
             return $this->redirectToRoute('app_groups_show', ['id' => $projectTask->getProject()->getGroup()->getId()]);
         }
