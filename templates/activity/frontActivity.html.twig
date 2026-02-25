@@ -702,113 +702,252 @@
     }
 </style>
 
-<!-- Delete Confirmation Modal -->
+<!-- Premium Delete Confirmation Modal -->
 <div id="deleteModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-icon">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
         <h3>Confirm Deletion</h3>
-        <p>Are you sure you want to delete this activity? This action is irreversible.</p>
+        <p>Are you sure you want to delete this activity? This will remove all associated content. This action is irreversible.</p>
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-            <button class="btn-confirm" onclick="confirmDelete()">Delete</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Delete Activity</button>
+        </div>
+    </div>
+</div>
+
+<!-- Question Count Modal -->
+<div id="questionCountModal" class="modal-overlay">
+    <div class="modal-content config-modal">
+        <div class="modal-icon ai-icon">
+            <i class="fas fa-magic"></i>
+        </div>
+        <h3>Custom Quiz Generation</h3>
+        <p>Define your learning objectives and let AI do the rest.</p>
+        
+        <div class="config-grid">
+            <!-- Activity Name -->
+            <div class="config-item">
+                <label><i class="fas fa-edit"></i> Activity Name</label>
+                <div class="count-input-wrapper">
+                    <input type="text" id="activity-name-input" placeholder="e.g. {{ course.name }} Quiz" class="config-select">
+                </div>
+            </div>
+
+            <!-- Question Count -->
+            <div class="config-item">
+                <label><i class="fas fa-list-ol"></i> Question Count</label>
+                <div class="count-input-wrapper">
+                    <input type="number" id="question-count-input" min="1" max="25" value="10" class="count-input">
+                </div>
+            </div>
+
+            <!-- Quiz Type -->
+            <div class="config-item">
+                <label><i class="fas fa-tasks"></i> Question Type</label>
+                <select id="quiz-type-select" class="config-select">
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="true_false">True or False</option>
+                    <option value="mixed">Mixed (MCQ & T/F)</option>
+                </select>
+            </div>
+
+            <!-- Difficulty -->
+            <div class="config-item">
+                <label><i class="fas fa-layer-group"></i> Difficulty</label>
+                <select id="difficulty-select" class="config-select">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeQuestionCountModal()">Cancel</button>
+            <button id="confirm-generate-btn" class="btn-confirm btn-ai-modal">
+                <i class="fas fa-sparkles"></i> Generate Activity
+            </button>
         </div>
     </div>
 </div>
 
 <style>
-    /* Modal Styles */
+    /* Premium Modal Styles */
     .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
         display: none;
         justify-content: center;
         align-items: center;
-        z-index: 1000;
-        backdrop-filter: blur(4px);
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
     }
 
     .modal-content {
         background: white;
-        padding: 2rem;
-        border-radius: 16px;
+        padding: 2.5rem;
+        border-radius: 24px;
         width: 90%;
-        max-width: 400px;
+        max-width: 450px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        animation: modalSlide 0.3s ease;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes modalSlide {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     .modal-icon {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
         background: #fee2e2;
-        color: #dc2626;
+        color: #ef4444;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 2rem;
         margin: 0 auto 1.5rem auto;
     }
 
     .modal-content h3 {
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-        font-size: 1.25rem;
+        color: #0f172a;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
     }
 
     .modal-content p {
-        color: #6b7280;
+        color: #64748b;
+        line-height: 1.6;
         margin-bottom: 2rem;
-        line-height: 1.5;
+        font-size: 1rem;
     }
 
     .modal-actions {
         display: flex;
         gap: 1rem;
-        justify-content: center;
     }
 
     .btn-cancel, .btn-confirm {
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 600;
+        flex: 1;
+        padding: 1rem;
+        border-radius: 14px;
+        font-weight: 700;
         cursor: pointer;
         border: none;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
 
     .btn-cancel {
-        background: #f3f4f6;
-        color: #4b5563;
+        background: #f1f5f9;
+        color: #475569;
     }
 
     .btn-cancel:hover {
-        background: #e5e7eb;
+        background: #e2e8f0;
+        transform: translateY(-2px);
     }
 
     .btn-confirm {
-        background: #dc2626;
+        background: #ef4444;
         color: white;
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
     }
 
     .btn-confirm:hover {
-        background: #b91c1c;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 15px 20px -3px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Modal special for AI Config */
+    .config-modal {
+        max-width: 600px !important;
+        padding: 2.5rem !important;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin: 2rem 0;
+        text-align: left;
+    }
+
+    .config-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .config-item label {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .config-item label i {
+        color: #0059A9;
+    }
+
+    .config-select, .count-input {
+        padding: 0.8rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f172a;
+        background: #f8fafc;
+        transition: all 0.2s;
+        width: 100%;
+        outline: none;
+    }
+
+    .config-select:focus, .count-input:focus {
+        border-color: #00B4D8;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+    }
+
+    .count-input {
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .ai-icon {
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+    }
+
+    .btn-ai-modal {
+        background: var(--ai-grad) !important;
+        box-shadow: 0 4px 12px rgba(0, 180, 216, 0.2) !important;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-ai-modal:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
     }
 </style>
 
@@ -817,11 +956,15 @@
 
     function openDeleteModal(id) {
         activityIdToDelete = id;
-        document.getElementById('deleteModal').style.display = 'flex';
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
     function closeDeleteModal() {
-        document.getElementById('deleteModal').style.display = 'none';
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
         activityIdToDelete = null;
     }
 
@@ -829,6 +972,14 @@
         if (activityIdToDelete) {
             document.getElementById('delete-form-' + activityIdToDelete).submit();
         }
+    }
+
+    function openQuestionCountModal() {
+        document.getElementById('questionCountModal').style.display = 'flex';
+    }
+
+    function closeQuestionCountModal() {
+        document.getElementById('questionCountModal').style.display = 'none';
     }
 
     // --- Smart Activity Generator Logic ---
@@ -839,17 +990,27 @@
         const statusMsg = document.getElementById('gen-status-msg');
         
         const loadingSteps = [
-            "Analyzing course content...",
-            "Thinking about practical applications...",
-            "Drafting clear instructions...",
-            "Polishing the final activity...",
-            "Almost ready..."
+            "Analyse du contenu du cours...",
+            "Élaboration des questions pédagogiques...",
+            "Rédaction des explications détaillées...",
+            "Mise en forme du quiz Studly...",
+            "Finalisation de l'activité..."
         ];
 
-        genBtn?.addEventListener('click', async function() {
-            const courseId = this.dataset.courseId;
+        genBtn?.addEventListener('click', function() {
+            openQuestionCountModal();
+        });
+
+        document.getElementById('confirm-generate-btn')?.addEventListener('click', async function() {
+            const courseId = genBtn.dataset.courseId;
+            const activityName = document.getElementById('activity-name-input').value;
+            const questionCount = document.getElementById('question-count-input').value;
+            const quizType = document.getElementById('quiz-type-select').value;
+            const difficulty = document.getElementById('difficulty-select').value;
             
-            // UI State: Show Immersive Overlay
+            closeQuestionCountModal();
+            
+            // UI Feedback
             genBtn.disabled = true;
             genBtn.classList.add('loading');
             overlay.classList.remove('hidden');
@@ -870,7 +1031,13 @@
             try {
                 const response = await fetch(`/ai/generate-activity/${courseId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        activityName: activityName,
+                        questionCount: parseInt(questionCount),
+                        quizType: quizType,
+                        difficulty: difficulty
+                    })
                 });
 
                 const data = await response.json();
@@ -878,16 +1045,20 @@
                 if (data.success) {
                     if (progressFill) progressFill.style.transition = 'width 0.3s';
                     if (progressFill) progressFill.style.width = '100%';
-                    showToast('Success!', 'AI has generated a new activity.', 'success');
+                    showToast('Succès !', 'L\'IA a généré votre quiz.', 'success');
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
                     overlay.classList.add('hidden');
-                    showToast('Error', data.error || 'Failed to generate.', 'error');
+                    this.disabled = false;
+                    this.classList.remove('loading');
+                    showToast('Erreur', data.error || 'Échec de la génération.', 'error');
                 }
             } catch (err) {
                 console.error(err);
                 overlay.classList.add('hidden');
-                showToast('Connection Error', 'Please try again.', 'error');
+                this.disabled = false;
+                this.classList.remove('loading');
+                showToast('Erreur de connexion', 'Veuillez réessayer.', 'error');
             } finally {
                 clearInterval(messageInterval);
             }

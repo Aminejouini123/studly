@@ -22,8 +22,14 @@ class AiActivityController extends AbstractController
             return $this->json(['error' => 'Course not found'], 404);
         }
 
+        $requestData = json_decode($this->container->get('request_stack')->getCurrentRequest()->getContent(), true);
+        $activityName = $requestData['activityName'] ?? null;
+        $questionCount = $requestData['questionCount'] ?? null;
+        $quizType = $requestData['quizType'] ?? 'multiple_choice';
+        $difficulty = $requestData['difficulty'] ?? null;
+
         try {
-            $activity = $aiService->generateActivityForCourse($course);
+            $activity = $aiService->generateActivityForCourse($course, $questionCount, $quizType, $difficulty, $activityName);
 
             if (!$activity) {
                 return $this->json(['error' => 'AI failed to generate activity'], 500);

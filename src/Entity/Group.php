@@ -25,7 +25,7 @@ class Group
     private ?int $capacity = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: 'La photo du groupe doit être une URL valide.', requireTld: true)]
+    #[Assert\Url(message: 'La photo du groupe doit être une URL valide.')]
     private ?string $groupPhoto = null;
 
     #[ORM\Column(length: 255)]
