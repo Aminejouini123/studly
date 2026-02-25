@@ -33,6 +33,12 @@ class PomodoroSession
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $endedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?float $focusScore = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $focusLogs = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,6 +112,30 @@ class PomodoroSession
     public function setEndedAt(?\DateTimeInterface $endedAt): static
     {
         $this->endedAt = $endedAt;
+
+        return $this;
+    }
+
+    public function getFocusScore(): ?float
+    {
+        return $this->focusScore;
+    }
+
+    public function setFocusScore(?float $focusScore): static
+    {
+        $this->focusScore = $focusScore;
+
+        return $this;
+    }
+
+    public function getFocusLogs(): ?array
+    {
+        return $this->focusLogs;
+    }
+
+    public function setFocusLogs(?array $focusLogs): static
+    {
+        $this->focusLogs = $focusLogs;
 
         return $this;
     }
