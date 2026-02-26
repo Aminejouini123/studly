@@ -4,18 +4,25 @@ namespace App\Service;
 
 use App\Entity\Activity;
 use App\Entity\Course;
+use App\Service\OpenRouterClient;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AiActivityGeneratorService
 {
     public function __construct(
-        private GeminiClient $client,
+        private OpenRouterClient $client,
         private EntityManagerInterface $entityManager
     ) {}
 
-    public function generateActivityForCourse(Course $course): ?Activity
+    public function generateActivityForCourse(
+        Course $course,
+        int $questionCount = 10,
+        string $quizType = 'multiple_choice',
+        string $difficulty = 'Medium',
+        ?string $activityName = null
+    ): ?Activity
     {
-        $prompt = $this->buildPrompt($course);
+        $prompt = $this->buildPrompt($course, $questionCount, $quizType, $difficulty, $activityName);
 
         $messages = [
             ['role' => 'system', 'content' => 'You are an educational AI content generator. You must respond ONLY with valid JSON.'],
@@ -28,7 +35,8 @@ class AiActivityGeneratorService
             return null;
         }
 
-        $content = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        // OpenRouter return format: ['choices'][0]['message']['content']
+        $content = $response['choices'][0]['message']['content'] ?? null;
 
         if (!$content) {
             return null;
@@ -46,15 +54,19 @@ class AiActivityGeneratorService
         $activity->setTitle($data['title']);
         $activity->setDescription($data['description'] ?? '');
         $activity->setDuration($data['duration'] ?? 30);
-        $activity->setType($data['type'] ?? 'challenge');
-        $activity->setInstructions($data['instructions'] ?? '');
+        $activity->setType($data['type'] ?? 'quiz');
+        $instructions = isset($data['instructions']) 
+            ? (is_array($data['instructions']) ? json_encode($data['instructions']) : $data['instructions']) 
+            : '';
+            
+        $activity->setInstructions($instructions);
         $activity->setExpectedOutput($data['expected_output'] ?? '');
         $activity->setHints($data['hints'] ?? '');
         
         // Map Course fields
         $activity->setCourse($course);
-        $activity->setLevel($course->getSemester() ?? 'General'); // Using semester as level if level is not explicit
-        $activity->setDifficulty($course->getDifficultyLevel() ?? 'Medium');
+        $activity->setLevel($course->getSemester() ?? 'General'); 
+        $activity->setDifficulty($difficulty);
         $activity->setStatus('Active');
 
         $this->entityManager->persist($activity);
@@ -63,45 +75,55 @@ class AiActivityGeneratorService
         return $activity;
     }
 
-    private function buildPrompt(Course $course): string
+    private function buildPrompt(
+        Course $course, 
+        int $questionCount, 
+        string $quizType, 
+        string $difficulty, 
+        ?string $activityName
+    ): string
     {
-        $difficulty = $course->getDifficultyLevel();
-        
-        // Logic rules: Easy -> quiz, Medium -> challenge, Hard -> mini_project
-        $suggestedType = 'challenge';
-        if (stripos($difficulty, 'Easy') !== false) $suggestedType = 'quiz';
-        if (stripos($difficulty, 'Hard') !== false) $suggestedType = 'mini_project';
-
-        $typeGuidelines = match($suggestedType) {
-            'quiz' => 'Include 5 multiple-choice questions with 4 options each. Format them clearly in the instructions.',
-            'challenge' => 'Provide a specific technical challenge with clear constraints and a list of required features.',
-            'mini_project' => 'Include an architecture overview, a set of milestones, and detailed requirements.',
-            default => 'Provide step-by-step instructions.'
+        $typeGuidelines = match($quizType) {
+            'multiple_choice' => "Include exactly {$questionCount} multiple-choice questions with 4 options each and indicate the correct answer index (0-3).",
+            'true_false' => "Include exactly {$questionCount} true or false questions. Options must be ['True', 'False'] and indicate correct index (0 or 1).",
+            'mixed' => "Include exactly {$questionCount} questions, alternating between multiple-choice and true/false.",
+            default => "Provide {$questionCount} questions for this activity."
         };
+
+        $activityTitle = $activityName ?: "Quiz for " . $course->getName();
 
         return "Generate a highly professional learning activity for the following course:
         Course Title: {$course->getName()}
         Course Description: {$course->getComment()}
-        Level: {$course->getSemester()}
-        Difficulty: {$difficulty}
+        Course Level: {$course->getSemester()}
+        Requested Activity Name: {$activityTitle}
+        Requested Difficulty: {$difficulty}
 
         Requirements:
-        1. Type: {$suggestedType}
+        1. Type: {$quizType}
         2. Content Guidelines: {$typeGuidelines}
-        3. Duration: must be realistic for the difficulty (in minutes)
-        4. Instructions: must be comprehensive, structured with Markdown, and pedagogically sound.
-        5. Expected Output: define exactly what success looks like.
-        6. Format: Final response must be valid JSON only.
+        3. Question Count: {$questionCount}
+        4. Duration: Estimate a realistic duration (in minutes) for a student to complete this {$difficulty} level activity.
+        5. Instructions: MUST be a JSON array of question objects.
+        6. Expected Output: Briefly describe the learning objectives.
+        7. Format: Final response must be valid JSON only.
 
         Response JSON Format:
         {
-            \"title\": \"string\",
-            \"description\": \"Professional overview\",
+            \"title\": \"{$activityTitle}\",
+            \"description\": \"Professional overview summarizing the activity's purpose\",
             \"duration\": 30,
-            \"type\": \"{$suggestedType}\",
-            \"instructions\": \"Full content here (questions for quiz, steps for challenge)\",
-            \"expected_output\": \"Detailed success criteria\",
-            \"hints\": \"Helpful tips for students\"
+            \"type\": \"quiz\",
+            \"instructions\": [
+                {
+                    \"question\": \"Text of the question\",
+                    \"options\": [\"Option 1\", \"Option 2\", \"Option 3\", \"Option 4\"],
+                    \"correct_answer_index\": 0,
+                    \"explanation\": \"Why this answer is correct\"
+                }
+            ],
+            \"expected_output\": \"Detailed success criteria and learning outcomes\",
+            \"hints\": \"Helpful tips for students to prepare for this quiz\"
         }";
     }
 }

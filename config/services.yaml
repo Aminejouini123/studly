@@ -44,3 +44,11 @@ services:
     App\Service\VoiceRssService:
         arguments:
             $apiKey: '%voicerss.api_key%'
+
+    # Dedicated client for AI Features via OpenRouter
+    App\Service\OpenRouterClient:
+        arguments:
+            $apiKey: '%env(OPENROUTER_API_KEY)%'
+            $model: '%env(OPENROUTER_MODEL)%'
+            $appUrl: '%env(OPENROUTER_APP_URL)%'
+            $appTitle: '%env(OPENROUTER_APP_TITLE)%'
