@@ -1,4 +1,4 @@
-<?php namespace App\Service; php
+<?php
 
 namespace App\Service;
 
