@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnAnalyze.addEventListener('click', async function() {
         const description = descriptionField.value;
-        if (!description || description.length < 10) {
-            alert('Veuillez saisir une description plus détaillée pour l\'analyse.');
+        if (!description.trim()) {
+            alert('Veuillez saisir une description pour l\'analyse.');
             return;
         }
 
