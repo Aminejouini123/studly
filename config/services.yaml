@@ -9,6 +9,7 @@ parameters:
     gemini.model: '%env(resolve:GEMINI_MODEL)%'
     voicerss.api_key: '%env(VOICERSS_API_KEY)%'
     python_exe: '%env(resolve:PYTHON_EXE)%'
+    openrouter.app_url: '%env(OPENROUTER_APP_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -40,6 +41,14 @@ services:
     App\Service\FaceRecognitionService:
         arguments:
             $faceApiUrl: '%env(FACE_API_URL)%'
+
+    # Default OpenRouter client (Chatbot)
+    App\Service\OpenRouterClient:
+        arguments:
+            $apiKey: '%env(OPENROUTER_API_KEY)%'
+            $model: '%env(OPENROUTER_MODEL)%'
+            $appUrl: '%openrouter.app_url%'
+            $appTitle: '%env(OPENROUTER_APP_TITLE)%'
 
     # Dedicated client for Quiz Generation
     app.quiz_api_client:
