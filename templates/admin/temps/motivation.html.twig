@@ -3,12 +3,15 @@
 {% block title %}Manage Motivation{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_temps_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Temps</a> / <span>Motivation</span>
+    <a href="{{ path('app_admin_temps_index') }}">Temps</a> / <span>Motivation</span>
 {% endblock %}
 
 {% block content %}
     <div class="dashboard-content">
-        <h1 class="page-title">Manage Motivation</h1>
+    <div style="margin-bottom: 32px;">
+        <h1 class="page-title" style="margin-bottom: 8px;">Manage Motivation</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Strategy for: <strong>{{ event.title }}</strong></p>
+    </div>
         
         {% for label, messages in app.flashes %}
             {% for message in messages %}
@@ -18,54 +21,60 @@
             {% endfor %}
         {% endfor %}
 
-        <div class="content-card" style="max-width: 600px; margin: 0 auto;">
+        <div class="content-card" style="max-width: 700px; margin: 0 auto;">
             <div class="card-header">
-                <h3>Motivation Strategy for: {{ event.title }}</h3>
-                 <div style="display: flex; gap: 10px;">
-                    <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
-                      {% if motivation.id %}
-                        <form method="post" action="{{ path('app_admin_temps_motivation_delete', {'id': event.id}) }}" onsubmit="return confirm('Delete motivation strategy?');">
+                <h3>Motivation Strategy</h3>
+                 <div style="display: flex; gap: 12px; align-items: center;">
+                    {% if motivation.id %}
+                        <form method="post" action="{{ path('app_admin_temps_motivation_delete', {'id': event.id}) }}" onsubmit="return confirm('Delete motivation strategy?');" style="margin: 0;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_motivation' ~ event.id) }}">
-                             <button class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;">Delete Strategy</button>
+                             <button type="submit" class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;">
+                                <i class="fas fa-trash"></i> Delete
+                             </button>
                         </form>
                     {% endif %}
+                    <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
                 </div>
             </div>
             
-            <div class="card-body" style="padding: 24px;">
-                {{ form_start(form) }}
+            <div class="card-body" style="padding: 32px;">
+                {{ form_start(form, {'attr': {'class': 'admin-form', 'novalidate': true}}) }}
                      {% if not form.vars.valid %}
-                    <div class="alert alert-danger" style="margin-bottom: 20px; color: #dc2626;">
-                        {{ form_errors(form) }}
+                    <div class="alert alert-danger" style="margin-bottom: 24px; color: #dc2626; background: #fff1f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; font-weight: 500;">
+                        <i class="fas fa-exclamation-circle"></i> Please correct the errors below.
                     </div>
                     {% endif %}
 
-                    <div class="form-group">
-                        <label class="form-label">Motivation Level (1-10)</label>
-                        {{ form_widget(form.motivationLevel) }}
-                         <small style="color: #dc2626;">{{ form_errors(form.motivationLevel) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.motivationLevel, 'Motivation Level (1-10)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.motivationLevel, {'attr': {'class': 'form-control', 'placeholder': 'Rate 1 to 10'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.motivationLevel) }}</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Emotion</label>
-                        {{ form_widget(form.emotion) }}
-                         <small style="color: #dc2626;">{{ form_errors(form.emotion) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.emotion, 'Primary Emotion', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.emotion, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Focused, Stressed, Excited'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.emotion) }}</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Preparation</label>
-                        {{ form_widget(form.preparation) }}
-                         <small style="color: #dc2626;">{{ form_errors(form.preparation) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.preparation, 'Preparation Notes', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.preparation, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'What needs to be done before?'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.preparation) }}</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Reward</label>
-                        {{ form_widget(form.reward) }}
-                         <small style="color: #dc2626;">{{ form_errors(form.reward) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.reward, 'Planned Reward', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.reward, {'attr': {'class': 'form-control', 'rows': '3', 'placeholder': 'What is the reward for completing?'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.reward) }}</small>
                     </div>
 
-                    <div style="margin-top: 24px; text-align: right;">
-                        <button class="btn-action">Save Strategy</button>
+                    <div style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-action" style="padding: 12px 32px; font-size: 1rem;">
+                            <i class="fas fa-save"></i> Save Strategy
+                        </button>
                     </div>
                 {{ form_end(form) }}
             </div>

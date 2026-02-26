@@ -3,15 +3,15 @@
 {% block title %}Edit Group{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_groups_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Groups</a> / <span>Edit</span>
+    <a href="{{ path('app_admin_groups_index') }}">Groups</a> / <span>Edit</span>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-content">
 
-    <div style="margin-bottom: 24px;">
+    <div style="margin-bottom: 32px;">
         <h1 class="page-title" style="margin-bottom: 8px;">Edit Group</h1>
-        <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Update the details for <strong>{{ group.category }}</strong></p>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Update the details for <strong>{{ group.category }}</strong></p>
     </div>
 
     {{ form_start(form, {'attr': {'class': 'admin-form', 'novalidate': true}}) }}
@@ -28,14 +28,14 @@
 
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="content-card">
-                <div class="card-body" style="padding: 24px;">
-                    <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+                <div class="card-body" style="padding: 32px;">
+                    <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; margin-bottom: 12px;">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
-                    <a href="{{ path('app_admin_groups_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border); width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+                    <a href="{{ path('app_admin_groups_index') }}" class="btn-secondary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; margin-bottom: 12px;">
                         Cancel
                     </a>
-                    <div style="border-top: 1px solid var(--admin-border); margin: 12px 0; padding-top: 12px;">
+                    <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px;">
                         {{ include('groups/_delete_form.html.twig') }}
                     </div>
                 </div>
