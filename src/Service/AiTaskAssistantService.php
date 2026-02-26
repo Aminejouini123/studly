@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
+use App\Service\OpenRouterClient;
+
 class AiTaskAssistantService
 {
     public function __construct(
-        private GeminiClient $client
+        private OpenRouterClient $client
     ) {}
 
     /**
@@ -27,7 +29,8 @@ class AiTaskAssistantService
             throw new \RuntimeException('AI Service Error: ' . $errorMsg);
         }
 
-        $content = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        // OpenRouter return format: ['choices'][0]['message']['content']
+        $content = $response['choices'][0]['message']['content'] ?? null;
 
         if (!$content) {
             throw new \RuntimeException('No response from AI service. Check your API key and quota.');

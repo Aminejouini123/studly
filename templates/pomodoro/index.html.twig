@@ -38,6 +38,12 @@ input:checked + .slider:before { transform: translateX(24px); }
 .ai-toggle-box:hover { box-shadow: 0 12px 30px rgba(14,165,233,0.12); transform: translateY(-3px); border-color: #bae6fd; }
 .val-label { color:#64748b; font-size:0.95rem; font-weight:500; margin-bottom:8px; }
 .val-metric { font-size:1.8rem; font-weight:800; color:#0f172a; line-height:1; }
+/* Quote API Styles */
+.quote-container { margin-top:25px; padding:20px 30px; border-radius:16px; background:linear-gradient(135deg, #f0f9ff, #e0f2fe); border:1px solid #bae6fd; min-height:100px; display:none; flex-direction:column; justify-content:center; align-items:center; transition:opacity 0.5s ease; opacity:0; box-shadow:0 8px 20px rgba(14,165,233,0.08); }
+.quote-container.visible { display:flex; opacity:1; }
+.quote-text { font-size:1.15rem; font-style:italic; font-weight:600; color:#0369a1; text-align:center; margin-bottom:10px; line-height:1.5; }
+.quote-author { font-size:0.9rem; font-weight:700; color:#0ea5e9; text-transform:uppercase; letter-spacing:1px; }
+
 </style>
 
 <div class="row" style="margin-bottom:20px; align-items:center;">
@@ -77,6 +83,12 @@ input:checked + .slider:before { transform: translateX(24px); }
                 <button class="btn-round btn-start" id="start-btn" onclick="onStartBtn()"><i class="fas fa-play"></i></button>
                 <button class="btn-round btn-pause" id="pause-btn" onclick="pauseTimer()"><i class="fas fa-pause"></i></button>
                 <button class="btn-round btn-reset" onclick="resetTimer()"><i class="fas fa-redo"></i></button>
+            </div>
+
+            <!-- Quotable API Motivational Quote Container -->
+            <div id="quote-container" class="quote-container">
+                <div class="quote-text" id="quote-text">"Patience, the API is thinking..."</div>
+                <div class="quote-author" id="quote-author">- Artificial Intelligence</div>
             </div>
 
             <!-- Instant Stats Card (Hidden by default) -->
@@ -457,6 +469,16 @@ function setTimer(minutes, type, btn) {
     updateDisplay();
     document.getElementById('current-session-label').textContent = type === 'WORK' ? 'Focus Time' : 'Time for a break';
 
+    // Quote API Logic: Fetch new quote if it's a break
+    const quoteContainer = document.getElementById('quote-container');
+    if (type === 'BREAK') {
+        quoteContainer.classList.add('visible');
+        fetchMotivationalQuote();
+    } else {
+        quoteContainer.classList.remove('visible');
+        setTimeout(() => { quoteContainer.style.display = 'none'; }, 500); // Wait for fade out
+    }
+
     // Update active button state
     document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
     if (btn) {
@@ -468,6 +490,28 @@ function setTimer(minutes, type, btn) {
                 el.classList.add('active');
             }
         });
+    }
+}
+
+async function fetchMotivationalQuote() {
+    const textEl = document.getElementById('quote-text');
+    const authorEl = document.getElementById('quote-author');
+    
+    textEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement de votre dose de motivation...';
+    authorEl.textContent = '';
+
+    try {
+        const response = await fetch('https://api.quotable.io/random?tags=technology,famous-quotes,wisdom');
+        if (!response.ok) throw new Error("API Limit Reached");
+        const data = await response.json();
+        
+        textEl.textContent = `"${data.content}"`;
+        authorEl.textContent = `- ${data.author}`;
+    } catch (error) {
+        console.error("Quote fetching failed: ", error);
+        // Beautiful fallback if offline or API blocked
+        textEl.textContent = "« Le succès est la somme de petits efforts, répétés jour après jour. »";
+        authorEl.textContent = "- Robert Collier";
     }
 }
 

@@ -235,6 +235,10 @@ final class GroupsController extends AbstractController
         ]);
     }
 
+
+    /**
+     * Show group details (both student and admin can view)
+     */
     #[Route('/invitations', name: 'app_groups_invitations', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function listInvitations(InvitationRepository $invitationRepository): Response
@@ -246,7 +250,7 @@ final class GroupsController extends AbstractController
         ]);
     }
 
-    #[Route('/invitations/{id}/accept', name: 'app_groups_invitation_accept', methods: ['POST'])]
+    #[Route('/invitations/{id}/accept', name: 'app_groups_invitation_accept', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
     {
@@ -262,7 +266,6 @@ final class GroupsController extends AbstractController
         $notification->setUser($invitation->getSender());
         $notification->setContent($this->getUser()->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
 
-        $entityManager->persist($group);
         $entityManager->persist($notification);
         $entityManager->flush();
 
@@ -270,7 +273,7 @@ final class GroupsController extends AbstractController
         return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
     }
 
-    #[Route('/invitations/{id}/refuse', name: 'app_groups_invitation_refuse', methods: ['POST'])]
+    #[Route('/invitations/{id}/refuse', name: 'app_groups_invitation_refuse', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function refuseInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
     {
@@ -279,7 +282,7 @@ final class GroupsController extends AbstractController
         }
 
         $invitation->setStatus(Invitation::STATUS_REJECTED);
-
+        
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
         $notification->setContent($this->getUser()->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
@@ -291,10 +294,7 @@ final class GroupsController extends AbstractController
         return $this->redirectToRoute('app_groups_invitations');
     }
 
-    /**
-     * Show group details (both student and admin can view)
-     */
-    #[Route('/{id}', name: 'app_groups_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_groups_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function show(Group $group): Response
     {
@@ -315,7 +315,7 @@ final class GroupsController extends AbstractController
     /**
      * Front Office: Edit a group (students can only edit their own groups)
      */
-    #[Route('/{id}/edit', name: 'app_groups_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_groups_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ETUDIANT')]
     public function edit(Request $request, Group $group, EntityManagerInterface $entityManager): Response
     {
@@ -368,7 +368,7 @@ final class GroupsController extends AbstractController
     /**
      * Front Office: Delete a group (students can only delete their own groups)
      */
-    #[Route('/{id}', name: 'app_groups_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_groups_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ETUDIANT')]
     public function delete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
@@ -412,7 +412,7 @@ final class GroupsController extends AbstractController
         return $this->redirectToRoute('app_admin_groups_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/{id}/invite', name: 'app_groups_invite', methods: ['POST'])]
+    #[Route('/{id}/invite', name: 'app_groups_invite', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ETUDIANT')]
     public function inviteUser(Request $request, Group $group, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
@@ -478,9 +478,7 @@ final class GroupsController extends AbstractController
         return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
     }
 
-
-
-    #[Route('/{id}/message', name: 'app_groups_send_message', methods: ['POST'])]
+    #[Route('/{id}/message', name: 'app_groups_send_message', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
     public function sendMessage(Request $request, Group $group, EntityManagerInterface $entityManager): Response
     {

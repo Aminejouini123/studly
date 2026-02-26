@@ -39,7 +39,7 @@ final class ChatBotController extends AbstractController
             if (($action === 'summarize_file' || str_contains(strtolower($userMessage), 'résumer le fichier')) && !empty($context['course_file'])) {
                 $fileContent = $pdfScanner->extractText($context['course_file']);
                 if (!empty($fileContent)) {
-                    // Truncate to avoid token limits (OpenRouter handles large context but better safe)
+                    // Truncate to avoid token limits
                     $truncatedContent = mb_substr($fileContent, 0, 10000);
                     $systemPrompt .= "\n\nDOCUMENT CONTENT (Extracted from course PDF):\n" . $truncatedContent;
                     $systemPrompt .= "\n\nINSTRUCTION: The user wants a summary of this document. Please provide a well-structured, bulleted summary focusing on key learning objectives.";
@@ -63,11 +63,12 @@ final class ChatBotController extends AbstractController
             return $this->json(['answer' => 'Erreur de l\'API IA : ' . ($data['error']['message'] ?? 'Erreur inconnue')]);
         }
 
+        // OpenRouter return format: ['choices'][0]['message']['content']
         $answer = $data['choices'][0]['message']['content'] ?? null;
 
         return $this->json([
             'answer' => $answer,
-            'raw' => $data['usageMetadata'] ?? null,
+            'raw' => $data['usage'] ?? null,
         ]);
     }
 

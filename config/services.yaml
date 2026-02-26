@@ -42,26 +42,7 @@ services:
         arguments:
             $faceApiUrl: '%env(FACE_API_URL)%'
 
-    # Default OpenRouter client (Chatbot)
-    App\Service\OpenRouterClient:
-        arguments:
-            $apiKey: '%env(OPENROUTER_API_KEY)%'
-            $model: '%env(OPENROUTER_MODEL)%'
-            $appUrl: '%openrouter.app_url%'
-            $appTitle: '%env(OPENROUTER_APP_TITLE)%'
 
-    # Dedicated client for Quiz Generation
-    app.quiz_api_client:
-        class: App\Service\OpenRouterClient
-        arguments:
-            $apiKey: '%env(QUIZ_API_KEY)%'
-            $model: '%env(QUIZ_MODEL)%'
-            $appUrl: '%openrouter.app_url%'
-            $appTitle: "Studly Quiz Generator"
-
-    App\Service\AiActivityGeneratorService:
-        arguments:
-            $client: '@app.quiz_api_client'
 
     App\Service\VoiceRssService:
         arguments:
@@ -70,3 +51,11 @@ services:
     App\Service\SmartPlanningService:
         arguments:
             $pythonExe: '%python_exe%'
+
+    # Dedicated client for AI Features via OpenRouter
+    App\Service\OpenRouterClient:
+        arguments:
+            $apiKey: '%env(OPENROUTER_API_KEY)%'
+            $model: '%env(OPENROUTER_MODEL)%'
+            $appUrl: '%env(OPENROUTER_APP_URL)%'
+            $appTitle: '%env(OPENROUTER_APP_TITLE)%'
