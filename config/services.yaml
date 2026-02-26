@@ -40,18 +40,6 @@ services:
         arguments:
             $faceApiUrl: '%env(FACE_API_URL)%'
 
-    # Dedicated client for Quiz Generation
-    app.quiz_api_client:
-        class: App\Service\OpenRouterClient
-        arguments:
-            $apiKey: '%env(QUIZ_API_KEY)%'
-            $model: '%env(QUIZ_MODEL)%'
-            $appUrl: '%openrouter.app_url%'
-            $appTitle: "Studly Quiz Generator"
-
-    App\Service\AiActivityGeneratorService:
-        arguments:
-            $client: '@app.quiz_api_client'
 
     App\Service\VoiceRssService:
         arguments:
