@@ -1,4 +1,6 @@
-﻿
+﻿<?php
+
+namespace App\Service;
 
 use App\Entity\Activity;
 use App\Entity\Course;
