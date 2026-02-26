@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Service\OpenRouterClient;
+
 class AiTaskAssistantService
 {
     public function __construct(
@@ -27,6 +29,7 @@ class AiTaskAssistantService
             throw new \RuntimeException('AI Service Error: ' . $errorMsg);
         }
 
+        // OpenRouter return format: ['choices'][0]['message']['content']
         $content = $response['choices'][0]['message']['content'] ?? null;
 
         if (!$content) {

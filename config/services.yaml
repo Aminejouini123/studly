@@ -70,3 +70,4 @@ services:
     App\Service\SmartPlanningService:
         arguments:
             $pythonExe: '%python_exe%'
+

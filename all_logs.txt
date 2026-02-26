@@ -1,0 +1,874 @@
+﻿commit 53f0c52f40d19eeb7fd4f5a81f8316c9f5fae3cc
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 04:15:25 2026 +0100
+
+    Update project task templates and migrations
+
+ error2.log                                         | Bin 0 -> 5284 bytes
+ exports/startup_test.log                           |   2 +-
+ exports/stealth_launch.vbs                         |   2 +-
+ fix_bom.php                                        |   9 ++
+ migrations/Version20260226021443.php               |  43 +++++++++
+ public/exports/planning_26-02-2026.pdf             | Bin 0 -> 1879 bytes
+ .../projects/planning-etudiant-1-699fad0a30156.pdf |  98 +++++++++++++++++++++
+ .../__pycache__/analyzer.cpython-314.pyc           | Bin 2425 -> 2425 bytes
+ .../__pycache__/pdf_generator.cpython-314.pyc      | Bin 5477 -> 5477 bytes
+ .../__pycache__/scheduler.cpython-314.pyc          | Bin 2315 -> 2315 bytes
+ templates/project_task/edit.html.twig              |   4 +-
+ templates/project_task/new.html.twig               |   4 +-
+ 12 files changed, 156 insertions(+), 6 deletions(-)
+
+commit d6cff5cd146ad0552cae6733dcd350d61f0c13b4
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 03:09:51 2026 +0100
+
+    Merge branch 'gestion_cours' into main
+
+ .env.example | 84 ++++++++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 70 insertions(+), 14 deletions(-)
+
+commit be1109780d72e8ebb34b986d92160f82f0c9d07b
+Merge: b06b8d2 a3c653e
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 03:04:48 2026 +0100
+
+    Merge branch 'main' of https://github.com/Aminejouini123/studly into gestion_cours
+
+commit b06b8d2ca38d4f88665b623199e8fb1efb272ae5
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 02:53:26 2026 +0100
+
+    Add .env.example with correct AI API keys so team members can copy it
+
+ .env.example | 84 ++++++++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 70 insertions(+), 14 deletions(-)
+
+commit aee1079a11e219d51626f167d54c3271ed8d8dff
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 02:31:53 2026 +0100
+
+    Restore fixed .env and resolve GroupsController conflict
+
+ .env | 87 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
+
+commit a3c653ef1e67dc05e6a1feeeb8997b9868470b39
+Merge: 0166b70 3710f84
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 02:29:48 2026 +0100
+
+    Merge pull request #35 from Aminejouini123/gestion_cours
+    
+    Gestion cours
+
+commit 3710f846eb198134c79f3daa1627514547bcef96
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 02:11:37 2026 +0100
+
+    Fix AI API issues: OpenRouter Client for Chatbot and services.yaml app_url fix
+
+ config/services.yaml                 | 9 +++++++++
+ src/Controller/ChatBotController.php | 6 +++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+commit abb1f87f348fcca5c4026fb64d85dcd2b8be1691
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 01:38:23 2026 +0100
+
+    Security: Remove sensitive files from tracking and update gitignore to stop API key leak
+
+ .env                                       |  75 ------------
+ .gitignore                                 |   3 +
+ recommendation_api/temp_uvicorn.log        | Bin 1844 -> 0 bytes
+ src/Service/AiActivityGeneratorService.php | 176 ++++++++++++++++++-----------
+ src/Service/OpenRouterClient.php           |  40 +++++++
+ 5 files changed, 150 insertions(+), 144 deletions(-)
+
+commit aa4004ed4f5ef217f65b563e0a72bf8a8232a915
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 26 00:37:48 2026 +0100
+
+    Fix dashboard routes and revert to original aesthetic with dynamic progress
+
+ composer.json                                      |   2 +-
+ composer.lock                                      | 560 +++++++++++++++-
+ config/services.yaml                               |   5 +
+ create_test_data.php                               |  16 +
+ diff_list.txt                                      | Bin 0 -> 11154 bytes
+ exports/startup_test.log                           |   2 +-
+ exports/stealth_launch.vbs                         |   2 +-
+ exports/stop_6.txt                                 |   1 +
+ exports/stop_7.txt                                 |   1 +
+ fix_group_data.php                                 |  39 ++
+ migrations/Version20260225024044.php               |  35 +
+ migrations_list.txt                                | Bin 0 -> 4472 bytes
+ migrations_list_full.txt                           | Bin 0 -> 4472 bytes
+ public/exports/planning_25-02-2026.pdf             | Bin 1936 -> 1879 bytes
+ .../uploads/activities/CH2-LMD-6996ebf7a1bef.pdf   | Bin 0 -> 126452 bytes
+ ...-conception-png-6987ec96e9617-69988b1f9331d.pdf | Bin 0 -> 96051 bytes
+ .../audio/1d09033b11d6ed5272f92b9410bffc4b.mp3     | Bin 0 -> 831119 bytes
+ ...f7.mp3 => 5a3b6fa9ba28b5c3b81f12af9d1f44da.mp3} | Bin 13800811 -> 12776393 bytes
+ .../audio/b8c4b021b50f257cca8bd1f4ee0e467d.mp3     | Bin 0 -> 12776393 bytes
+ ...C-2BB7-4F43-82DD-B6F0D9203DBC-69988bd692f42.png | Bin 0 -> 39148 bytes
+ ...C-2BB7-4F43-82DD-B6F0D9203DBC-69988bf85512f.png | Bin 0 -> 39148 bytes
+ public/uploads/courses/CH2-LMD-69964e345a281.pdf   | Bin 0 -> 126452 bytes
+ public/uploads/courses/CH2-LMD-6996e1b301c19.pdf   | Bin 0 -> 126452 bytes
+ public/uploads/courses/CH2-LMD-699e4460a74eb.pdf   | Bin 0 -> 126452 bytes
+ .../courses/Chapitre-5-Heritage-6996449db1267.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699644a1cf399.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699644cfe0da9.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-69990136602f2.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699de64fe083e.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699de9f60a919.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699df77b603da.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699df7918827c.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699df8342f872.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699df938d160d.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699e61974fed6.pdf  | Bin 0 -> 951501 bytes
+ .../courses/Chapitre-5-Heritage-699f0a602209e.pdf  | Bin 0 -> 951501 bytes
+ .../Chapitre-7-Les-Exceptions-699d8838e6651.pdf    | Bin 0 -> 764812 bytes
+ ...e-698a7a7aa39cf-698bc0ad622f0-69964bae4f4a3.pdf | Bin 0 -> 121661 bytes
+ .../courses/planning-etudiant-1-699f7eff28349.pdf  |  98 +++
+ ...698bc0ad622f0-6994cce194adf-1-699deb29344b6.pdf | Bin 0 -> 121661 bytes
+ ...698bc0ad622f0-6994cce194adf-1-699f1014ee29d.pdf | Bin 0 -> 121661 bytes
+ ...e-698a7a7aa39cf-698bc0ad622f0-699de892c8feb.pdf | Bin 0 -> 121661 bytes
+ ...e-698a7a7aa39cf-698bc0ad622f0-699dea203d163.pdf | Bin 0 -> 121661 bytes
+ ...e-698a7a7aa39cf-698bc0ad622f0-699e44b3dadf5.pdf | Bin 0 -> 121661 bytes
+ ...e-698a7a7aa39cf-698bc0ad622f0-699f824155075.pdf | Bin 0 -> 121661 bytes
+ .../__pycache__/analyzer.cpython-314.pyc           | Bin 0 -> 2425 bytes
+ .../__pycache__/pdf_generator.cpython-314.pyc      | Bin 0 -> 5477 bytes
+ .../__pycache__/scheduler.cpython-314.pyc          | Bin 0 -> 2315 bytes
+ requirements.txt                                   |   4 +
+ schema_dump.txt                                    | Bin 0 -> 16890 bytes
+ scripts/check_creators.php                         |  18 +
+ scripts/fix_group_data_v2.php                      |  49 ++
+ scripts/list_groups.php                            |  18 +
+ scripts/test_find_group.php                        |  22 +
+ src/Controller/AiActivityController.php            |   4 +
+ src/Controller/FrontController.php                 |  21 +-
+ src/Controller/PomodoroController.php              |   4 +-
+ src/Entity/Course.php                              |  16 +
+ src/Repository/CourseRepository.php                |  14 +
+ src/Repository/EventRepository.php                 |  26 +-
+ src/Repository/ExamRepository.php                  |  36 +-
+ src/Repository/TaskRepository.php                  |  35 +-
+ src/Service/SmartPlanningService.php               |   7 +-
+ templates/activity/frontActivity.html.twig         |   2 +-
+ templates/admin/temps/edit.html.twig               |  94 +--
+ templates/admin/temps/motivation.html.twig         |  71 +-
+ templates/admin/temps/new.html.twig                |  96 +--
+ templates/back/base.html.twig                      | 745 ++++++++++++---------
+ templates/back/dashboard.html.twig                 | 161 +++--
+ templates/courses/backCourses.html.twig            |  63 +-
+ templates/courses/backEdit.html.twig               |  76 +--
+ templates/courses/backShow.html.twig               |  19 +-
+ templates/front/front.html.twig                    | 205 +++---
+ templates/groups/backGroups.html.twig              |  51 +-
+ templates/groups/back_groups_edit.html.twig        |  14 +-
+ templates/groups/back_groups_new.html.twig         |  12 +-
+ templates/groups/back_groups_show.html.twig        |  46 +-
+ templates/user/index.html.twig                     | 114 ++--
+ 78 files changed, 1927 insertions(+), 877 deletions(-)
+
+commit 0166b7016ae5bb481b5dda18d8a2b40cc3be239b
+Merge: f1ac59b 8e8f807
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Wed Feb 25 23:46:30 2026 +0100
+
+    Merge branch 'gestion_group' into main
+
+commit 8e8f8074be1a62d0b9682d1c6bd5433e4ecd214a
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Wed Feb 25 23:40:09 2026 +0100
+
+    Fix AI Service Quota error with fallback mocks and update AI implementations
+
+ .env                                               |  11 ++-
+ config/services.yaml                               |  14 +--
+ list_models.php                                    |  35 +++++++
+ .../deliverables/AF-Part-1-699edb890eb8e.pdf       | Bin 0 -> 3048528 bytes
+ .../deliverables/AF-Part-3-699edbcf63a34.pdf       | Bin 0 -> 2707591 bytes
+ .../deliverables/AF-Part-3-699edd9e13213.pdf       | Bin 0 -> 2707591 bytes
+ ...lyse-Syntaxique-699c4eb268b6c-699f0d6ce2788.pdf | Bin 0 -> 935891 bytes
+ .../Analyse-Syntaxique-699f0a39bf62b.pdf           | Bin 0 -> 935891 bytes
+ ...-Les-grammaires-699edb41d4e30-699f0ce1bcbb5.pdf | Bin 0 -> 1543359 bytes
+ .../Ch-3-Les-grammaires-699f09c69dcb2.pdf          | Bin 0 -> 1543359 bytes
+ .../Ch-3-TLA-Les-Grammaires-699ed16783874.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699ed90eebe6f.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f01c8b3586.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f04b360d9a.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f09b6ed87b.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f0a06162da.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f0a162ff1c.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f0bf8270ee.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f0c9419f62.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f68856023d.pdf      | Bin 0 -> 1513052 bytes
+ .../projects/Analyse-Syntaxique-699f0d161688e.pdf  | Bin 0 -> 935891 bytes
+ .../projects/Ch-3-Les-grammaires-699e3804d17d6.pdf | Bin 0 -> 1543359 bytes
+ .../projects/Ch-3-Les-grammaires-699ed0c32a71f.pdf | Bin 0 -> 1543359 bytes
+ .../projects/Ch-3-Les-grammaires-699ed882202f2.pdf | Bin 0 -> 1543359 bytes
+ .../projects/Ch-3-Les-grammaires-699edb41d4e30.pdf | Bin 0 -> 1543359 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f67d5ac86e.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f699f10ee4.pdf      | Bin 0 -> 1513052 bytes
+ .../Ch-3-TLA-Les-Grammaires-699f78998fd14.pdf      | Bin 0 -> 1513052 bytes
+ src/Controller/Api/ApiProjectTaskController.php    |  24 +++++
+ src/Controller/ChatBotController.php               |  13 ++-
+ src/Controller/ProjectTaskController.php           |  18 +++-
+ src/Service/AiActivityGeneratorService.php         |   9 +-
+ src/Service/AiTaskAssistantService.php             |  65 +++++++++++++
+ src/Service/GeminiClient.php                       | 106 +++++++++++++++++++++
+ src/Service/OpenRouterClient.php                   |  39 --------
+ src/Service/ScoreService.php                       |   6 ++
+ templates/groups/show.html.twig                    |  62 ++++++------
+ templates/project_task/edit.html.twig              |  71 ++++++++++++++
+ templates/project_task/new.html.twig               |  80 ++++++++++++++++
+ 39 files changed, 460 insertions(+), 93 deletions(-)
+
+commit f1ac59bff9ffe57fc25a67a4d515b4327a333e13
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Wed Feb 25 03:22:15 2026 +0100
+
+    Final conflict resolution and features
+
+ migrations/Version20260225013145.php               |  85 +++++++
+ .../audio/806dd4ce5f221607463c246b53d0e0f7.mp3     | Bin 0 -> 13800811 bytes
+ push_log.txt                                       | Bin 0 -> 5440 bytes
+ src/Controller/AiActivityController.php            |   8 +-
+ src/Entity/Activity.php                            |   4 +
+ src/Entity/Group.php                               |   2 +-
+ src/Form/ActivityType.php                          |   2 +-
+ stashed_CourseController.php                       |   0
+ status.txt                                         | Bin 0 -> 1072 bytes
+ templates/activity/frontActivity.html.twig         | 275 +++++++++++++++++----
+ templates/examen/frontExamen.html.twig             |  90 ++++---
+ 11 files changed, 371 insertions(+), 95 deletions(-)
+
+commit e02eb5cbe6903009b29d976bde29b6abc6019f0a
+Merge: 89e0d27 0fc8f64
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Wed Feb 25 02:27:54 2026 +0100
+
+    Merge remote-tracking branch 'origin/main' into clean-calendar
+    
+    # Conflicts:
+    #       .env
+    #       .gitignore
+    #       composer.json
+    #       composer.lock
+    #       config/services.yaml
+    #       migrations/Version20260217155657.php
+    #       src/Controller/ChatBotController.php
+    #       src/Controller/GoogleController.php
+    #       src/Entity/Activity.php
+    #       src/Entity/User.php
+    #       src/Security/GoogleAuthenticator.php
+    #       src/Service/AiActivityGeneratorService.php
+    #       src/Service/OpenRouterClient.php
+    #       symfony.lock
+    #       templates/activity/show.html.twig
+    #       templates/courses/show.html.twig
+
+commit 89e0d275093fbce55ef53b40a2af0e133aed77ac
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Wed Feb 25 02:04:10 2026 +0100
+
+    design
+
+ exports/startup_test.log                         |   2 +-
+ exports/stealth_launch.vbs                       |   2 +-
+ public/exports/planning_25-02-2026.pdf           | Bin 2032 -> 1936 bytes
+ public/uploads/courses/CH3-LID-699e4a0c1088e.pdf | Bin 0 -> 912120 bytes
+ templates/temps/index.html.twig                  | 345 ++++++++++++++++++++---
+ 5 files changed, 310 insertions(+), 39 deletions(-)
+
+commit ee5c56f3cac08496ab4d21dec883780c126fd947
+Merge: 0fc8f64 8f8184a
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Wed Feb 25 01:45:17 2026 +0100
+
+    WIP on main: 0fc8f64 Merge branch 'gestion_cours' into main and resolve conflict in services.yaml
+
+commit 8f8184ac85c5edada2d543710be131309746e4f2
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Wed Feb 25 01:45:17 2026 +0100
+
+    index on main: 0fc8f64 Merge branch 'gestion_cours' into main and resolve conflict in services.yaml
+
+ .env                                       |  24 ++-
+ src/Controller/AiActivityController.php    |   8 +-
+ src/Entity/Activity.php                    |  34 +---
+ src/Form/ActivityType.php                  |   2 +-
+ templates/activity/frontActivity.html.twig | 275 +++++++++++++++++++++++------
+ templates/examen/frontExamen.html.twig     |  90 +++++-----
+ 6 files changed, 305 insertions(+), 128 deletions(-)
+
+commit 74caf38a55c6554f361a3952d9938ea69e5cab20
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Wed Feb 25 01:38:52 2026 +0100
+
+    camera ia
+
+ exports/pythonw_crash.log                     |   2 +
+ exports/startup_test.log                      |   1 +
+ exports/status_2.json                         |   1 +
+ exports/status_999.json                       |   1 +
+ exports/stealth_launch.vbs                    |   2 +
+ exports/stop_100.txt                          |   1 +
+ exports/stop_101.txt                          |   1 +
+ exports/stop_102.txt                          |   1 +
+ exports/stop_103.txt                          |   1 +
+ exports/stop_112.txt                          |   1 +
+ exports/stop_89.txt                           |   1 +
+ exports/stop_90.txt                           |   1 +
+ exports/stop_91.txt                           |   1 +
+ exports/stop_92.txt                           |   1 +
+ exports/stop_93.txt                           |   1 +
+ exports/stop_94.txt                           |   1 +
+ exports/stop_95.txt                           |   1 +
+ exports/stop_96.txt                           |   1 +
+ exports/stop_98.txt                           |   1 +
+ exports/stop_99.txt                           |   1 +
+ exports/test_stealth.vbs                      |   2 +
+ public/exports/planning_25-02-2026.pdf        |  97 ++++++
+ python_services/attention_tracking/tracker.py | 219 ++++++++++++++
+ src/Controller/PomodoroController.php         | 158 ++++++++++
+ src/Entity/PomodoroSession.php                |  30 ++
+ templates/pomodoro/index.html.twig            | 421 ++++++++++++++++++++++++--
+ templates/temps/index.html.twig               |   6 +-
+ 27 files changed, 923 insertions(+), 32 deletions(-)
+
+commit 0fa1c87c9a693728260316e544622350079e6103
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Tue Feb 24 22:43:38 2026 +0100
+
+     planning IA
+
+ exports/planning_2026-02-24.pdf                    | Bin 0 -> 2088 bytes
+ exports/planning_today.pdf                         |  98 +++++++++++++++++++++
+ public/exports/planning_24-02-2026.pdf             | Bin 0 -> 2059 bytes
+ .../__pycache__/analyzer.cpython-313.pyc           | Bin 0 -> 2329 bytes
+ .../__pycache__/pdf_generator.cpython-313.pyc      | Bin 0 -> 5552 bytes
+ .../__pycache__/scheduler.cpython-313.pyc          | Bin 0 -> 2207 bytes
+ python_services/time_management/analyzer.py        |  65 ++++++++++++++
+ python_services/time_management/main.py            |  63 +++++++++++++
+ python_services/time_management/pdf_generator.py   |  85 ++++++++++++++++++
+ python_services/time_management/scheduler.py       |  67 ++++++++++++++
+ src/Controller/TempsController.php                 |  67 ++++++++++++++
+ src/Service/SmartPlanningService.php               |  52 +++++++++++
+ templates/temps/index.html.twig                    |  88 +++++++++++++++++-
+ 13 files changed, 584 insertions(+), 1 deletion(-)
+
+commit 945413ad82cf0ce3075ef9565b7800fb5594c68a
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Tue Feb 24 22:07:05 2026 +0100
+
+    API calendar clean version
+
+ .env                                               |   41 -
+ .env.example                                       |   31 +
+ .gitignore                                         |    2 +
+ composer.json                                      |    5 +
+ composer.lock                                      | 1313 +++++++++++++++++++-
+ config/bundles.php                                 |    1 +
+ config/packages/google_apiclient.yaml              |   11 +
+ config/packages/knpu_oauth2_client.yaml            |   14 +
+ config/packages/knpu_oauth2_client.yaml.bak        |   14 +
+ config/packages/knpu_oauth2_client.yaml.bak2       |   14 +
+ config/packages/mailer.yaml                        |    5 +
+ config/packages/messenger.yaml                     |    5 +-
+ config/packages/security.yaml                      |    1 +
+ config/services.yaml                               |   15 +
+ migrations/Version20260217155657.php               |   81 ++
+ migrations/Version20260217173927.php               |   81 ++
+ migrations_backup/sqlite_backup                    |   75 ++
+ .../Chapitre-5-Heritage-6995ee71aec39.pdf          |  Bin 0 -> 951501 bytes
+ .../uploads/activities/Prosit-8-6995e614da413.pdf  |  Bin 0 -> 140595 bytes
+ ...698bc0ad622f0-6994cce194adf-1-6995d2eb87f7e.pdf |  Bin 0 -> 121661 bytes
+ .../courses/Chapitre-5-Heritage-6995d0fd0230d.pdf  |  Bin 0 -> 951501 bytes
+ .../Chapitre-6-Polymorphisme-6996f7c803e37.pdf     |  Bin 0 -> 429377 bytes
+ .../Chapitre-7-Les-Exceptions-6995f2d88fee7.pdf    |  Bin 0 -> 764812 bytes
+ .../courses/TP1-SQLAVANCE-2-698deb337308c.pdf      |  Bin 0 -> 195147 bytes
+ public/uploads/exams/Prosit-8-6995d84a4187f.pdf    |  Bin 0 -> 140595 bytes
+ .../exams/TP1-SQLAVANCE-2-698deb81943b5.pdf        |  Bin 0 -> 195147 bytes
+ ...698bc0ad622f0-6994cce194adf-1-6995d18998f01.pdf |  Bin 0 -> 121661 bytes
+ ...f-698bc0ad622f0-6994cce194adf-6995ee274c94d.pdf |  Bin 0 -> 121661 bytes
+ schema_fix.sql                                     |  Bin 0 -> 4386 bytes
+ src/Command/TestCourseEmailCommand.php             |   76 ++
+ src/Controller/Admin/DashboardController.php       |   49 +-
+ src/Controller/AiActivityController.php            |   47 +
+ src/Controller/Auth/AuthController.php             |   38 +-
+ src/Controller/Auth/ForgotPasswordController.php   |   60 +
+ src/Controller/Auth/ResetPasswordController.php    |   61 +
+ src/Controller/ChatBotController.php               |  211 ++++
+ src/Controller/ExamenController.php                |    4 +-
+ src/Controller/FrontController.php                 |   23 +-
+ src/Controller/GoogleController.php                |   36 +
+ src/Controller/TempsController.php                 |  107 +-
+ src/Controller/VerifyEmailController.php           |   49 +
+ src/Entity/Activity.php                            |   97 +-
+ src/Entity/Course.php                              |   56 +-
+ src/Entity/Event.php                               |   14 +
+ src/Entity/Exam.php                                |   36 +-
+ src/Entity/PasswordResetToken.php                  |   86 ++
+ src/Entity/User.php                                |   82 ++
+ src/EventListener/CourseCreatedListener.php        |   46 +
+ src/Form/ActivityType.php                          |   85 +-
+ src/Form/CourseType.php                            |   80 +-
+ src/Form/ExamType.php                              |   58 +-
+ src/Repository/CourseRepository.php                |   32 +
+ src/Repository/EventRepository.php                 |   14 +
+ src/Security/GoogleAuthenticator.php               |  141 +++
+ src/Service/AiActivityGeneratorService.php         |  102 ++
+ src/Service/GoogleCalendarService.php              |  246 ++++
+ src/Service/OpenRouterClient.php                   |   46 +
+ src/Service/PasswordResetService.php               |   55 +
+ src/Service/PdfScannerService.php                  |   46 +
+ symfony.lock                                       |   30 +
+ templates/activity/backActivity.html.twig          |   42 +-
+ templates/activity/edit.html.twig                  |   34 +-
+ templates/activity/frontActivity.html.twig         |  353 +++++-
+ templates/activity/new.html.twig                   |   28 +
+ templates/activity/show.html.twig                  |   94 +-
+ templates/admin/dashboard.html.twig                |   94 +-
+ templates/auth/forgot_password.html.twig           |   38 +
+ templates/auth/login.html.twig                     |  100 +-
+ templates/auth/reset_password.html.twig            |   47 +
+ templates/auth/verify_email.html.twig              |  102 ++
+ templates/chat/_chat_widget.html.twig              |  507 ++++++++
+ templates/chat/index.html.twig                     |   15 +
+ templates/courses/backCourses.html.twig            |   18 +-
+ templates/courses/frontCourses.html.twig           |   18 +-
+ templates/courses/show.html.twig                   |  991 +++++++++++++--
+ templates/emails/course_created.html.twig          |  187 +++
+ templates/emails/reset_password.html.twig          |   77 ++
+ templates/examen/backExamen.html.twig              |   40 +-
+ templates/examen/show.html.twig                    |  613 ++++-----
+ templates/front/front.html.twig                    |   17 +-
+ templates/temps/index.html.twig                    |  224 +++-
+ templates/user/profile.html.twig                   |   13 +-
+ 82 files changed, 6718 insertions(+), 756 deletions(-)
+
+commit 256851e6ce16dacd9fc3eb19c782c8107b23b0a1
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Tue Feb 24 22:00:31 2026 +0100
+
+    Remove .env from tracking
+
+ .env | 41 -----------------------------------------
+ 1 file changed, 41 deletions(-)
+
+commit 270e8459f7fa74cbba0f3cb61a7823a0363c555e
+Author: ghalia <wannenghalia@gmail.com>
+Date:   Tue Feb 24 21:39:35 2026 +0100
+
+    API CALENDAR
+
+ src/Controller/.gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 0fc8f64ee74bd1a2b951f70f5484f53a1473f3b5
+Merge: 833420e 1d8ff4c
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Tue Feb 24 19:54:37 2026 +0100
+
+    Merge branch 'gestion_cours' into main and resolve conflict in services.yaml
+
+commit 1d8ff4c1166cb81d896ed4b359278b49674ef85b
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Tue Feb 24 19:49:19 2026 +0100
+
+    feat: enhance chatbot with exam/course context awareness and voice rss service
+
+ .gitignore                                 |  Bin 475 -> 538 bytes
+ composer.json                              |    1 +
+ composer.lock                              |  685 ++++++++++++++++-
+ config/services.yaml                       |   19 +
+ src/Controller/ChatBotController.php       |  135 ++--
+ src/Controller/VoiceRssController.php      |   76 ++
+ src/Service/AiActivityGeneratorService.php |  175 +++--
+ src/Service/FileScannerService.php         |  124 +++
+ src/Service/OpenRouterClient.php           |   57 +-
+ src/Service/VoiceRssService.php            |   72 ++
+ templates/activity/show.html.twig          | 1133 +++++++++++++++-------------
+ templates/courses/show.html.twig           |  276 ++++++-
+ 12 files changed, 2083 insertions(+), 670 deletions(-)
+
+commit ce6693db3e04d32fc2d6f7884c0e7060255cb7d8
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Mon Feb 23 15:05:06 2026 +0100
+
+    Add login page with email validation
+
+ migrations/Version20260223111455.php               |  39 +++
+ migrations/Version20260223114136.php               |  46 ++++
+ migrations/Version20260223120305.php               |  31 +++
+ migrations/Version20260223130521.php               |  31 +++
+ .../deliverables/AF-Part-2-699c55708690d.pdf       | Bin 0 -> 2005258 bytes
+ .../Analyse-Syntaxique-699c442a16e15.pdf           | Bin 0 -> 935891 bytes
+ .../Analyse-Syntaxique-699c4792772e1.pdf           | Bin 0 -> 935891 bytes
+ ...-Les-grammaires-699c4623cd298-699c484488247.pdf | Bin 0 -> 1543359 bytes
+ ...-Les-grammaires-699c4623cd298-699c4a2570e33.pdf | Bin 0 -> 1543359 bytes
+ .../Ch-3-Les-grammaires-699c46827b31d.pdf          | Bin 0 -> 1543359 bytes
+ .../Ch-3-Les-grammaires-699c47a10be13.pdf          | Bin 0 -> 1543359 bytes
+ .../Ch-3-Les-grammaires-699c4eedee657.pdf          | Bin 0 -> 1543359 bytes
+ .../Ch-3-Les-grammaires-699c54a7c58ff.pdf          | Bin 0 -> 1543359 bytes
+ .../Ch-3-TLA-Les-Grammaires-699c50f59108e.pdf      | Bin 0 -> 1513052 bytes
+ .../projects/Analyse-Syntaxique-699c4eb268b6c.pdf  | Bin 0 -> 935891 bytes
+ .../projects/Ch-3-Les-grammaires-699c43f53f1a7.pdf | Bin 0 -> 1543359 bytes
+ .../projects/Ch-3-Les-grammaires-699c4623cd298.pdf | Bin 0 -> 1543359 bytes
+ src/Controller/Api/ApiGroupController.php          | 128 ++++++++++
+ src/Controller/Api/ApiInvitationController.php     | 142 +++++++++++
+ src/Controller/Api/ApiProjectController.php        |  93 +++++++
+ src/Controller/Api/ApiProjectTaskController.php    | 121 +++++++++
+ src/Controller/GroupsController.php                | 140 +++++++----
+ src/Controller/ProjectController.php               |  67 ++++-
+ src/Controller/ProjectTaskController.php           | 237 +++++++++++++++++-
+ src/Entity/Group.php                               |  16 +-
+ src/Entity/Invitation.php                          |   4 +-
+ src/Entity/Message.php                             |   2 +-
+ src/Entity/Project.php                             |   1 -
+ src/Entity/ProjectTask.php                         |  46 ++++
+ src/Form/ProjectTaskAttachmentType.php             |  48 ++++
+ src/Form/ProjectTaskDeliverableType.php            |  48 ++++
+ src/Form/ProjectTaskGradeType.php                  |  42 ++++
+ src/Form/ProjectTaskType.php                       |  18 +-
+ src/Form/ProjectType.php                           |  42 +++-
+ src/Repository/GroupRepository.php                 |  16 ++
+ src/Repository/InvitationRepository.php            |  18 ++
+ src/Service/ScoreService.php                       |  13 +
+ templates/groups/show.html.twig                    | 272 +++++++++++++++++++--
+ templates/project_task/grade.html.twig             |  45 ++++
+ templates/project_task/upload.html.twig            |  65 +++++
+ templates/project_task/upload_attachment.html.twig |  79 ++++++
+ 41 files changed, 1751 insertions(+), 99 deletions(-)
+
+commit 833420eb011ee22af11b9cefb0e48c45a77a9f12
+Merge: cb1840e f87766a
+Author: Aminejouini123 <164958844+Aminejouini123@users.noreply.github.com>
+Date:   Mon Feb 23 12:04:19 2026 +0100
+
+    Merge pull request #32 from Aminejouini123/gestion_group
+    
+    Add login page with email validation
+
+commit 41388cc48d6c3631be8794e9ec5ee134fd3474db
+Merge: 4da9095 cb1840e
+Author: Aminejouini123 <Medamine.Jouini@esprit.tn>
+Date:   Mon Feb 23 11:59:52 2026 +0100
+
+    Merge branch 'main' of https://github.com/Aminejouini123/studly into Gestion_Utilisateur
+
+commit cb1840ea69544e7c0a3e28dc4ef79f28f9184236
+Merge: 52e3e8a 45c9489
+Author: Aminejouini123 <164958844+Aminejouini123@users.noreply.github.com>
+Date:   Mon Feb 23 11:40:28 2026 +0100
+
+    Merge pull request #31 from Aminejouini123/Gestion_Utilisateur
+    
+    ia recomendation
+
+commit 45c9489db1a72aa8064c0345faf3b80d2a104a83
+Merge: 96b26ce 52e3e8a
+Author: Aminejouini123 <164958844+Aminejouini123@users.noreply.github.com>
+Date:   Mon Feb 23 11:40:17 2026 +0100
+
+    Merge branch 'main' into Gestion_Utilisateur
+
+commit 4da909540d2e4476284fa7b4898abcacf6976cee
+Merge: 96b26ce 05b34df
+Author: Aminejouini123 <Medamine.Jouini@esprit.tn>
+Date:   Mon Feb 23 11:34:21 2026 +0100
+
+    Merge branch 'main' into Gestion_Utilisateur
+
+commit f87766a52f6f6c129f2d4f4f92d3682a6ea67b59
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Sun Feb 22 17:25:10 2026 +0100
+
+    Add login page with email validation
+
+ migrations/Version20260222161046.php        |  41 +++++++++
+ migrations/Version20260222161947.php        |  33 ++++++++
+ migrations/Version20260222162242.php        |  33 ++++++++
+ src/Controller/GroupsController.php         |  21 +++--
+ src/Controller/ProjectController.php        |  95 +++++++++++++++++++++
+ src/Controller/ProjectTaskController.php    | 127 ++++++++++++++++++++++++++++
+ src/Entity/Group.php                        |  30 +++----
+ src/Entity/MemberGroup.php                  |  40 ---------
+ src/Entity/Project.php                      |  21 +++--
+ src/Entity/ProjectTask.php                  |   4 +
+ src/Form/GroupType.php                      |   5 --
+ src/Form/MemberGroupType.php                |  30 -------
+ src/Form/ProjectTaskType.php                |  12 +++
+ src/Repository/MemberGroupRepository.php    |  43 ----------
+ templates/groups/backGroups.html.twig       |   7 +-
+ templates/groups/back_groups_pdf.html.twig  |   2 +-
+ templates/groups/back_groups_show.html.twig |  31 +++----
+ templates/groups/frontGroups.html.twig      |  12 ++-
+ templates/groups/show.html.twig             |  87 +++++++++++++++----
+ templates/project/edit.html.twig            | 104 +++++++++++++++++++++++
+ templates/project/new.html.twig             |  95 +++++++++++++++++++++
+ templates/project_task/edit.html.twig       |  99 ++++++++++++++++++++++
+ templates/project_task/new.html.twig        |  91 ++++++++++++++++++++
+ 23 files changed, 869 insertions(+), 194 deletions(-)
+
+commit 96b26ce507b2f9604db40f8c0771bf4a7da2649a
+Author: Aminejouini123 <Medamine.Jouini@esprit.tn>
+Date:   Sun Feb 22 13:42:58 2026 +0100
+
+    ia recomendation
+
+ .env                                               |  74 -------
+ SCORE_SYSTEM_INTEGRATION_GUIDE.md                  | 198 +++++++++++++++++
+ check_db_schema.php                                |  51 +++++
+ config/packages/security.yaml                      |   3 +
+ face_service/__pycache__/database.cpython-313.pyc  | Bin 1185 -> 1185 bytes
+ face_service/__pycache__/main.cpython-313.pyc      | Bin 5774 -> 5774 bytes
+ fix_schema.php                                     |  39 ++++
+ migrations/Version20260211120000.php               |  30 +++
+ migrations/Version20260216000000.php               |  58 +++++
+ migrations/Version20260217155657.php               |   1 +
+ migrations/Version20260219123941.php               |  63 ++++++
+ migrations/Version20260222084127.php               |  61 ++++++
+ ...probabilite-et-statistiques-1-698cfbc1e7663.pdf | Bin 0 -> 328788 bytes
+ .../__pycache__/main.cpython-313.pyc               | Bin 0 -> 699 bytes
+ .../api/__pycache__/routes.cpython-313.pyc         | Bin 0 -> 1352 bytes
+ recommendation_api/api/routes.py                   |  25 +++
+ .../core/__pycache__/config.cpython-313.pyc        | Bin 0 -> 1561 bytes
+ recommendation_api/core/config.py                  |  30 +++
+ recommendation_api/main.py                         |  15 ++
+ .../models/__pycache__/schemas.cpython-313.pyc     | Bin 0 -> 1792 bytes
+ recommendation_api/models/schemas.py               |  24 +++
+ recommendation_api/requirements.txt                |   7 +
+ .../__pycache__/ai_service.cpython-313.pyc         | Bin 0 -> 8725 bytes
+ .../__pycache__/course_service.cpython-313.pyc     | Bin 0 -> 5099 bytes
+ .../__pycache__/job_service.cpython-313.pyc        | Bin 0 -> 2930 bytes
+ recommendation_api/services/ai_service.py          | 167 +++++++++++++++
+ recommendation_api/services/course_service.py      |  97 +++++++++
+ recommendation_api/services/job_service.py         |  49 +++++
+ recommendation_api/temp_uvicorn.log                | Bin 0 -> 1844 bytes
+ recommendation_api/uvicorn_log.txt                 | Bin 0 -> 1718 bytes
+ reset_db.php                                       | 116 ++++++++++
+ schema_update_dump.sql                             | Bin 0 -> 3958 bytes
+ src/Controller/GroupsController.php                | 125 +++++++++++
+ src/Controller/ProfileController.php               |   8 +
+ src/Controller/RecommendationController.php        |  52 +++++
+ src/Controller/ScoreController.php                 |  43 ++++
+ src/Entity/Activity.php                            |  30 +++
+ src/Entity/Group.php                               |  65 ++++--
+ src/Entity/Invitation.php                          | 107 ++++++++++
+ src/Entity/Message.php                             |  88 ++++++++
+ src/Entity/Notification.php                        | 101 +++++++++
+ src/Entity/ProjectTask.php                         |  50 +++++
+ src/Entity/Task.php                                |  46 ++++
+ src/Entity/User.php                                | 189 +++++++++++++++++
+ src/EventListener/ScoreUpdateListener.php          |  44 ++++
+ src/Form/GroupType.php                             |  29 ++-
+ src/Form/ProfileType.php                           |  11 +-
+ src/Form/ProjectTaskType.php                       |  25 ++-
+ src/Repository/GroupRepository.php                 |  45 +---
+ src/Security/GoogleAuthenticator.php               | 101 +++++----
+ src/Service/RecommendationService.php              |  46 ++++
+ src/Service/ScoreService.php                       | 235 +++++++++++++++++++++
+ templates/front/base.html.twig                     |  20 +-
+ templates/front/recommendations/index.html.twig    | 215 +++++++++++++++++++
+ templates/groups/invitations.html.twig             |  34 +++
+ templates/groups/show.html.twig                    |  88 +++++++-
+ templates/score/admin_scores.html.twig             |  92 ++++++++
+ templates/score/my_score.html.twig                 |  70 ++++++
+ templates/user/edit_profile.html.twig              |   9 +
+ test_fix.php                                       |  50 +++++
+ test_schema.php                                    |  29 +++
+ 61 files changed, 2965 insertions(+), 190 deletions(-)
+
+commit 05b34df63f507c867de4d836b8a3f274ca4129eb
+Author: Aminejouini123 <Medamine.Jouini@esprit.tn>
+Date:   Sun Feb 22 13:29:17 2026 +0100
+
+    IA RECONMENDATION
+
+ .env                                               |  74 -------
+ face_service/__pycache__/database.cpython-313.pyc  | Bin 1185 -> 1185 bytes
+ face_service/__pycache__/main.cpython-313.pyc      | Bin 5774 -> 5774 bytes
+ migrations/Version20260222084127.php               |  61 ++++++
+ .../__pycache__/main.cpython-313.pyc               | Bin 0 -> 699 bytes
+ .../api/__pycache__/routes.cpython-313.pyc         | Bin 0 -> 1352 bytes
+ recommendation_api/api/routes.py                   |  25 +++
+ .../core/__pycache__/config.cpython-313.pyc        | Bin 0 -> 1561 bytes
+ recommendation_api/core/config.py                  |  30 +++
+ recommendation_api/main.py                         |  15 ++
+ .../models/__pycache__/schemas.cpython-313.pyc     | Bin 0 -> 1792 bytes
+ recommendation_api/models/schemas.py               |  24 +++
+ recommendation_api/requirements.txt                |   7 +
+ .../__pycache__/ai_service.cpython-313.pyc         | Bin 0 -> 8725 bytes
+ .../__pycache__/course_service.cpython-313.pyc     | Bin 0 -> 5099 bytes
+ .../__pycache__/job_service.cpython-313.pyc        | Bin 0 -> 2930 bytes
+ recommendation_api/services/ai_service.py          | 167 ++++++++++++++++
+ recommendation_api/services/course_service.py      |  97 ++++++++++
+ recommendation_api/services/job_service.py         |  49 +++++
+ recommendation_api/temp_uvicorn.log                | Bin 0 -> 1844 bytes
+ recommendation_api/uvicorn_log.txt                 | Bin 0 -> 1718 bytes
+ schema_update_dump.sql                             | Bin 0 -> 3958 bytes
+ src/Controller/ProfileController.php               |   8 +
+ src/Controller/RecommendationController.php        |  52 +++++
+ src/Form/ProfileType.php                           |  11 +-
+ src/Security/GoogleAuthenticator.php               | 101 ++++++----
+ src/Service/RecommendationService.php              |  46 +++++
+ templates/front/base.html.twig                     |   6 +
+ templates/front/recommendations/index.html.twig    | 215 +++++++++++++++++++++
+ templates/user/edit_profile.html.twig              |   9 +
+ 30 files changed, 875 insertions(+), 122 deletions(-)
+
+commit 52e3e8a7e32f79ec9b87e10870a7925ca2bf6a07
+Merge: 5d4c3f7 8626405
+Author: Aminejouini123 <164958844+Aminejouini123@users.noreply.github.com>
+Date:   Sat Feb 21 15:22:35 2026 +0100
+
+    Merge pull request #30 from Aminejouini123/Gestion_Utilisateur
+    
+    Face Recognition
+
+commit 8626405ed06e845fa535ceac338a80cf9b5a851f
+Author: Aminejouini123 <Medamine.Jouini@esprit.tn>
+Date:   Sat Feb 21 15:18:26 2026 +0100
+
+    Face Recognition
+
+ .env                                               |   12 +-
+ config/packages/security.yaml                      |    2 +
+ config/services.yaml                               |    4 +
+ face_embeddings_migration.sql                      |    8 +
+ face_service/.env                                  |    1 +
+ face_service/__pycache__/database.cpython-313.pyc  |  Bin 0 -> 1185 bytes
+ face_service/__pycache__/main.cpython-313.pyc      |  Bin 0 -> 5774 bytes
+ face_service/database.py                           |   22 +
+ face_service/main.py                               |  103 +
+ face_service/pip_error.txt                         |  Bin 0 -> 7042 bytes
+ face_service/requirements.txt                      |    9 +
+ face_service/uvicorn_log.txt                       |  Bin 0 -> 2958 bytes
+ public/models/age_gender_model-shard1              |  Bin 0 -> 429708 bytes
+ .../models/age_gender_model-weights_manifest.json  |    1 +
+ public/models/face_expression_model-shard1         |  Bin 0 -> 329468 bytes
+ .../face_expression_model-weights_manifest.json    |    1 +
+ public/models/face_landmark_68_model-shard1        |  Bin 0 -> 356840 bytes
+ .../face_landmark_68_model-weights_manifest.json   |    1 +
+ public/models/face_landmark_68_tiny_model-shard1   |  Bin 0 -> 77224 bytes
+ ...ce_landmark_68_tiny_model-weights_manifest.json |    1 +
+ public/models/face_recognition_model-shard1        |  Bin 0 -> 4194304 bytes
+ public/models/face_recognition_model-shard2        |    6 +
+ .../face_recognition_model-weights_manifest.json   |    1 +
+ public/models/mtcnn_model-shard1                   |  Bin 0 -> 1983400 bytes
+ public/models/mtcnn_model-weights_manifest.json    |    1 +
+ public/models/ssd_mobilenetv1_model-shard1         |  Bin 0 -> 4194304 bytes
+ public/models/ssd_mobilenetv1_model-shard2         |  137 +
+ .../ssd_mobilenetv1_model-weights_manifest.json    |    1 +
+ public/models/tiny_face_detector_model-shard1      |  Bin 0 -> 193321 bytes
+ .../tiny_face_detector_model-weights_manifest.json |    1 +
+ ...Cahier-des-charges-version-C-6996e8be0d821.docx |  Bin 0 -> 85157 bytes
+ src/Controller/FaceController.php                  |   76 +
+ src/Service/FaceRecognitionService.php             |   57 +
+ temp_face_api/dist/face-api.js                     | 6568 ++++++++++++++++++++
+ temp_face_api/src/ageGenderNet/AgeGenderNet.ts     |  126 +
+ temp_face_api/src/ageGenderNet/extractParams.ts    |   26 +
+ .../src/ageGenderNet/extractParamsFromWeigthMap.ts |   30 +
+ temp_face_api/src/ageGenderNet/types.ts            |   23 +
+ temp_face_api/src/classes/Box.ts                   |  175 +
+ temp_face_api/src/classes/Dimensions.ts            |   28 +
+ temp_face_api/src/classes/FaceLandmarks.ts         |  125 +
+ .../src/common/disposeUnusedWeightTensors.ts       |    9 +
+ temp_face_api/src/dom/imageTensorToCanvas.ts       |   20 +
+ temp_face_api/src/dom/loadWeightMap.ts             |   15 +
+ .../extractParamsFromWeigthMap.ts                  |   27 +
+ temp_face_api/src/faceProcessor/FaceProcessor.ts   |   88 +
+ .../src/faceRecognitionNet/extractParams.ts        |  155 +
+ temp_face_api/src/faceRecognitionNet/index.ts      |    9 +
+ temp_face_api/src/faceRecognitionNet/scaleLayer.ts |    7 +
+ temp_face_api/src/factories/WithFaceDetection.ts   |   20 +
+ .../src/globalApi/PredictAgeAndGenderTask.ts       |  108 +
+ temp_face_api/src/globalApi/types.ts               |   10 +
+ temp_face_api/src/mtcnn/stage1.ts                  |  161 +
+ temp_face_api/src/mtcnn/stage2.ts                  |   82 +
+ temp_face_api/src/mtcnn/types.ts                   |   44 +
+ temp_face_api/src/resizeResults.ts                 |   35 +
+ temp_face_api/test/env.node.ts                     |   31 +
+ temp_face_api/test/env.ts                          |   40 +
+ temp_face_api/test/expectFaceDetections.ts         |   27 +
+ .../test/expectFaceDetectionsWithLandmarks.ts      |   35 +
+ templates/auth/login.html.twig                     |  122 +-
+ templates/user/profile.html.twig                   |  135 +
+ 62 files changed, 8723 insertions(+), 3 deletions(-)
+
+commit 5d4c3f7856be77bf9e0b818ee9171278a7877e1b
+Merge: 39822d6 9960b3c
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Thu Feb 19 13:50:36 2026 +0100
+
+    Merge branch 'gestion_group' into main
+
+commit 9960b3ca250168d3c784aab2d2f5bcff6950bb69
+Author: Kouch1919 <moncef.kouch@esprit.tn>
+Date:   Thu Feb 19 13:47:56 2026 +0100
+
+    feat: Implement Group features, invitations, messaging, and score system. Fix database migrations and configuration.
+
+ .env                                               |   2 +-
+ config/packages/security.yaml                      |   3 +
+ migrations/Version20260209120000.php               |   6 +-
+ migrations/Version20260209150650.php               |   4 +-
+ migrations/Version20260211120000.php               |  30 +++
+ migrations/Version20260216000000.php               |  58 +++++
+ migrations/Version20260219123941.php               |  63 ++++++
+ ...probabilite-et-statistiques-1-698cfbc1e7663.pdf | Bin 0 -> 328788 bytes
+ src/Controller/GroupsController.php                | 125 +++++++++++
+ src/Controller/ScoreController.php                 |  43 ++++
+ src/Entity/Activity.php                            |  30 +++
+ src/Entity/Group.php                               |  65 ++++--
+ src/Entity/Invitation.php                          | 107 ++++++++++
+ src/Entity/Message.php                             |  88 ++++++++
+ src/Entity/Notification.php                        | 101 +++++++++
+ src/Entity/ProjectTask.php                         |  50 +++++
+ src/Entity/Task.php                                |  46 ++++
+ src/Entity/User.php                                | 189 +++++++++++++++++
+ src/EventListener/ScoreUpdateListener.php          |  44 ++++
+ src/Form/GroupType.php                             |  29 ++-
+ src/Form/ProjectTaskType.php                       |  25 ++-
+ src/Repository/GroupRepository.php                 |  45 +---
+ src/Service/ScoreService.php                       | 235 +++++++++++++++++++++
+ templates/front/base.html.twig                     |  14 +-
+ templates/groups/invitations.html.twig             |  34 +++
+ templates/groups/show.html.twig                    |  88 +++++++-
+ templates/score/admin_scores.html.twig             |  92 ++++++++
+ templates/score/my_score.html.twig                 |  70 ++++++
+ 28 files changed, 1615 insertions(+), 71 deletions(-)
+
+commit 146ba166156ece8b0ad0e6aa9c6587f2e50f398a
+Merge: 311726e 39822d6
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 19 11:31:54 2026 +0100
+
+    Merge branch 'main' of https://github.com/Aminejouini123/studly into gestion_cours
+
+commit 311726e167079b7f4ff08d9e3bd6e000e7f43a26
+Merge: b30de9c cb17b01
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 19 11:30:33 2026 +0100
+
+    Merge branch main into gestion_cours
+
+commit 39822d6992c11332040dc3ee6b698e21bab228d7
+Merge: cb17b01 7bf6b4c
+Author: MohamedAzizRaies <raies.mohamedaziz@esprit.tn>
+Date:   Thu Feb 19 11:28:17 2026 +0100
+
+    Merge pull request #29 from Aminejouini123/gestion_cours
+    
+    Fix: Update OpenRouter API key and restore missing smalot/pdfparser dÔÇª
+
+commit cb17b011961ce207239ad9887cea66d0f39918b7
+Merge: bdc6d6a c6dae47
+Author: Aminejouini123 <164958844+Aminejouini123@users.noreply.github.com>
+Date:   Thu Feb 19 11:07:23 2026 +0100
+
+    Merge pull request #28 from Aminejouini123/evenement
+    
+     calendrier

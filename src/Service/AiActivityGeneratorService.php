@@ -1,9 +1,8 @@
-<?php
-
-namespace App\Service;
+﻿
 
 use App\Entity\Activity;
 use App\Entity\Course;
+use App\Service\OpenRouterClient;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AiActivityGeneratorService
@@ -20,6 +19,7 @@ class AiActivityGeneratorService
         if ($questionCount !== null) {
             $questionCount = max(1, $questionCount);
         }
+
         $courseContent = ""; // Initialisation de la variable pour le texte du cours
         if ($course->getCourseFile()) { // Vérification si le cours possède un fichier attaché (PDF, Word, etc.)
             $courseContent = $this->fileScanner->extractText($course->getCourseFile()); // Extraction du texte à partir du fichier
@@ -29,7 +29,7 @@ class AiActivityGeneratorService
             } // Fin de la condition de tronquage
         } // Fin de la condition de fichier
 
-        $prompt = $this->buildPrompt($course, $courseContent, $questionCount, $quizType, $difficultyOverride); // Construction de la consigne (prompt) détaillée pour l'IA
+        $prompt = $this->buildPrompt($course, $courseContent, $questionCount, $quizType, $difficultyOverride, $activityName); // Construction de la consigne (prompt) détaillée pour l'IA
 
         $messages = [ // Préparation de la structure de discussion pour l'API
             ['role' => 'system', 'content' => 'You are an educational AI content generator. You must respond ONLY with valid JSON.'], // Consigne système : l'IA doit être un prof et répondre en JSON
@@ -37,6 +37,12 @@ class AiActivityGeneratorService
         ]; // Fin du tableau de messages
 
         $response = $this->client->chat($messages); // Envoi au client OpenRouter et attente de la réponse
+        
+        if (isset($response['error'])) {
+            return null;
+        }
+
+        // OpenRouter return format: ['choices'][0]['message']['content']
         $content = $response['choices'][0]['message']['content'] ?? null; // Récupération du contenu textuel de la réponse
 
         if (!$content) { // Si l'IA n'a rien renvoyé (échec de connexion ou erreur)
@@ -77,9 +83,9 @@ class AiActivityGeneratorService
         return $activity; // Retourne l'objet Activité complet
     } // Fin de la fonction principale
 
-    private function buildPrompt(Course $course, string $courseContent = "", ?int $questionCount = null, ?string $quizType = 'multiple_choice', ?string $difficultyOverride = null): string // Fonction privée pour fabriquer la consigne IA
+    private function buildPrompt(Course $course, string $courseContent = "", ?int $questionCount = null, ?string $quizType = 'multiple_choice', ?string $difficultyOverride = null, ?string $activityName = null): string // Fonction privée pour fabriquer la consigne IA
     { // Début de la fonction
-        $difficulty = $difficultyOverride ?? $course->getDifficultyLevel(); // Récupération du niveau de difficulté (priorité au override)
+        $difficulty = $difficultyOverride ?? $course->getDifficultyLevel() ?? 'Medium'; // Récupération du niveau de difficulté (priorité au override)
         
         // All generated activities are now quizzes
         $suggestedType = 'quiz'; // Le type est fixé à "quiz"
@@ -106,40 +112,47 @@ class AiActivityGeneratorService
             ? "strictly related to the PROVIDED source content text above. DO NOT use external knowledge if it contradicts the file." 
             : "strictly related to the course subject matter described in the title and description."; // Contraintes pour forcer l'IA à rester sur le sujet
 
+        $activityTitle = $activityName ?: "Quiz for " . $course->getName();
+
+        $typeGuidelines = match($quizType) {
+            'multiple_choice' => "Include exactly {$questionCount} multiple-choice questions with 4 options each and indicate the correct answer index (0-3).",
+            'true_false' => "Include exactly {$questionCount} true or false questions. Options must be ['True', 'False'] and indicate correct index (0 or 1).",
+            'mixed' => "Include exactly {$questionCount} questions, alternating between multiple-choice and true/false.",
+            default => "Provide {$questionCount} questions for this activity."
+        };
+
         return "Generate a highly professional learning activity for the following course:
         Course Title: {$course->getName()}
         Course Description: {$course->getComment()}
-        Level: {$course->getSemester()}
-        Difficulty: {$difficulty}
+        Course Level: {$course->getSemester()}
+        Requested Activity Name: {$activityTitle}
+        Requested Difficulty: {$difficulty}
 
         {$sourceContext}
 
         Requirements:
         1. Type: {$quizType}
         2. Content Quality: Must be pedagogically sound, challenging, and {$contentConstraint}
-        3. Duration: must be realistic for the difficulty. Suggested: {$suggestedDuration} minutes.
-        4. Instructions: This field MUST be a JSON array of {$questionCount} high-quality questions.
+        3. Content Guidelines: {$typeGuidelines}
+        4. Question Count: {$questionCount}
+        5. Duration: must be realistic for the difficulty. Suggested: {$suggestedDuration} minutes.
+        6. Instructions: This field MUST be a JSON array of {$questionCount} high-quality questions.
            
-           {% if quizType == 'true_false' %}
-           Schema for True/False: [{\"question\": \"string\", \"options\": [\"True\", \"False\"], \"correct_answer_index\": 0_or_1, \"explanation\": \"string\"}]
-           {% elseif quizType == 'multiple_choice' %}
-           Schema for Multiple Choice: [{\"question\": \"string\", \"options\": [\"a\", \"b\", \"c\", \"d\"], \"correct_answer_index\": 0_to_3, \"explanation\": \"string\"}]
-           {% else %}
-           Mixed Schema: Mix between Multiple Choice (4 options) and True/False (2 options).
-           {% endif %}
+           Schema for Questions: [{\"question\": \"string\", \"options\": [\"a\", \"b\", \"c\", \"d\"], \"correct_answer_index\": 0_to_3, \"explanation\": \"string\"}]
 
-        5. Expected Output: define exactly what success looks like.
-        6. Format: Final response must be valid JSON only.
+        7. Expected Output: define exactly what success looks like and learning objectives.
+        8. Format: Final response must be valid JSON only.
 
         Response JSON Format:
         {
-            \"title\": \"Professional Catchy Title\",
+            \"title\": \"{$activityTitle}\",
             \"description\": \"Professional and motivating overview (2-3 sentences)\",
             \"duration\": {$suggestedDuration},
             \"type\": \"quiz\",
             \"instructions\": JSON_ARRAY_OF_QUESTIONS,
-            \"expected_output\": \"Detailed success criteria\",
-            \"hints\": \"Helpful tips for students\"
+            \"expected_output\": \"Detailed success criteria and learning outcomes\",
+            \"hints\": \"Helpful tips for students to prepare for this quiz\"
         }"; // Construction et retour du prompt final complet au format texte
     } // Fin de la fonction de construction de prompt
+
 }
