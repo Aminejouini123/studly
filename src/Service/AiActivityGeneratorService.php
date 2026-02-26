@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Service;
 
@@ -115,11 +115,11 @@ class AiActivityGeneratorService
         };
 
         return "Generate a highly professional learning activity for the following course:
-        Course Title: {$course->getName()}
-        Course Description: {$course->getComment()}
-        Course Level: {$course->getSemester()}
-        Requested Activity Name: {$activityTitle}
-        Requested Difficulty: {$difficulty}
+        Course Title: " . $course->getName() . "
+        Course Description: " . $course->getComment() . "
+        Course Level: " . $course->getSemester() . "
+        Requested Activity Name: " . $activityTitle . "
+        Requested Difficulty: " . $difficulty . "
 
         {$sourceContext}
 
@@ -138,7 +138,7 @@ class AiActivityGeneratorService
 
         Response JSON Format:
         {
-            \"title\": \"{$activityTitle}\",
+            \"title\": \"" . $activityTitle . "\",
             \"description\": \"Professional and motivating overview (2-3 sentences)\",
             \"duration\": {$suggestedDuration},
             \"type\": \"quiz\",
