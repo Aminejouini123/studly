@@ -50,14 +50,18 @@ class Group
     private Collection $projects;
 
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $messages;
+
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $invitations;
 
     public function __construct()
     {
         $this->projects = new ArrayCollection();
         $this->members = new ArrayCollection();
         $this->messages = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->capacity = 1;
     }
@@ -188,5 +192,13 @@ class Group
     public function getMessages(): Collection
     {
         return $this->messages;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getInvitations(): Collection
+    {
+        return $this->invitations;
     }
 }

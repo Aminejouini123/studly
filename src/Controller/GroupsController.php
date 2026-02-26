@@ -10,6 +10,7 @@ use App\Form\GroupType;
 use App\Repository\GroupRepository;
 use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
+use App\Service\ScoreService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,7 +39,7 @@ final class GroupsController extends AbstractController
             // Usually search is global. Let's make it global but filter by creator if no search.
             $groups = $groupRepository->searchByCategory($searchTerm);
         } else {
-            $groups = $groupRepository->findByCreator($user);
+            $groups = $groupRepository->findUserGroups($user);
         }
 
         $assignedCount = 0;
@@ -234,6 +235,62 @@ final class GroupsController extends AbstractController
         ]);
     }
 
+    #[Route('/invitations', name: 'app_groups_invitations', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function listInvitations(InvitationRepository $invitationRepository): Response
+    {
+        $invitations = $invitationRepository->findBy(['receiver' => $this->getUser(), 'status' => Invitation::STATUS_PENDING]);
+
+        return $this->render('groups/invitations.html.twig', [
+            'invitations' => $invitations,
+        ]);
+    }
+
+    #[Route('/invitations/{id}/accept', name: 'app_groups_invitation_accept', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
+    {
+        if ($invitation->getReceiver() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $invitation->setStatus(Invitation::STATUS_ACCEPTED);
+        $group = $invitation->getGroup();
+        $group->addMember($this->getUser());
+
+        $notification = new Notification();
+        $notification->setUser($invitation->getSender());
+        $notification->setContent($this->getUser()->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
+
+        $entityManager->persist($group);
+        $entityManager->persist($notification);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'You joined the group!');
+        return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
+    }
+
+    #[Route('/invitations/{id}/refuse', name: 'app_groups_invitation_refuse', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function refuseInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
+    {
+        if ($invitation->getReceiver() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $invitation->setStatus(Invitation::STATUS_REJECTED);
+
+        $notification = new Notification();
+        $notification->setUser($invitation->getSender());
+        $notification->setContent($this->getUser()->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
+
+        $entityManager->persist($notification);
+        $entityManager->flush();
+
+        $this->addFlash('info', 'Invitation refused.');
+        return $this->redirectToRoute('app_groups_invitations');
+    }
+
     /**
      * Show group details (both student and admin can view)
      */
@@ -298,8 +355,9 @@ final class GroupsController extends AbstractController
     {
         $user = $this->getUser();
 
-        // Students can only view their own groups
-        if (!$this->isGranted('ROLE_ADMIN') && $group->getCreator() !== $user) {
+        // Allow admins, the group creator, or members to view the group
+        $isMember = $group->getMembers()->contains($user);
+        if (!$this->isGranted('ROLE_ADMIN') && $group->getCreator() !== $user && !$isMember) {
             throw $this->createAccessDeniedException('You can only view your own groups.');
         }
 
@@ -367,7 +425,7 @@ final class GroupsController extends AbstractController
      */
     #[Route('/{id}', name: 'app_groups_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ETUDIANT')]
-    public function delete(Request $request, Group $group, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
         $user = $this->getUser();
 
@@ -377,10 +435,13 @@ final class GroupsController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete'.$group->getId(), $request->request->get('_token'))) {
+            // Reset scores of members
+            $scoreService->resetScores($group->getMembers());
+            
             $entityManager->remove($group);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Group deleted successfully!');
+            $this->addFlash('success', 'Group deleted successfully and member scores reset!');
         }
 
         return $this->redirectToRoute('app_groups_index', [], Response::HTTP_SEE_OTHER);
@@ -391,13 +452,16 @@ final class GroupsController extends AbstractController
      */
     #[Route('/admin/{id}', name: 'app_admin_groups_delete', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminDelete(Request $request, Group $group, EntityManagerInterface $entityManager): Response
+    public function adminDelete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
         if ($this->isCsrfTokenValid('delete'.$group->getId(), $request->request->get('_token'))) {
+            // Reset scores of members
+            $scoreService->resetScores($group->getMembers());
+
             $entityManager->remove($group);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Group deleted successfully!');
+            $this->addFlash('success', 'Group deleted successfully and member scores reset!');
         }
 
         return $this->redirectToRoute('app_admin_groups_index', [], Response::HTTP_SEE_OTHER);
@@ -442,6 +506,32 @@ final class GroupsController extends AbstractController
         return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
     }
 
+    #[Route('/{id}/remove-member/{userId}', name: 'app_groups_remove_member', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function removeMember(Group $group, int $userId, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
+    {
+        // Only creator can remove members
+        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Only the group creator can remove members.');
+        }
+
+        $userToRemove = $userRepository->find($userId);
+        if (!$userToRemove) {
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
+        }
+
+        if ($group->getMembers()->contains($userToRemove)) {
+            $group->removeMember($userToRemove);
+            
+            // Optional: Find and delete/update invitation if it exists
+            // This is good for consistency
+            $entityManager->flush();
+            $this->addFlash('success', 'Member removed successfully.');
+        }
+
+        return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
+    }
 
     #[Route('/{id}/message', name: 'app_groups_send_message', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]

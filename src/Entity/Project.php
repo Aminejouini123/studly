@@ -32,7 +32,6 @@ class Project
     private ?string $status = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: '"{{ value }}" n\'est pas une URL valide.', requireTld: true)]
     private ?string $resource = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]

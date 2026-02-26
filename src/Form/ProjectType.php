@@ -16,13 +16,45 @@ class ProjectType extends AbstractType
         $builder
             ->add('title')
             ->add('description')
-            ->add('status')
-            ->add('resource')
-            ->add('deadline')
-            ->add('type')
+            ->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'choices' => [
+                    'En attente' => 'PENDING',
+                    'En cours' => 'IN_PROGRESS',
+                    'Terminé' => 'COMPLETED',
+                ],
+            ])
+            ->add('resource', \Symfony\Component\Form\Extension\Core\Type\FileType::class, [
+                'label' => 'Ressources (Fichier)',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\File([
+                        'maxSize' => '5M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/x-pdf',
+                            'image/*',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader un document valide (PDF, Image, Word)',
+                    ])
+                ],
+            ])
+            ->add('deadline', \Symfony\Component\Form\Extension\Core\Type\DateType::class, [
+                'widget' => 'single_text',
+            ])
+            ->add('type', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'choices' => [
+                    'Recherche' => 'RESEARCH',
+                    'Développement' => 'DEVELOPMENT',
+                    'Design' => 'DESIGN',
+                    'Autre' => 'OTHER',
+                ],
+            ])
             ->add('group', EntityType::class, [
                 'class' => Group::class,
-                'choice_label' => 'id',
+                'choice_label' => 'category',
             ])
         ;
     }
