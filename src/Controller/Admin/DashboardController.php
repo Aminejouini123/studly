@@ -62,7 +62,7 @@ class DashboardController extends AbstractController
         // All courses for management overview
         $allCourses = $courseRepository->findAll();
 
-        return $this->render('admin/dashboard.html.twig', [
+        return $this->render('back/dashboard.html.twig', [
             'totalUsers' => $totalUsers,
             'students' => $students,
             'admins' => $admins,
