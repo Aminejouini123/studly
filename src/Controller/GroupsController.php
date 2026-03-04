@@ -11,6 +11,7 @@ use App\Repository\GroupRepository;
 use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
 use App\Service\ScoreService;
+use App\Service\UserActionLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -64,7 +65,7 @@ final class GroupsController extends AbstractController
      */
     #[Route('/new', name: 'app_groups_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ETUDIANT')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, UserActionLogger $actionLogger): Response
     {
         $group = new Group();
         $form = $this->createForm(GroupType::class, $group);
@@ -73,8 +74,12 @@ final class GroupsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Set the current user as the creator
             $group->setCreator($this->getUser());
-            
+
             $entityManager->persist($group);
+
+            // Log the action
+            $actionLogger->log($this->getUser(), 'group_created', 'Created a new group: ' . $group->getCategory(), $group);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Group created successfully!');
@@ -92,7 +97,7 @@ final class GroupsController extends AbstractController
      */
     #[Route('/admin', name: 'app_admin_groups_index', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminIndex(GroupRepository $groupRepository, Request $request, EntityManagerInterface $entityManager): Response
+    public function adminIndex(GroupRepository $groupRepository, Request $request, EntityManagerInterface $entityManager, UserActionLogger $actionLogger): Response
     {
         // Create form for the modal
         $group = new Group();
@@ -102,8 +107,12 @@ final class GroupsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Set the current admin as the creator
             $group->setCreator($this->getUser());
-            
+
             $entityManager->persist($group);
+
+            // Log action
+            $actionLogger->log($this->getUser(), 'group_created', 'Created a new group (Admin): ' . $group->getCategory(), $group);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Group created successfully!');
@@ -135,15 +144,15 @@ final class GroupsController extends AbstractController
     public function adminExport(GroupRepository $groupRepository): Response
     {
         $groups = $groupRepository->findAllOrderedByCreation();
-        
+
         $fp = fopen('php://temp', 'w');
-        
+
         // Add BOM for Excel compatibility
         fputs($fp, "\xEF\xBB\xBF");
-        
+
         // Header
         fputcsv($fp, ['ID', 'Category', 'Capacity', 'Creator Email', 'Created At', 'Members Count']);
-        
+
         foreach ($groups as $group) {
             fputcsv($fp, [
                 $group->getId(),
@@ -154,14 +163,14 @@ final class GroupsController extends AbstractController
                 !$group->getMembers()->isEmpty() ? 'Assigned' : 'Unassigned'
             ]);
         }
-        
+
         rewind($fp);
         $response = new Response(stream_get_contents($fp));
         fclose($fp);
-        
+
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
         $response->headers->set('Content-Disposition', 'attachment; filename="groups_export.csv"');
-        
+
         return $response;
     }
 
@@ -170,7 +179,7 @@ final class GroupsController extends AbstractController
      */
     #[Route('/admin/new', name: 'app_admin_groups_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminNew(Request $request, EntityManagerInterface $entityManager): Response
+    public function adminNew(Request $request, EntityManagerInterface $entityManager, UserActionLogger $actionLogger): Response
     {
         $group = new Group();
         $form = $this->createForm(GroupType::class, $group);
@@ -179,7 +188,7 @@ final class GroupsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Set the current admin as the creator
             $group->setCreator($this->getUser());
-            
+
             $entityManager->persist($group);
             $entityManager->flush();
 
@@ -252,7 +261,7 @@ final class GroupsController extends AbstractController
 
     #[Route('/invitations/{id}/accept', name: 'app_groups_invitation_accept', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_USER')]
-    public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
+    public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager, UserActionLogger $actionLogger): Response
     {
         if ($invitation->getReceiver() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
@@ -267,6 +276,10 @@ final class GroupsController extends AbstractController
         $notification->setContent($this->getUser()->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
 
         $entityManager->persist($notification);
+
+        // Log action
+        $actionLogger->log($this->getUser(), 'group_joined', 'Joined the group: ' . $group->getCategory(), $group);
+
         $entityManager->flush();
 
         $this->addFlash('success', 'You joined the group!');
@@ -282,7 +295,7 @@ final class GroupsController extends AbstractController
         }
 
         $invitation->setStatus(Invitation::STATUS_REJECTED);
-        
+
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
         $notification->setContent($this->getUser()->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
@@ -379,10 +392,10 @@ final class GroupsController extends AbstractController
             throw $this->createAccessDeniedException('You can only delete your own groups.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$group->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $group->getId(), $request->request->get('_token'))) {
             // Reset scores of members
             $scoreService->resetScores($group->getMembers());
-            
+
             $entityManager->remove($group);
             $entityManager->flush();
 
@@ -399,7 +412,7 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminDelete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$group->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $group->getId(), $request->request->get('_token'))) {
             // Reset scores of members
             $scoreService->resetScores($group->getMembers());
 
@@ -468,7 +481,7 @@ final class GroupsController extends AbstractController
 
         if ($group->getMembers()->contains($userToRemove)) {
             $group->removeMember($userToRemove);
-            
+
             // Optional: Find and delete/update invitation if it exists
             // This is good for consistency
             $entityManager->flush();

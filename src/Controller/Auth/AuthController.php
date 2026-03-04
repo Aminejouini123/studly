@@ -51,18 +51,19 @@ final class AuthController extends AbstractController
         $user = new User();
 
         // Set all user data from the form
-        $user->setEmail($request->request->get('email'));
-        $user->setFirstName($request->request->get('firstName'));
-        $user->setLastName($request->request->get('lastName'));
+        $user->setEmail((string) $request->request->get('email'));
+        $user->setFirstName((string) $request->request->get('firstName'));
+        $user->setLastName((string) $request->request->get('lastName'));
 
         // Set plain password for validation
-        $plainPassword = $request->request->get('password');
+        $plainPassword = (string) $request->request->get('password');
         $user->setPlainPassword($plainPassword);
 
         // Handle Date Of Birth
         $dob = $request->request->get('dateOfBirth');
         if ($dob) {
             try {
+                /** @var string $dob */
                 $user->setDateOfBirth(new \DateTime($dob));
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Invalid date format.');
@@ -70,8 +71,8 @@ final class AuthController extends AbstractController
             }
         }
 
-        $user->setPhoneNumber($request->request->get('phoneNumber'));
-        $user->setAddress($request->request->get('address'));
+        $user->setPhoneNumber($request->request->get('phoneNumber') ? (string) $request->request->get('phoneNumber') : null);
+        $user->setAddress($request->request->get('address') ? (string) $request->request->get('address') : null);
         $user->setRoles(['ROLE_ETUDIANT']); // Default role
         $user->setStatut('Active');
 
@@ -120,7 +121,7 @@ final class AuthController extends AbstractController
         $user->setPassword(
             $userPasswordHasher->hashPassword(
                 $user,
-                $plainPassword
+                (string) $plainPassword
             )
         );
 

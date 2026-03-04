@@ -66,6 +66,10 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 $googleUser = $client->fetchUserFromToken($accessToken);
 
                 $email = $googleUser->getEmail();
+                if (!$email) {
+                    throw new \Exception('Google did not return an email address.');
+                }
+
 
                 // 1) have they logged in with Google before?
                 $user = $this->entityManager->getRepository(User::class)->findOneBy(['googleId' => $googleUser->getId()]);
@@ -81,8 +85,8 @@ class GoogleAuthenticator extends OAuth2Authenticator
                         $user = new User();
                         $user->setEmail($email);
                         $user->setGoogleId($googleUser->getId());
-                        $user->setFirstName($googleUser->getFirstName());
-                        $user->setLastName($googleUser->getLastName());
+                        $user->setFirstName($googleUser->getFirstName() ?? '');
+                        $user->setLastName($googleUser->getLastName() ?? '');
                         // Generate a random password since one is required
                         $user->setPassword(bin2hex(random_bytes(20)));
                         $user->setIsVerified(false);
@@ -114,7 +118,7 @@ class GoogleAuthenticator extends OAuth2Authenticator
                     // Send verification email
                     $emailMessage = (new Email())
                         ->from($this->mailerFromAddress)
-                        ->to($user->getEmail())
+                        ->to((string) $user->getEmail())
                         ->subject('Your Verification Code - Studly')
                         ->text('Your verification code is: ' . $code);
 

@@ -128,14 +128,91 @@
         margin-bottom: 20px;
         border: 1px solid #b8daff;
     }
+    .roadmap-timeline {
+        position: relative;
+        padding: 40px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .roadmap-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 40px;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(to bottom, #00c6ff, #0072ff);
+        border-radius: 4px;
+    }
+    .timeline-step {
+        display: flex;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 4px solid #0072ff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+        margin-right: 20px;
+        z-index: 10;
+        color: #0072ff;
+        margin-left: 22px;
+    }
+    .timeline-content {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        flex-grow: 1;
+        transition: transform 0.3s ease;
+    }
+    .timeline-content:hover {
+        transform: translateY(-5px);
+    }
+    .step-number {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #0072ff;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    .step-title {
+        font-size: 1.3rem;
+        color: #1a1a1a;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    .step-duration {
+        display: inline-block;
+        background: #e7f5ff;
+        color: #0056b3;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
 </style>
 
 <div class="ai-header">
-    <h1><i class="fas fa-magic"></i> AI Recommendations</h1>
-    <p>Discover personalized job opportunities and courses based on your skills and education.</p>
-    <a href="{{ path('app_recommendations_generate') }}" class="ai-btn">
-        <i class="fas fa-sync-alt"></i> Generate New Recommendations
-    </a>
+    <h1><i class="fas fa-magic"></i> AI Career Roadmap</h1>
+    <p>Discover your personalized path: courses, projects, and job opportunities to reach your dream role.</p>
+    <form action="{{ path('app_recommendations_generate') }}" method="POST" style="display: flex; gap: 10px; margin-top: 20px;">
+        <input type="text" name="targetJob" placeholder="Target Job (e.g. Fullstack Developer)" class="form-control" style="max-width: 350px; border-radius: 8px; border: none; padding: 10px 15px;" required value="{{ targetJob|default('') }}">
+        <button type="submit" class="ai-btn" style="border: none;">
+            <i class="fas fa-route"></i> Generate My Success Path
+        </button>
+    </form>
 </div>
 
 <div class="profile-summary">
@@ -202,6 +279,82 @@
             {% endfor %}
         </div>
     </div>
+
+    {% if recommendations.roadmap is defined and recommendations.roadmap %}
+    <div class="recommendation-section" style="margin-top: 50px;">
+        <h2 class="section-title"><i class="fas fa-map-signs"></i> Your Step-by-Step Career Roadmap</h2>
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button id="saveRoadmapBtn" class="ai-btn" style="background: #00a676; color: white;">
+                <i class="fas fa-save"></i> Save Path to My Objectives
+            </button>
+        </div>
+        
+        <div class="roadmap-timeline">
+            {% for step in recommendations.roadmap %}
+                <div class="timeline-step">
+                    <div class="timeline-icon">
+                        {% if step.type == 'Course' %}
+                            <i class="fas fa-graduation-cap"></i>
+                        {% elseif step.type == 'Project' %}
+                            <i class="fas fa-laptop-code"></i>
+                        {% else %}
+                            <i class="fas fa-bolt"></i>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <div class="step-number">Step {{ step.step_number }} &bull; {{ step.type|upper }}</div>
+                        <div class="step-title">{{ step.title }}</div>
+                        <div class="step-duration"><i class="far fa-clock"></i> {{ step.duration_weeks }} Week(s)</div>
+                        <div class="rec-summary">{{ step.description }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('saveRoadmapBtn').addEventListener('click', function() {
+            const btn = this;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+            
+            const roadmapData = {{ recommendations.roadmap|json_encode|raw }};
+            const targetJob = "{{ targetJob|default('My Career Roadmap')|escape('js') }}";
+            
+            fetch("{{ path('app_recommendations_roadmap_save') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({
+                    roadmap: roadmapData,
+                    targetJob: targetJob
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Saved successfully!';
+                    btn.style.background = '#28a745';
+                    setTimeout(() => {
+                        window.location.href = "{{ path('app_objectives') }}";
+                    }, 1500);
+                } else {
+                    btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error saving';
+                    btn.style.background = '#dc3545';
+                    btn.disabled = false;
+                    alert(data.error || 'Failed to save roadmap');
+                }
+            })
+            .catch(err => {
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                btn.style.background = '#dc3545';
+                btn.disabled = false;
+            });
+        });
+    </script>
+    {% endif %}
 
 {% else %}
     <div style="text-align: center; padding: 50px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">

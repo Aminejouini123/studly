@@ -20,7 +20,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id; // @phpstan-ignore property.onlyRead
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleId = null;
@@ -36,6 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     private ?string $email = null;
 
+    /** @var array<int, string> */
     #[ORM\Column]
     private array $roles = [];
 
@@ -80,33 +81,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $updatedAt = null;
 
     // Legacy fields kept for compatibility or future removal if needed, made nullable
+    /** @var Collection<int, Event> */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Event::class)]
     private Collection $events;
 
+    /** @var Collection<int, Motivation> */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
     private Collection $motivations;
 
+    /** @var Collection<int, Group> */
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
     private Collection $groups;
 
+    /** @var Collection<int, Group> */
     #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'members')]
     private Collection $memberGroups;
 
+    /** @var Collection<int, Task> */
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
     private Collection $assignedTasks;
 
+    /** @var Collection<int, ProjectTask> */
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: ProjectTask::class)]
     private Collection $assignedProjectTasks;
 
+    /** @var Collection<int, Activity> */
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Activity::class)]
     private Collection $assignedActivities;
 
+    /** @var Collection<int, Invitation> */
     #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, orphanRemoval: true)]
     private Collection $sentInvitations;
 
+    /** @var Collection<int, Invitation> */
     #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, orphanRemoval: true)]
     private Collection $receivedInvitations;
 
+    /** @var Collection<int, Notification> */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
     private Collection $notifications;
 
@@ -134,6 +145,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Length(max: 1000, maxMessage: "La biographie ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $bio = null;
 
+    /** @var array<int, string>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $skills = [];
 
@@ -151,6 +163,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $googleTokenExpiresAt = null;
 
+    /** @var Collection<int, UserAction> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserAction::class, orphanRemoval: true)]
+    private Collection $userActions;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -166,6 +182,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->sentInvitations = new ArrayCollection();
         $this->receivedInvitations = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->userActions = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -213,6 +230,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array<int, string> $roles
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -225,7 +245,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getPassword(): string
     {
-        return $this->password;
+        return (string) $this->password;
     }
 
     public function setPassword(string $password): static
@@ -370,9 +390,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @var Collection<int, Course> */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Course::class)]
     private Collection $courses;
 
+    /**
+     * @return Collection<int, Course>
+     */
     public function getCourses(): Collection
     {
         return $this->courses;
@@ -619,11 +643,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return array<int, string>|null
+     */
     public function getSkills(): ?array
     {
         return $this->skills;
     }
 
+    /**
+     * @param array<int, string>|null $skills
+     */
     public function setSkills(?array $skills): static
     {
         $this->skills = $skills;
@@ -755,11 +785,63 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * @return Collection<int, UserAction>
+     */
+    public function getUserActions(): Collection
+    {
+        return $this->userActions;
+    }
+
+    /**
      * @return Collection<int, Notification>
      */
     public function getNotifications(): Collection
     {
         return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getUser() === $this) {
+                $notification->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addUserAction(UserAction $userAction): static
+    {
+        if (!$this->userActions->contains($userAction)) {
+            $this->userActions->add($userAction);
+            $userAction->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserAction(UserAction $userAction): static
+    {
+        if ($this->userActions->removeElement($userAction)) {
+            // set the owning side to null (unless already changed)
+            if ($userAction->getUser() === $this) {
+                $userAction->setUser(null);
+            }
+        }
+
+        return $this;
     }
 
 }

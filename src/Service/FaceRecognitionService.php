@@ -18,8 +18,20 @@ class FaceRecognitionService
         $this->logger = $logger;
     }
 
+    /**
+     * @param array<int, float> $descriptor
+     * @return array<string, mixed>
+     */
     public function register(int $userId, array $descriptor): array
     {
+        if ($userId <= 0) {
+            throw new \InvalidArgumentException('L\'ID de l\'utilisateur doit être positif');
+        }
+
+        if (empty($descriptor)) {
+            throw new \InvalidArgumentException('Le descripteur facial est obligatoire');
+        }
+
         try {
             $response = $this->client->request('POST', $this->faceApiUrl . '/face/register', [
                 'json' => [
@@ -28,15 +40,25 @@ class FaceRecognitionService
                 ]
             ]);
 
-            return $response->toArray();
+            /** @var array<string, mixed> $data */
+            $data = $response->toArray();
+            return $data;
         } catch (\Exception $e) {
             $this->logger->error('Error registering face: ' . $e->getMessage());
             throw new \RuntimeException('Unable to register face descriptor.');
         }
     }
 
+    /**
+     * @param array<int, float> $descriptor
+     * @return array<string, mixed>|null
+     */
     public function login(array $descriptor): ?array
     {
+        if (empty($descriptor)) {
+            throw new \InvalidArgumentException('Le descripteur facial est obligatoire');
+        }
+
         try {
             $response = $this->client->request('POST', $this->faceApiUrl . '/face/login', [
                 'json' => [
@@ -45,7 +67,9 @@ class FaceRecognitionService
             ]);
 
             if ($response->getStatusCode() === 200) {
-                return $response->toArray();
+                /** @var array<string, mixed> $data */
+                $data = $response->toArray();
+                return $data;
             }
 
             return null;

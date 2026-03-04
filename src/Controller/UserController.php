@@ -37,7 +37,11 @@ final class UserController extends AbstractController
             default => null
         };
 
-        $users = $userRepository->findBySearchFilterSort($search, $roleParam, $sort);
+        $users = $userRepository->findBySearchFilterSort(
+            $search ? (string) $search : null,
+            $roleParam,
+            $sort ? (string) $sort : 'DESC'
+        );
 
 
 

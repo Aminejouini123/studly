@@ -15,7 +15,7 @@ class GroupRepository extends ServiceEntityRepository
         parent::__construct($registry, Group::class);
     }
 
-    
+
     public function findByCreator(User $creator): array
     {
         return $this->createQueryBuilder('g')
@@ -43,7 +43,7 @@ class GroupRepository extends ServiceEntityRepository
         ;
     }
 
-   
+
     public function findAllOrderedByCreation(): array
     {
         return $this->createQueryBuilder('g')
@@ -53,7 +53,19 @@ class GroupRepository extends ServiceEntityRepository
         ;
     }
 
-    
+
+    public function searchByCategory(string $searchTerm): array
+    {
+        return $this->createQueryBuilder('g')
+            ->select('g', 'm')
+            ->leftJoin('g.members', 'm')
+            ->andWhere('g.category LIKE :term')
+            ->setParameter('term', '%' . $searchTerm . '%')
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findAllSorted(string $sortField, string $direction = 'ASC'): array
     {
         $validFields = ['category', 'createdAt', 'capacity', 'id'];
@@ -67,18 +79,8 @@ class GroupRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    
-    public function searchByCategory(string $category): array
-    {
-        return $this->createQueryBuilder('g')
-            ->andWhere('g.category LIKE :category')
-            ->setParameter('category', '%' . $category . '%')
-            ->orderBy('g.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult()
-        ;
-    }
 
 
-    
+
+
 }

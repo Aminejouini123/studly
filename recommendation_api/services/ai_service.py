@@ -53,6 +53,7 @@ class AIService:
         skills_str = ", ".join(profile.skills) if profile.skills else "None"
         job_title = profile.jobTitle or "None"
         edu_level = profile.educationLevel or "None"
+        target_job = profile.targetJob or "None specified"
         
         job_context = json.dumps(jobs)
         course_context = json.dumps(courses)
@@ -63,8 +64,9 @@ Analyze the following user profile against the provided lists of real jobs and r
 
 User Profile:
 - Skills: {skills_str}
-- Job Title: {job_title}
+- Current Job Title: {job_title}
 - Education Level: {edu_level}
+- Target Job / Goal: {target_job}
 
 Jobs available: {job_context}
 Courses available: {course_context}
@@ -93,11 +95,21 @@ Return a single JSON object with the following structure exactly (populate array
       "personalized_summary": "<1 paragraph explaining why it's recommended>"
     }}
   ],
-  "general_summary": "<2-sentence encouraging summary of their prospects>"
+  "roadmap": [
+    {{
+      "step_number": <int starting from 1>,
+      "title": "<Actionable title, e.g., 'Complete React Course'>",
+      "type": "<must be exactly one of: 'Course', 'Project', 'Action'>",
+      "duration_weeks": <int estimated weeks>,
+      "description": "<detailed explanation of what to do in this step>"
+    }}
+  ],
+  "general_summary": "<2-sentence encouraging summary of their prospects and roadmap>"
 }}
 """
 
     def _parse_ai_response(self, raw_data: Dict[str, Any], raw_jobs: List[Dict[str, Any]], raw_courses: List[Dict[str, Any]]) -> RecommendationResponse:
+        from models.schemas import RoadmapStep
         # Map unstructured dict into strictly validated Pydantic models
         jobs_list = []
         for j in raw_data.get("jobs", []):
@@ -123,6 +135,16 @@ Return a single JSON object with the following structure exactly (populate array
                 personalized_summary=c.get("personalized_summary", "A great course for your career.")
             ))
             
+        roadmap_list = []
+        for r in raw_data.get("roadmap", []):
+            roadmap_list.append(RoadmapStep(
+                step_number=r.get("step_number", 1),
+                title=r.get("title", "Take Action"),
+                type=r.get("type", "Action"),
+                duration_weeks=r.get("duration_weeks", 1),
+                description=r.get("description", "Follow the recommended path.")
+            ))
+            
         # Ensure we don't return an empty list if AI hallucinates names away, fallback
         if not jobs_list and raw_jobs:
             jobs_list = self._generate_fallback_response(raw_jobs, raw_courses).jobs
@@ -132,7 +154,8 @@ Return a single JSON object with the following structure exactly (populate array
         return RecommendationResponse(
             jobs=jobs_list,
             courses=courses_list,
-            general_summary=raw_data.get("general_summary", "Here are your personalized recommendations based on our analysis.")
+            general_summary=raw_data.get("general_summary", "Here are your personalized recommendations based on our analysis."),
+            roadmap=roadmap_list
         )
 
     def _generate_fallback_response(self, jobs: List[Dict[str, Any]], courses: List[Dict[str, Any]]) -> RecommendationResponse:
@@ -160,8 +183,27 @@ Return a single JSON object with the following structure exactly (populate array
                 personalized_summary="This course has been selected to help advance your career."
             ))
             
+        from models.schemas import RoadmapStep
+        fallback_roadmap = [
+            RoadmapStep(
+                step_number=1,
+                title="Review your skills",
+                type="Action",
+                duration_weeks=1,
+                description="Take some time to assess your current skills and career goals."
+            ),
+            RoadmapStep(
+                step_number=2,
+                title="Complete a recommended course",
+                type="Course",
+                duration_weeks=4,
+                description="Pick one of the courses above to close your skill gaps."
+            )
+        ]
+            
         return RecommendationResponse(
             jobs=fallback_jobs,
             courses=fallback_courses,
-            general_summary="We found some excellent opportunities for you, despite high AI load."
+            general_summary="We found some excellent opportunities for you, despite high AI load.",
+            roadmap=fallback_roadmap
         )
