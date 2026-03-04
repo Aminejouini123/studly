@@ -16,6 +16,9 @@ class EventStatsController extends AbstractController
     public function stats(EventRepository $eventRepository): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            return $this->json(['error' => 'Access denied'], Response::HTTP_FORBIDDEN);
+        }
 
         // Compute weekly stats (in minutes) for the current user
         $weeklyMinutes = $eventRepository->getWeeklyDurationMinutesForUser($user);
@@ -29,12 +32,12 @@ class EventStatsController extends AbstractController
 
             // Compute ISO week start (Monday) and end (Sunday)
             $weekStart = (new \DateTimeImmutable())->setISODate($year, $week);
-            $weekEnd   = $weekStart->modify('+6 days');
+            $weekEnd = $weekStart->modify('+6 days');
 
             $data[] = [
-                'week'       => sprintf('%d-W%02d', $year, $week),
-                'startDate'  => $weekStart->format('Y-m-d'),
-                'endDate'    => $weekEnd->format('Y-m-d'),
+                'week' => sprintf('%d-W%02d', $year, $week),
+                'startDate' => $weekStart->format('Y-m-d'),
+                'endDate' => $weekEnd->format('Y-m-d'),
                 'totalHours' => round($totalMinutes / 60, 2),
             ];
         }
@@ -48,17 +51,18 @@ class EventStatsController extends AbstractController
     public function calendar(EventRepository $eventRepository): Response
     {
         $user = $this->getUser();
-        
+        if (!$user instanceof \App\Entity\User) {
+            return $this->json(['error' => 'Access denied'], Response::HTTP_FORBIDDEN);
+        }
+
         // Get all events for the current user
         $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC', 'startTime' => 'ASC']);
-        
+
         $calendarEvents = [];
-        
+
         foreach ($events as $event) {
-            if (!$event->getDate()) {
-                continue;
-            }
-            
+            // Documented that getDate() is never null in Event entity
+
             // Use event color or determine from category/type
             $color = $event->getColor();
             if (!$color) {
@@ -74,23 +78,23 @@ class EventStatsController extends AbstractController
                 ];
                 $color = $colorMap[$category] ?? '#3b82f6';
             }
-            
+
             // Build start datetime
             $start = $event->getDate()->format('Y-m-d');
             if ($event->getStartTime()) {
                 $start = $event->getStartTime()->format('Y-m-d\TH:i:s');
             }
-            
+
             // Build end datetime
             $end = null;
             if ($event->getEndTime()) {
                 $end = $event->getEndTime()->format('Y-m-d\TH:i:s');
             } elseif ($event->getStartTime() && $event->getDuration()) {
                 $endTime = clone $event->getStartTime();
-                $endTime->modify('+' . $event->getDuration() . ' minutes');
+                $endTime->modify('+' . (int) $event->getDuration() . ' minutes');
                 $end = $endTime->format('Y-m-d\TH:i:s');
             }
-            
+
             $calendarEvents[] = [
                 'id' => $event->getId(),
                 'title' => $event->getTitle(),
@@ -115,7 +119,7 @@ class EventStatsController extends AbstractController
                 ],
             ];
         }
-        
+
         return $this->json($calendarEvents);
     }
 }

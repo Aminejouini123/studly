@@ -31,6 +31,7 @@ class ApiInvitationController extends AbstractController
         InvitationRepository $invitationRepository,
         EntityManagerInterface $em
     ): JsonResponse {
+        /** @var \App\Entity\Group|null $group */
         $group = $groupRepository->find($id);
 
         if (!$group) {
@@ -51,9 +52,9 @@ class ApiInvitationController extends AbstractController
 
         // Vérifier qu'une invitation PENDING n'existe pas déjà
         $existing = $invitationRepository->findOneBy([
-            'group'    => $group,
+            'group' => $group,
             'receiver' => $receiver,
-            'status'   => Invitation::STATUS_PENDING,
+            'status' => Invitation::STATUS_PENDING,
         ]);
 
         if ($existing) {
@@ -61,7 +62,9 @@ class ApiInvitationController extends AbstractController
         }
 
         $invitation = new Invitation();
-        $invitation->setSender($this->getUser());
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $invitation->setSender($user);
         $invitation->setReceiver($receiver);
         $invitation->setGroup($group);
         $invitation->setStatus(Invitation::STATUS_PENDING);
@@ -70,7 +73,7 @@ class ApiInvitationController extends AbstractController
         $em->flush();
 
         return $this->json([
-            'message'      => 'Invitation envoyée avec succès.',
+            'message' => 'Invitation envoyée avec succès.',
             'invitationId' => $invitation->getId(),
         ], Response::HTTP_CREATED);
     }
@@ -95,13 +98,17 @@ class ApiInvitationController extends AbstractController
             return $this->json(['error' => 'Cette invitation a déjà été traitée.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
         // Vérifier que c'est bien le destinataire qui accepte
-        if ($invitation->getReceiver()?->getId() !== $this->getUser()->getId()) {
+        if ($invitation->getReceiver()?->getId() !== ($currentUser ? $currentUser->getId() : null)) {
             return $this->json(['error' => 'Vous n\'êtes pas autorisé à accepter cette invitation.'], Response::HTTP_FORBIDDEN);
         }
 
         $invitation->setStatus(Invitation::STATUS_ACCEPTED);
-        $invitation->getGroup()->addMember($invitation->getReceiver());
+        if ($invitation->getGroup() && $invitation->getReceiver()) {
+            $invitation->getGroup()->addMember($invitation->getReceiver());
+        }
 
         $em->flush();
 
@@ -128,8 +135,10 @@ class ApiInvitationController extends AbstractController
             return $this->json(['error' => 'Cette invitation a déjà été traitée.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
         // Vérifier que c'est bien le destinataire qui refuse
-        if ($invitation->getReceiver()?->getId() !== $this->getUser()->getId()) {
+        if ($invitation->getReceiver()?->getId() !== ($currentUser ? $currentUser->getId() : null)) {
             return $this->json(['error' => 'Vous n\'êtes pas autorisé à refuser cette invitation.'], Response::HTTP_FORBIDDEN);
         }
 

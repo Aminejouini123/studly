@@ -76,9 +76,11 @@ final class ExamenController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
+                        $projectDir . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -90,7 +92,10 @@ final class ExamenController extends AbstractController
             $entityManager->persist($exam);
 
             // Log action
-            $actionLogger->log($this->getUser(), 'exam_created', 'Created a new exam: ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+            $user = $this->getUser();
+            if ($user instanceof \App\Entity\User) {
+                $actionLogger->log($user, 'exam_created', 'Created a new exam: ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+            }
 
             $entityManager->flush();
 
@@ -124,9 +129,11 @@ final class ExamenController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
+                        $projectDir . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -138,7 +145,10 @@ final class ExamenController extends AbstractController
             $entityManager->persist($exam);
 
             // Log action
-            $actionLogger->log($this->getUser(), 'exam_created', 'Created a new exam (Admin): ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+            $user = $this->getUser();
+            if ($user instanceof \App\Entity\User) {
+                $actionLogger->log($user, 'exam_created', 'Created a new exam (Admin): ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+            }
 
             $entityManager->flush();
 
@@ -157,7 +167,7 @@ final class ExamenController extends AbstractController
     {
         $course = $exam->getCourse();
         // Security check
-        if ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$course || ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException();
         }
 
@@ -173,9 +183,11 @@ final class ExamenController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
+                        $projectDir . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -211,6 +223,9 @@ final class ExamenController extends AbstractController
     public function editAdmin(Request $request, Exam $exam, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $course = $exam->getCourse();
+        if (!$course) {
+            throw $this->createNotFoundException('Exam must belong to a course.');
+        }
 
         $form = $this->createForm(ExamType::class, $exam);
         $form->handleRequest($request);
@@ -223,9 +238,11 @@ final class ExamenController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
+                        $projectDir . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -253,7 +270,7 @@ final class ExamenController extends AbstractController
     {
         $course = $exam->getCourse();
         // Security check
-        if ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$course || ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException('You do not have permission to view this exam.');
         }
 
@@ -266,11 +283,13 @@ final class ExamenController extends AbstractController
     public function delete(Request $request, Exam $exam, EntityManagerInterface $entityManager): Response
     {
         $course = $exam->getCourse();
-        if ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if (!$course || ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException();
         }
 
-        if ($this->isCsrfTokenValid('delete' . $exam->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $exam->getId(), $token)) {
             $entityManager->remove($exam);
             $entityManager->flush();
             $this->addFlash('success', 'Exam successfully deleted!');

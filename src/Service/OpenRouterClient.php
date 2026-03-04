@@ -12,16 +12,18 @@ final class OpenRouterClient // Classe finale pour communiquer avec l'API OpenRo
         private string $model, // Le modèle d'IA à utiliser
         private string $appUrl, // URL de votre application (requis par OpenRouter)
         private string $appTitle, // Titre de votre application (requis par OpenRouter)
-    ) {} // Fin du constructeur
+    ) {
+    } // Fin du constructeur
 
     /**
      * @param array<int, array{role:string, content:string}> $messages
+     * @return array<string, mixed>
      */ // Documentation PHPStan pour les messages
     public function chat(array $messages): array // Fonction pour envoyer un message à l'IA
     { // Début de la fonction
         $response = $this->http->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [ // Envoi d'une requête POST à OpenRouter
             'headers' => [ // Définition des entêtes HTTP de la requête
-                'Authorization' => 'Bearer '.$this->apiKey, // Authentification avec la clé API
+                'Authorization' => 'Bearer ' . $this->apiKey, // Authentification avec la clé API
                 'Content-Type' => 'application/json', // Indication du format JSON
                 // Optional but recommended by OpenRouter:
                 'HTTP-Referer' => $this->appUrl, // URL source de la requête

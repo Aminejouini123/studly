@@ -11,7 +11,8 @@ class AiActivityGeneratorService
     public function __construct(
         private OpenRouterClient $client,
         private EntityManagerInterface $entityManager
-    ) {}
+    ) {
+    }
 
     public function generateActivityForCourse(
         Course $course,
@@ -20,7 +21,10 @@ class AiActivityGeneratorService
         ?string $difficulty = null,
         ?string $activityName = null
     ): ?Activity {
-        $resolvedDifficulty = $difficulty ?? $course->getDifficultyLevel() ?? 'Medium';
+        $resolvedDifficulty = $difficulty ?? $course->getDifficultyLevel();
+        if (!$resolvedDifficulty) {
+            $resolvedDifficulty = 'Medium';
+        }
         $type = $this->resolveType($quizType, $resolvedDifficulty);
 
         // Use a different prompt strategy for quizzes vs other types
@@ -43,11 +47,11 @@ class AiActivityGeneratorService
         ?string $activityName
     ): ?Activity {
         $titleHint = $activityName ? "Preferred title: \"{$activityName}\"." : '';
-        
+
         $questionFormat = match ($quizType) {
             'true_false' => 'Each question must have exactly 2 options: ["True", "False"]. correct_answer_index is 0 for True, 1 for False.',
-            'mixed'      => 'Mix multiple-choice questions (4 options) and true/false questions (2 options: ["True", "False"]).',
-            default      => 'Each question must have exactly 4 options (A, B, C, D).',
+            'mixed' => 'Mix multiple-choice questions (4 options) and true/false questions (2 options: ["True", "False"]).',
+            default => 'Each question must have exactly 4 options (A, B, C, D).',
         };
 
         $prompt = <<<PROMPT
@@ -103,8 +107,8 @@ PROMPT;
         }
 
         // Clean markdown fences
-        $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
-        $cleanJson = preg_replace('/\s*```$/i', '', $cleanJson);
+        $cleanJson = (string) preg_replace('/^```(?:json)?\s*/i', '', trim((string) $content));
+        $cleanJson = (string) preg_replace('/\s*```$/i', '', $cleanJson);
         $data = json_decode($cleanJson, true);
 
         if (!$data || !isset($data['questions']) || !is_array($data['questions'])) {
@@ -114,15 +118,17 @@ PROMPT;
         // Validate and sanitize each question
         $validQuestions = [];
         foreach ($data['questions'] as $q) {
-            if (!isset($q['question'], $q['options'], $q['correct_answer_index']) ||
-                !is_array($q['options']) || count($q['options']) < 2) {
+            if (
+                !isset($q['question'], $q['options'], $q['correct_answer_index']) ||
+                !is_array($q['options']) || count($q['options']) < 2
+            ) {
                 continue;
             }
             $validQuestions[] = [
-                'question' => (string)$q['question'],
-                'options'  => array_map('strval', $q['options']),
-                'correct_answer_index' => (int)$q['correct_answer_index'],
-                'explanation' => (string)($q['explanation'] ?? ''),
+                'question' => (string) $q['question'],
+                'options' => array_map('strval', $q['options']),
+                'correct_answer_index' => (int) $q['correct_answer_index'],
+                'explanation' => (string) ($q['explanation'] ?? ''),
             ];
         }
 
@@ -136,11 +142,12 @@ PROMPT;
         $activity->setDescription($data['description'] ?? '');
         $activity->setDuration($data['duration'] ?? $questionCount * 2);
         $activity->setType('quiz');
-        $activity->setInstructions(json_encode($validQuestions, JSON_UNESCAPED_UNICODE));
+        $jsonInstructions = json_encode($validQuestions, JSON_UNESCAPED_UNICODE);
+        $activity->setInstructions($jsonInstructions !== false ? $jsonInstructions : '[]');
         $activity->setExpectedOutput($data['expected_output'] ?? 'Answer all questions correctly.');
         $activity->setHints($data['hints'] ?? '');
         $activity->setCourse($course);
-        $activity->setLevel($course->getSemester() ?? 'Beginner');
+        $activity->setLevel((string) ($course->getSemester() ?: 'Beginner'));
         $activity->setDifficulty(in_array($difficulty, ['Easy', 'Medium', 'Hard']) ? $difficulty : 'Medium');
         $activity->setStatus('to do');
 
@@ -162,9 +169,9 @@ PROMPT;
         $titleHint = $activityName ? "Preferred title: \"{$activityName}\"." : '';
 
         $typeGuidelines = match ($type) {
-            'challenge'    => 'Provide a specific technical challenge with clear constraints and a list of required features.',
+            'challenge' => 'Provide a specific technical challenge with clear constraints and a list of required features.',
             'mini_project' => 'Include an architecture overview, a set of milestones, and detailed requirements.',
-            default        => 'Provide step-by-step instructions.',
+            default => 'Provide step-by-step instructions.',
         };
 
         $prompt = <<<PROMPT
@@ -209,8 +216,8 @@ PROMPT;
             return null;
         }
 
-        $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
-        $cleanJson = preg_replace('/\s*```$/i', '', $cleanJson);
+        $cleanJson = (string) preg_replace('/^```(?:json)?\s*/i', '', trim((string) $content));
+        $cleanJson = (string) preg_replace('/\s*```$/i', '', $cleanJson);
         $data = json_decode($cleanJson, true);
 
         if (!$data || !isset($data['title'])) {
@@ -226,7 +233,7 @@ PROMPT;
         $activity->setExpectedOutput($data['expected_output'] ?? '');
         $activity->setHints($data['hints'] ?? '');
         $activity->setCourse($course);
-        $activity->setLevel($course->getSemester() ?? 'Beginner');
+        $activity->setLevel((string) ($course->getSemester() ?: 'Beginner'));
         $activity->setDifficulty(in_array($difficulty, ['Easy', 'Medium', 'Hard']) ? $difficulty : 'Medium');
         $activity->setStatus('to do');
 

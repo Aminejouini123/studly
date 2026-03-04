@@ -8,7 +8,8 @@ class AiTaskAssistantService
 {
     public function __construct(
         private OpenRouterClient $client
-    ) {}
+    ) {
+    }
 
     /**
      * @param string $description
@@ -23,7 +24,7 @@ class AiTaskAssistantService
         ];
 
         $response = $this->client->chat($messages);
-        
+
         if (isset($response['error'])) {
             $errorMsg = $response['error']['message'] ?? 'Unknown API error';
             throw new \RuntimeException('AI Service Error: ' . $errorMsg);
@@ -37,7 +38,7 @@ class AiTaskAssistantService
         }
 
         // Clean JSON response (remove markdown if present)
-        $cleanJson = preg_replace('/^```json\s*|\s*```$/i', '', trim($content));
+        $cleanJson = (string) preg_replace('/^```json\s*|\s*```$/i', '', trim($content));
         $data = json_decode($cleanJson, true);
 
         if (!$data || !isset($data['estimation'], $data['priority'], $data['advice'])) {

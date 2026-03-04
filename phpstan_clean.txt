@@ -1,0 +1,176 @@
+﻿C:\Users\jouin\studly\src\Controller\ActivityController.php:144 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ActivityController.php:157 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ActivityController.php:187 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ActivityController.php:226 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ActivityController.php:239 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ActivityController.php:248 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:39 Strict comparison using === between null and string will always evaluate to false.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:40 Strict comparison using === between null and string will always evaluate to false.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:41 Strict comparison using === between null and int will always evaluate to false.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:42 Strict comparison using === between null and string will always evaluate to false.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:43 Strict comparison using === between null and int will always evaluate to false.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:47 Parameter #1 $user of method App\Entity\Event::setUser() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:86 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:108 Parameter #1 $user of method App\Entity\Motivation::setUser() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\Admin\TempsController.php:131 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:28 Parameter #1 $callback of function array_map expects (callable(object): mixed)|null, Closure(App\Entity\Group): array given.
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:51 Parameter #1 $creator of method App\Entity\Group::setCreator() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:72 Parameter #1 $group of method App\Controller\Api\ApiGroupController::serializeGroup() expects App\Entity\Group, object given.
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:79 Call to an undefined method object::getMembers().
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:86 Call to an undefined method object::getProjects().
+C:\Users\jouin\studly\src\Controller\Api\ApiGroupController.php:114 Method App\Controller\Api\ApiGroupController::serializeGroup() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Controller\Api\ApiInvitationController.php:64 Parameter #1 $sender of method App\Entity\Invitation::setSender() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\Api\ApiInvitationController.php:66 Parameter #1 $group of method App\Entity\Invitation::setGroup() expects App\Entity\Group|null, object given.
+C:\Users\jouin\studly\src\Controller\Api\ApiInvitationController.php:99 Cannot call method getId() on Symfony\Component\Security\Core\User\UserInterface|null.
+C:\Users\jouin\studly\src\Controller\Api\ApiInvitationController.php:104 Cannot call method addMember() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\Api\ApiInvitationController.php:132 Cannot call method getId() on Symfony\Component\Security\Core\User\UserInterface|null.
+C:\Users\jouin\studly\src\Controller\Api\ApiProjectController.php:60 Method App\Controller\Api\ApiProjectController::serializeProject() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Controller\Api\ApiProjectController.php:78 Method App\Controller\Api\ApiProjectController::serializeTask() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Controller\Api\EventStatsController.php:58 Negated boolean expression is always false.
+C:\Users\jouin\studly\src\Controller\CoursesController.php:121 Parameter #1 $haystack of function strpos expects string, string|null given.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:95 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:145 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:164 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:197 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:249 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:264 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:277 Cannot call method getUser() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:281 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\ExamenController.php:287 Cannot call method getId() on App\Entity\Course|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:41 Parameter #1 $searchTerm of method App\Repository\GroupRepository::searchByCategory() expects string, float|int<min, -1>|int<1, max>|string|true given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:43 Parameter #1 $user of method App\Repository\GroupRepository::findUserGroups() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:76 Parameter #1 $creator of method App\Entity\Group::setCreator() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:81 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:109 Parameter #1 $creator of method App\Entity\Group::setCreator() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:114 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:126 Parameter #1 $searchTerm of method App\Repository\GroupRepository::searchByCategory() expects string, float|int<min, -1>|int<1, max>|string|true given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:128 Parameter #1 $sortField of method App\Repository\GroupRepository::findAllSorted() expects string, float|int<min, -1>|int<1, max>|string|true given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:128 Parameter #2 $direction of method App\Repository\GroupRepository::findAllSorted() expects string, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:151 Parameter #1 $stream of function fputs expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:154 Parameter #1 $stream of function fputcsv expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:157 Parameter #1 $stream of function fputcsv expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:167 Parameter #1 $stream of function rewind expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:168 Parameter #1 $stream of function stream_get_contents expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:169 Parameter #1 $stream of function fclose expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:190 Parameter #1 $creator of method App\Entity\Group::setCreator() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:272 Cannot call method addMember() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:276 Cannot call method getCategory() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:276 Cannot call method getFirstName() on App\Entity\User|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:281 Cannot call method getCategory() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:281 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, App\Entity\User|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:286 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:301 Cannot call method getCategory() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:301 Cannot call method getFirstName() on App\Entity\User|null.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:395 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:415 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:509 Parameter #1 $sender of method App\Entity\Message::setSender() expects App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\GroupsController.php:511 Parameter #1 $content of method App\Entity\Message::setContent() expects string, float|int<min, -1>|int<1, max>|string|true given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:62 Parameter #1 $type of method App\Entity\PomodoroSession::setType() expects string, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:108 Parameter #1 $status of method App\Entity\PomodoroSession::setStatus() expects string, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:111 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, App\Entity\User|null given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:173 Parameter #1 $handle of function pclose expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:193 Parameter #1 $handle of function pclose expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:217 Parameter #1 $handle of function pclose expects resource, resource|false given.
+C:\Users\jouin\studly\src\Controller\PomodoroController.php:263 Parameter #1 $json of function json_decode expects string, string|false given.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:45 If condition is always true.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:66 Parameter #1 $user of method App\Service\UserActionLogger::log() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:86 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:98 If condition is always true.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:130 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:145 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:149 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\ProjectController.php:165 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:35 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:56 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:70 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:71 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:87 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:143 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:144 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:148 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:154 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:173 If condition is always true.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:205 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:205 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:218 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:220 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:226 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:244 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:256 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:300 Cannot call method getId() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:313 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:317 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:341 Cannot call method getGroup() on App\Entity\Project|null.
+C:\Users\jouin\studly\src\Controller\ProjectTaskController.php:344 Cannot call method getCreator() on App\Entity\Group|null.
+C:\Users\jouin\studly\src\Controller\ScoreController.php:25 Parameter #1 $user of method App\Service\ScoreService::getUserScore() expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.
+C:\Users\jouin\studly\src\Controller\TempsController.php:68 Call to an undefined method Symfony\Component\Form\FormError|Symfony\Component\Form\FormErrorIterator::getMessage().
+C:\Users\jouin\studly\src\Controller\TempsController.php:208 Parameter #2 $token of method Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null, bool|float|int|string|null given.
+C:\Users\jouin\studly\src\Controller\TempsController.php:263 Parameter #1 $userState of method App\Service\SmartPlanningService::analyze() expects array{energy: int, stress: int, sleep_quality: int, mood_text: string, date: string}, array{energy: int, stress: int, sleep_quality: int, mood_text: bool|float|int|string|null, date: non-falsy-string} given.
+C:\Users\jouin\studly\src\Controller\TempsController.php:263 Parameter #2 $tasks of method App\Service\SmartPlanningService::analyze() expects list<array{id: int, title: string, difficulty: int|null, initial_duration: int|null}>, list<array{id: int|null, title: string, difficulty: int, initial_duration: int}> given.
+C:\Users\jouin\studly\src\Entity\Activity.php:16 Property App\Entity\Activity::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Course.php:18 Property App\Entity\Course::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Event.php:15 Property App\Entity\Event::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Event.php:48 Property App\Entity\Event::$endTime (DateTimeImmutable|null) is never assigned DateTimeImmutable so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Event.php:72 Property App\Entity\Event::$pomodoroSessions has no type specified.
+C:\Users\jouin\studly\src\Entity\Exam.php:15 Property App\Entity\Exam::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Group.php:19 Property App\Entity\Group::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Group.php:44 Property App\Entity\Group::$members with generic interface Doctrine\Common\Collections\Collection does not specify its types: TKey, T
+C:\Users\jouin\studly\src\Entity\Group.php:54 Property App\Entity\Group::$messages with generic interface Doctrine\Common\Collections\Collection does not specify its types: TKey, T
+C:\Users\jouin\studly\src\Entity\Group.php:57 Property App\Entity\Group::$invitations with generic interface Doctrine\Common\Collections\Collection does not specify its types: TKey, T
+C:\Users\jouin\studly\src\Entity\Invitation.php:18 Property App\Entity\Invitation::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Invitation.php:33 Property App\Entity\Invitation::$status (string|null) is never assigned null so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Message.php:15 Property App\Entity\Message::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Motivation.php:14 Property App\Entity\Motivation::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Notification.php:14 Property App\Entity\Notification::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Notification.php:27 Property App\Entity\Notification::$isRead (bool|null) is never assigned null so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Objective.php:16 Property App\Entity\Objective::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:15 Property App\Entity\PomodoroSession::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:31 Property App\Entity\PomodoroSession::$startedAt (DateTimeInterface|null) is never assigned DateTimeInterface so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:34 Property App\Entity\PomodoroSession::$endedAt (DateTimeInterface|null) is never assigned DateTimeInterface so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:40 Property App\Entity\PomodoroSession::$focusLogs type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:117 Method App\Entity\PomodoroSession::getFocusLogs() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Entity\PomodoroSession.php:122 Method App\Entity\PomodoroSession::setFocusLogs() has parameter $focusLogs with no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Entity\Project.php:18 Property App\Entity\Project::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\ProjectTask.php:20 Property App\Entity\ProjectTask::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Entity\Task.php:15 Property App\Entity\Task::$id (int|null) is never assigned int so it can be removed from the property type.
+C:\Users\jouin\studly\src\Repository\EventRepository.php:43 Method App\Repository\EventRepository::getWeeklyDurationMinutesForUser() has parameter $user with no type specified.
+C:\Users\jouin\studly\src\Repository\EventRepository.php:86 Method App\Repository\EventRepository::findUpcomingByUser() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\EventRepository.php:103 Method App\Repository\EventRepository::findByUserSortedByPriority() has parameter $user with no type specified.
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:11 Class App\Repository\GroupRepository extends generic class Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository but does not specify its types: T
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:19 Method App\Repository\GroupRepository::findByCreator() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:33 Method App\Repository\GroupRepository::findUserGroups() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:47 Method App\Repository\GroupRepository::findAllOrderedByCreation() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:57 Method App\Repository\GroupRepository::searchByCategory() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\GroupRepository.php:69 Method App\Repository\GroupRepository::findAllSorted() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\NotificationRepository.php:17 Class App\Repository\NotificationRepository has PHPDoc tag @method for method findBy() parameter #1 $criteria with no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\NotificationRepository.php:17 Class App\Repository\NotificationRepository has PHPDoc tag @method for method findBy() parameter #2 $orderBy with no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\NotificationRepository.php:17 Class App\Repository\NotificationRepository has PHPDoc tag @method for method findOneBy() parameter #1 $criteria with no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Repository\NotificationRepository.php:17 Class App\Repository\NotificationRepository has PHPDoc tag @method for method findOneBy() parameter #2 $orderBy with no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Security\Voter\EventVoter.php:10 Class App\Security\Voter\EventVoter extends generic class Symfony\Component\Security\Core\Authorization\Voter\Voter but does not specify its types: TAttribute, TSubject
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:23 Expression on left side of ?? is not nullable.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:107 Parameter #3 $subject of function preg_replace expects array<float|int|string>|string, string|null given.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:108 Parameter #1 $json of function json_decode expects string, string|null given.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:139 Parameter #1 $instructions of method App\Entity\Activity::setInstructions() expects string|null, string|false given.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:143 Expression on left side of ?? is not nullable.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:213 Parameter #3 $subject of function preg_replace expects array<float|int|string>|string, string|null given.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:214 Parameter #1 $json of function json_decode expects string, string|null given.
+C:\Users\jouin\studly\src\Service\AiActivityGeneratorService.php:229 Expression on left side of ?? is not nullable.
+C:\Users\jouin\studly\src\Service\AiTaskAssistantService.php:41 Parameter #1 $json of function json_decode expects string, string|null given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:74 Cannot access offset 'name' on array{name: string, index: int, crc: int, size: int, mtime: int, comp_size: int, comp_method: int, encryption_method: int}|false.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:75 Cannot access offset 'name' on array{name: string, index: int, crc: int, size: int, mtime: int, comp_size: int, comp_method: int, encryption_method: int}|false.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:76 Parameter #1 $string of function strip_tags expects string, string|false given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:91 Parameter #1 $string of function strip_tags expects string, string|false given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:102 Parameter #1 $text of method App\Service\FileScannerService::cleanText() expects string, string|false given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:114 Parameter #3 $subject of function str_replace expects array<string>|string, string|null given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:120 Parameter #3 $subject of function preg_replace expects array<float|int|string>|string, string|null given.
+C:\Users\jouin\studly\src\Service\FileScannerService.php:122 Parameter #1 $string of function trim expects string, string|null given.
+C:\Users\jouin\studly\src\Service\GeminiClient.php:19 Method App\Service\GeminiClient::chat() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Service\GoogleCalendarService.php:31 Parameter #1 $token of method Google\Client::setAccessToken() expects array|string, string|null given.
+C:\Users\jouin\studly\src\Service\OpenRouterClient.php:20 Method App\Service\OpenRouterClient::chat() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Service\PdfScannerService.php:40 Method App\Service\PdfScannerService::extractText() should return string but returns string|null.
+C:\Users\jouin\studly\src\Service\ScoreService.php:25 Method App\Service\ScoreService::resetScores() has parameter $users with generic interface Doctrine\Common\Collections\Collection but does not specify its types: TKey, T
+C:\Users\jouin\studly\src\Service\ScoreService.php:204 Method App\Service\ScoreService::getOldStatus() has parameter $entity with no type specified.
+C:\Users\jouin\studly\src\Service\ScoreService.php:233 Method App\Service\ScoreService::getAllUsersScores() return type has no value type specified in iterable type array.
+C:\Users\jouin\studly\src\Service\SmartPlanningService.php:48 Parameter #1 $input of method Symfony\Component\Process\Process::setInput() expects resource|string|Traversable|null, string|false given.
+C:\Users\jouin\studly\src\Service\VoiceRssService.php:65 Parameter #3 $subject of function preg_replace expects array<float|int|string>|string, string|null given.
+C:\Users\jouin\studly\src\Service\VoiceRssService.php:70 Parameter #1 $string of function trim expects string, string|null given.

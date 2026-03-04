@@ -8,6 +8,9 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 
+/**
+ * @extends ServiceEntityRepository<Group>
+ */
 class GroupRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,6 +19,9 @@ class GroupRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * @return Group[]
+     */
     public function findByCreator(User $creator): array
     {
         return $this->createQueryBuilder('g')
@@ -29,6 +35,7 @@ class GroupRepository extends ServiceEntityRepository
 
     /**
      * Find all groups where the user is either the creator OR a member
+     * @return Group[]
      */
     public function findUserGroups(User $user): array
     {
@@ -44,6 +51,9 @@ class GroupRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * @return Group[]
+     */
     public function findAllOrderedByCreation(): array
     {
         return $this->createQueryBuilder('g')
@@ -54,6 +64,9 @@ class GroupRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * @return Group[]
+     */
     public function searchByCategory(string $searchTerm): array
     {
         return $this->createQueryBuilder('g')
@@ -66,6 +79,9 @@ class GroupRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Group[]
+     */
     public function findAllSorted(string $sortField, string $direction = 'ASC'): array
     {
         $validFields = ['category', 'createdAt', 'capacity', 'id'];

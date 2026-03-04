@@ -23,6 +23,7 @@ class ApiGroupController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(GroupRepository $groupRepository): JsonResponse
     {
+        /** @var Group[] $groups */
         $groups = $groupRepository->findAll();
 
         $data = array_map(fn(Group $g) => $this->serializeGroup($g), $groups);
@@ -48,7 +49,9 @@ class ApiGroupController extends AbstractController
         $group->setCategory($body['category']);
         $group->setCapacity($body['capacity'] ?? 1);
         $group->setGroupPhoto($body['groupPhoto'] ?? null);
-        $group->setCreator($this->getUser());
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $group->setCreator($user);
 
         $em->persist($group);
         $em->flush();
@@ -63,6 +66,7 @@ class ApiGroupController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id, GroupRepository $groupRepository): JsonResponse
     {
+        /** @var Group|null $group */
         $group = $groupRepository->find($id);
 
         if (!$group) {
@@ -72,16 +76,16 @@ class ApiGroupController extends AbstractController
         $data = $this->serializeGroup($group);
 
         // Membres
-        $data['members'] = array_map(fn($u) => [
-            'id'    => $u->getId(),
+        $data['members'] = array_map(fn(\App\Entity\User $u) => [
+            'id' => $u->getId(),
             'email' => $u->getEmail(),
-            'name'  => $u->getFirstName() . ' ' . $u->getLastName(),
+            'name' => (string) $u->getFirstName() . ' ' . (string) $u->getLastName(),
         ], $group->getMembers()->toArray());
 
         // Projets
-        $data['projects'] = array_map(fn($p) => [
-            'id'     => $p->getId(),
-            'title'  => $p->getTitle(),
+        $data['projects'] = array_map(fn(\App\Entity\Project $p) => [
+            'id' => $p->getId(),
+            'title' => $p->getTitle(),
             'status' => $p->getStatus(),
         ], $group->getProjects()->toArray());
 
@@ -111,16 +115,19 @@ class ApiGroupController extends AbstractController
     // Helper
     // -----------------------------------------------------------------------
 
+    /**
+     * @return array<string, mixed>
+     */
     private function serializeGroup(Group $group): array
     {
         return [
-            'id'         => $group->getId(),
-            'category'   => $group->getCategory(),
-            'capacity'   => $group->getCapacity(),
+            'id' => $group->getId(),
+            'category' => $group->getCategory(),
+            'capacity' => $group->getCapacity(),
             'groupPhoto' => $group->getGroupPhoto(),
-            'createdAt'  => $group->getCreatedAt()?->format('Y-m-d H:i:s'),
-            'creator'    => $group->getCreator() ? [
-                'id'    => $group->getCreator()->getId(),
+            'createdAt' => $group->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'creator' => $group->getCreator() ? [
+                'id' => $group->getCreator()->getId(),
                 'email' => $group->getCreator()->getEmail(),
             ] : null,
         ];

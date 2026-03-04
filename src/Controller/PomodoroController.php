@@ -59,7 +59,7 @@ class PomodoroController extends AbstractController
 
         $session = new PomodoroSession();
         $session->setEvent($event);
-        $session->setType($type);
+        $session->setType((string) $type);
         $session->setDuration((int) $duration);
         $session->setStatus('PENDING');
 
@@ -102,13 +102,16 @@ class PomodoroController extends AbstractController
         }
 
         $session = $em->getRepository(PomodoroSession::class)->find($sessionId);
-        $status = $request->request->get('status');
+        $status = (string) $request->request->get('status');
 
         if ($session && $session->getEvent() === $event && in_array($status, ['PENDING', 'IN_PROGRESS', 'COMPLETED'])) {
             $session->setStatus($status);
 
             if ($status === 'COMPLETED') {
-                $actionLogger->log($this->getUser(), 'pomodoro_completed', 'Completed a pomodoro session for event: ' . $event->getTitle(), $session);
+                $user = $this->getUser();
+                if ($user instanceof \App\Entity\User) {
+                    $actionLogger->log($user, 'pomodoro_completed', 'Completed a pomodoro session for event: ' . $event->getTitle(), $session);
+                }
             }
 
             $em->flush();
@@ -159,8 +162,9 @@ class PomodoroController extends AbstractController
         }
 
         // OpenCV CAP_DSHOW bug is fixed, so we can finally use pythonw.exe safely for a 0% flash execution
-        $pythonExe = $this->getParameter('python_exe');
-        $scriptPath = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'python_services' . DIRECTORY_SEPARATOR . 'attention_tracking' . DIRECTORY_SEPARATOR . 'tracker.py';
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $scriptPath = $projectDir . DIRECTORY_SEPARATOR . 'python_services' . DIRECTORY_SEPARATOR . 'attention_tracking' . DIRECTORY_SEPARATOR . 'tracker.py';
 
         $apiUrl = $this->generateUrl('app_pomodoro_save_stats', [
             'id' => $event->getId(),
@@ -169,7 +173,10 @@ class PomodoroController extends AbstractController
 
         // Failsafe: kill any existing zombie tracker processes before starting a new one
         $killCmd = 'wmic process where "name=\'python.exe\' and commandline like \'%tracker.py%\'" call terminate > nul 2>&1';
-        pclose(popen($killCmd, "r"));
+        $fp = popen($killCmd, "r");
+        if ($fp !== false) {
+            pclose($fp);
+        }
 
         // THE GOLDEN SOLUTION:
         // Use python.exe (console binary) instead of pythonw.exe because pythonw acts dead in WScript.
@@ -177,15 +184,22 @@ class PomodoroController extends AbstractController
         // This guarantees 100% stealth (zero flash) AND guarantees the camera starts and the LED lights up.
         $pythonExe = $this->getParameter('python_exe');
 
-        $vbsPath = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'stealth_launch.vbs';
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $vbsPath = $projectDir . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'stealth_launch.vbs';
 
+        /** @var string $pythonExe */
+        $pythonExe = $this->getParameter('python_exe');
         $vbsCode = "Set WshShell = CreateObject(\"WScript.Shell\")\n";
         $vbsCode .= 'WshShell.Run """' . $pythonExe . '"" ""' . $scriptPath . '"" ""' . $apiUrl . '"" ' . $sessionId . '", 0, False' . "\n";
 
         file_put_contents($vbsPath, $vbsCode);
 
         // Execute the VBS natively silently
-        pclose(popen("wscript.exe \"" . $vbsPath . "\"", "r"));
+        $fp = popen("wscript.exe \"" . $vbsPath . "\"", "r");
+        if ($fp !== false) {
+            pclose($fp);
+        }
 
         return $this->json(['status' => 'success', 'message' => 'Tracker started natively via Stealth VBS']);
     }
@@ -202,12 +216,17 @@ class PomodoroController extends AbstractController
             return $this->json(['status' => 'error', 'message' => 'Session not found'], 404);
         }
 
-        $stopFile = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'stop_' . $sessionId . '.txt';
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $stopFile = $projectDir . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'stop_' . $sessionId . '.txt';
         file_put_contents($stopFile, "STOP");
 
         // Failsafe: aggressively kill the python process to guarantee the camera LED turns off
         $killCmd = 'wmic process where "name=\'python.exe\' and commandline like \'%tracker.py%\'" call terminate > nul 2>&1';
-        pclose(popen($killCmd, "r"));
+        $fp = popen($killCmd, "r");
+        if ($fp !== false) {
+            pclose($fp);
+        }
 
         return $this->json(['status' => 'success']);
     }
@@ -247,17 +266,21 @@ class PomodoroController extends AbstractController
             return $this->json(['status' => 'error'], 404);
         }
 
-        $statusFile = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'status_' . $sessionId . '.json';
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $statusFile = $projectDir . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'status_' . $sessionId . '.json';
 
         if (file_exists($statusFile)) {
             $content = file_get_contents($statusFile);
-            $data = json_decode($content, true);
-            if ($data) {
-                return $this->json([
-                    'status' => 'active',
-                    'state' => $data['state'],
-                    'score' => $data['score']
-                ]);
+            if ($content !== false) {
+                $data = json_decode($content, true);
+                if ($data) {
+                    return $this->json([
+                        'status' => 'active',
+                        'state' => $data['state'],
+                        'score' => $data['score']
+                    ]);
+                }
             }
         }
 

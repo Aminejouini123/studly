@@ -30,7 +30,7 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function new(Project $project, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $group = $project->getGroup();
+        $group = $this->getGroupSafely($project);
         // Only the creator of the group or an admin can add tasks
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can add tasks.');
@@ -45,7 +45,7 @@ final class ProjectTaskController extends AbstractController
         ]);
         // Remove project field from form since it's fixed
         $form->remove('project');
-        
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -67,7 +67,7 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function edit(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager): Response
     {
-        $group = $projectTask->getProject()->getGroup();
+        $group = $this->getGroupSafely($projectTask->getProject());
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can edit tasks.');
         }
@@ -77,7 +77,7 @@ final class ProjectTaskController extends AbstractController
         ]);
         $form->remove('project');
 
-        
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -105,7 +105,7 @@ final class ProjectTaskController extends AbstractController
 
         if (in_array($status, [ProjectTask::STATUS_TO_DO, ProjectTask::STATUS_IN_PROGRESS, ProjectTask::STATUS_DONE])) {
             $projectTask->setStatus($status);
-            
+
             // Handle completedAt logic
             if ($status === ProjectTask::STATUS_DONE) {
                 $projectTask->setCompletedAt(new \DateTime());
@@ -115,7 +115,7 @@ final class ProjectTaskController extends AbstractController
 
             $scoreService->updateScoreForProjectTask($projectTask);
             $entityManager->flush();
-            
+
             return $this->json([
                 'success' => true,
                 'status' => $status,
@@ -129,7 +129,7 @@ final class ProjectTaskController extends AbstractController
 
     private function getBadgeClass(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             ProjectTask::STATUS_DONE => 'bg-success',
             ProjectTask::STATUS_IN_PROGRESS => 'bg-warning',
             default => 'bg-secondary',
@@ -140,12 +140,14 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function delete(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager): Response
     {
-        $group = $projectTask->getProject()->getGroup();
+        $group = $this->getGroupSafely($projectTask->getProject());
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can delete tasks.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$projectTask->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $projectTask->getId(), $token)) {
             $entityManager->remove($projectTask);
             $entityManager->flush();
             $this->addFlash('success', 'Task deleted successfully!');
@@ -167,31 +169,33 @@ final class ProjectTaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $deliverableFile */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $deliverableFile */
             $deliverableFile = $form->get('deliverable')->getData();
 
             if ($deliverableFile) {
                 $originalFilename = pathinfo($deliverableFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$deliverableFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $deliverableFile->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $deliverableFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/deliverables',
+                        $projectDir . '/public/uploads/deliverables',
                         $newFilename
                     );
                     $projectTask->setDeliverable($newFilename);
                     $projectTask->setStatus(ProjectTask::STATUS_DONE);
-                    
+
                     // Clear any previous completedAt just in case
                     $projectTask->setCompletedAt(new \DateTime());
-                    
+
                     // updateScoreForProjectTask will update points
                     $scoreService->updateScoreForProjectTask($projectTask);
-                    
+
                     $entityManager->persist($projectTask);
                     $entityManager->flush();
-                    
+
                     $this->addFlash('success', 'Travail déposé avec succès ! La tâche est désormais "Terminée".');
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Impossible d\'enregistrer le fichier : ' . $e->getMessage());
@@ -200,7 +204,7 @@ final class ProjectTaskController extends AbstractController
                 $this->addFlash('warning', 'Aucun fichier sélectionné.');
             }
 
-            return $this->redirectToRoute('app_groups_show', ['id' => $projectTask->getProject()->getGroup()->getId()]);
+            return $this->redirectToRoute('app_groups_show', ['id' => $this->getGroupSafely($projectTask->getProject())->getId()]);
         }
 
         return $this->render('project_task/upload.html.twig', [
@@ -213,7 +217,7 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function gradeTask(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
-        $group = $projectTask->getProject()->getGroup();
+        $group = $this->getGroupSafely($projectTask->getProject());
         // Only creator can grade
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can grade tasks.');
@@ -235,7 +239,7 @@ final class ProjectTaskController extends AbstractController
                 $pointsDiff = $projectTask->getGrade() - ($oldGrade ?? 0);
                 $projectTask->getAssignedUser()->addScore($pointsDiff);
             }
-            
+
             $entityManager->flush();
             $this->addFlash('success', 'Note attribuée avec succès !');
 
@@ -251,8 +255,8 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function uploadAttachment(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
-        $group = $projectTask->getProject()->getGroup();
-        
+        $group = $this->getGroupSafely($projectTask->getProject());
+
         // Security: Only assigned user can upload
         if ($projectTask->getAssignedUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Seul l\'utilisateur assigné peut ajouter une pièce jointe.');
@@ -267,20 +271,24 @@ final class ProjectTaskController extends AbstractController
             if ($attachmentFile) {
                 $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$attachmentFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $attachmentFile->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $attachmentFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/tasks',
+                        $projectDir . '/public/uploads/tasks',
                         $newFilename
                     );
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors du dépôt du fichier.');
                 }
-                
+
                 // Remove old file if exists
                 if ($projectTask->getAttachment()) {
-                    $oldPath = $this->getParameter('kernel.project_dir').'/public/uploads/tasks/'.$projectTask->getAttachment();
+                    /** @var string $projectDir */
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    $oldPath = $projectDir . '/public/uploads/tasks/' . $projectTask->getAttachment();
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
                     }
@@ -304,11 +312,13 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function downloadAttachment(ProjectTask $projectTask): Response
     {
-        $group = $projectTask->getProject()->getGroup();
-        
+        $group = $this->getGroupSafely($projectTask->getProject());
+
         // Security: Group creator only
-        if ($group->getCreator() !== $this->getUser() && 
-            !$this->isGranted('ROLE_ADMIN')) {
+        if (
+            $group->getCreator() !== $this->getUser() &&
+            !$this->isGranted('ROLE_ADMIN')
+        ) {
             throw $this->createAccessDeniedException('Seul le créateur du groupe peut télécharger ce fichier.');
         }
 
@@ -316,8 +326,10 @@ final class ProjectTaskController extends AbstractController
             throw $this->createNotFoundException('Aucun fichier joint.');
         }
 
-        $filePath = $this->getParameter('kernel.project_dir').'/public/uploads/tasks/'.$projectTask->getAttachment();
-        
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $filePath = $projectDir . '/public/uploads/tasks/' . $projectTask->getAttachment();
+
         if (!file_exists($filePath)) {
             throw $this->createNotFoundException('Fichier physique introuvable.');
         }
@@ -328,8 +340,8 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function downloadDeliverable(ProjectTask $projectTask): Response
     {
-        $group = $projectTask->getProject()->getGroup();
-        
+        $group = $this->getGroupSafely($projectTask->getProject());
+
         // Security: Group creator or admin only
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Seul le créateur du groupe peut télécharger ce livrable.');
@@ -339,12 +351,26 @@ final class ProjectTaskController extends AbstractController
             throw $this->createNotFoundException('Aucun livrable déposé.');
         }
 
-        $filePath = $this->getParameter('kernel.project_dir').'/public/uploads/deliverables/'.$projectTask->getDeliverable();
-        
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $filePath = $projectDir . '/public/uploads/deliverables/' . $projectTask->getDeliverable();
+
         if (!file_exists($filePath)) {
             throw $this->createNotFoundException('Fichier physique introuvable.');
         }
 
         return $this->file($filePath, null, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+    }
+
+    private function getGroupSafely(?Project $project): \App\Entity\Group
+    {
+        if (!$project) {
+            throw $this->createNotFoundException('Task must belong to a project.');
+        }
+        $group = $project->getGroup();
+        if (!$group) {
+            throw $this->createNotFoundException('Project must belong to a group.');
+        }
+        return $group;
     }
 }

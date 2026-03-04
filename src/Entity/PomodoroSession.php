@@ -12,6 +12,7 @@ class PomodoroSession
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'pomodoroSessions')]
@@ -36,6 +37,7 @@ class PomodoroSession
     #[ORM\Column(nullable: true)]
     private ?float $focusScore = null;
 
+    /** @var array<mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $focusLogs = null;
 
@@ -102,6 +104,18 @@ class PomodoroSession
         return $this->endedAt;
     }
 
+    public function setStartedAt(?\DateTimeInterface $startedAt): static
+    {
+        $this->startedAt = $startedAt;
+        return $this;
+    }
+
+    public function setEndedAt(?\DateTimeInterface $endedAt): static
+    {
+        $this->endedAt = $endedAt;
+        return $this;
+    }
+
     public function getFocusScore(): ?float
     {
         return $this->focusScore;
@@ -114,11 +128,17 @@ class PomodoroSession
         return $this;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getFocusLogs(): ?array
     {
         return $this->focusLogs;
     }
 
+    /**
+     * @param array<mixed>|null $focusLogs
+     */
     public function setFocusLogs(?array $focusLogs): static
     {
         $this->focusLogs = $focusLogs;

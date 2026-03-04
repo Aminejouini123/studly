@@ -39,7 +39,7 @@ final class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $resourceFile */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $resourceFile */
             $resourceFile = $form->get('resource')->getData();
 
             if ($resourceFile) {
@@ -47,9 +47,11 @@ final class ProjectController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $resourceFile->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $resourceFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/projects',
+                        $projectDir . '/public/uploads/projects',
                         $newFilename
                     );
                     $project->setResource($newFilename);
@@ -61,7 +63,10 @@ final class ProjectController extends AbstractController
             $entityManager->persist($project);
 
             // Log action
-            $actionLogger->log($this->getUser(), 'project_created', 'Created a new project: ' . $project->getTitle() . ' in group ' . $group->getCategory(), $project);
+            $user = $this->getUser();
+            if ($user instanceof \App\Entity\User) {
+                $actionLogger->log($user, 'project_created', 'Created a new project: ' . $project->getTitle() . ' in group ' . $group->getCategory(), $project);
+            }
 
             $entityManager->flush();
 
@@ -81,6 +86,9 @@ final class ProjectController extends AbstractController
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $group = $project->getGroup();
+        if (!$group) {
+            throw $this->createNotFoundException('Project must belong to a group.');
+        }
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can edit projects.');
         }
@@ -90,7 +98,7 @@ final class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $resourceFile */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $resourceFile */
             $resourceFile = $form->get('resource')->getData();
 
             if ($resourceFile) {
@@ -98,15 +106,19 @@ final class ProjectController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $resourceFile->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $resourceFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/projects',
+                        $projectDir . '/public/uploads/projects',
                         $newFilename
                     );
 
                     // Remove old file
                     if ($project->getResource()) {
-                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/projects/' . $project->getResource();
+                        /** @var string $projectDir */
+                        $projectDir = $this->getParameter('kernel.project_dir');
+                        $oldFilePath = $projectDir . '/public/uploads/projects/' . $project->getResource();
                         if (file_exists($oldFilePath)) {
                             unlink($oldFilePath);
                         }
@@ -136,14 +148,21 @@ final class ProjectController extends AbstractController
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         $group = $project->getGroup();
+        if (!$group) {
+            throw $this->createNotFoundException('Project must belong to a group.');
+        }
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can delete projects.');
         }
 
-        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $project->getId(), $token)) {
             // Remove file
             if ($project->getResource()) {
-                $filePath = $this->getParameter('kernel.project_dir') . '/public/uploads/projects/' . $project->getResource();
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $filePath = $projectDir . '/public/uploads/projects/' . $project->getResource();
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }

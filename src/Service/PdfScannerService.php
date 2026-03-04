@@ -32,12 +32,12 @@ class PdfScannerService
         try {
             $parser = new Parser();
             $pdfContent = $parser->parseFile($filePath);
-            
+
             // Limit extraction to first few thousand characters to avoid token bloating
             $text = $pdfContent->getText();
-            
+
             // Clean up extra whitespace
-            return preg_replace('/\s+/', ' ', $text);
+            return (string) preg_replace('/\s+/', ' ', $text);
         } catch (\Exception $e) {
             // Log error if logger is available or just return empty
             return "";

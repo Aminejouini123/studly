@@ -3,7 +3,34 @@
 namespace App\Controller;
 
 use App\Service\OpenRouterClient;
-<<<<<<< HEAD
+use App\Service\PdfScannerService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+
+final class ChatBotController extends AbstractController
+{
+    #[Route('/api/chat', name: 'api_chat', methods: ['POST'])]
+    public function chat(
+        Request $request,
+        OpenRouterClient $client,
+        PdfScannerService $pdfScanner,
+        #[Autowire(service: 'cache.app')] CacheInterface $cache
+    ): JsonResponse {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $userMessage = trim((string) ($payload['message'] ?? ''));
+        $context = is_array($payload['context'] ?? null) ? $payload['context'] : null;
+        $action = (string) ($payload['action'] ?? '');
+
+        if ($userMessage === '' && $action !== 'summarize_file') {
+            return $this->json(['error' => 'Empty message'], 400);
+        }
+
         $systemPrompt = "Tu es Studly Assistant, un tuteur IA intelligent et bienveillant pour la plateforme Studly.
 Ta mission est d'aider l'étudiant à comprendre ses cours et réussir ses examens.
 Sois concis, professionnel et utilise un ton encourageant.
@@ -88,8 +115,16 @@ Garde les réponses brèves, claires et utiles.";
     private function compactContext(array $context): array
     {
         $allowedKeys = [
-            'course_name', 'course_type', 'difficulty', 'description', 'semester', 'teacher',
-            'exam_title', 'exam_difficulty', 'exam_duration', 'exam_date',
+            'course_name',
+            'course_type',
+            'difficulty',
+            'description',
+            'semester',
+            'teacher',
+            'exam_title',
+            'exam_difficulty',
+            'exam_duration',
+            'exam_date',
         ];
 
         $result = [];
@@ -116,6 +151,5 @@ Garde les réponses brèves, claires et utiles.";
     public function index(): Response
     {
         return $this->render('chat/index.html.twig');
-    }
     }
 }

@@ -48,8 +48,8 @@ class ApiProjectController extends AbstractController
 
         return $this->json([
             'projectId' => $project->getId(),
-            'title'     => $project->getTitle(),
-            'tasks'     => $tasks,
+            'title' => $project->getTitle(),
+            'tasks' => $tasks,
         ], Response::HTTP_OK);
     }
 
@@ -57,35 +57,41 @@ class ApiProjectController extends AbstractController
     // Helpers
     // -----------------------------------------------------------------------
 
+    /**
+     * @return array<string, mixed>
+     */
     private function serializeProject(Project $project): array
     {
         return [
-            'id'          => $project->getId(),
-            'title'       => $project->getTitle(),
+            'id' => $project->getId(),
+            'title' => $project->getTitle(),
             'description' => $project->getDescription(),
-            'status'      => $project->getStatus(),
-            'type'        => $project->getType(),
-            'resource'    => $project->getResource(),
-            'deadline'    => $project->getDeadline()?->format('Y-m-d'),
-            'group'       => $project->getGroup() ? [
-                'id'       => $project->getGroup()->getId(),
+            'status' => $project->getStatus(),
+            'type' => $project->getType(),
+            'resource' => $project->getResource(),
+            'deadline' => $project->getDeadline()?->format('Y-m-d'),
+            'group' => $project->getGroup() ? [
+                'id' => $project->getGroup()->getId(),
                 'category' => $project->getGroup()->getCategory(),
             ] : null,
-            'taskCount'   => $project->getProjectTasks()->count(),
+            'taskCount' => $project->getProjectTasks()->count(),
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function serializeTask(ProjectTask $task): array
     {
         return [
-            'id'           => $task->getId(),
-            'title'        => $task->getTitle(),
-            'description'  => $task->getDescription(),
-            'status'       => $task->getStatus(),
-            'deadline'     => $task->getDeadline()?->format('Y-m-d H:i:s'),
-            'completedAt'  => $task->getCompletedAt()?->format('Y-m-d H:i:s'),
+            'id' => $task->getId(),
+            'title' => $task->getTitle(),
+            'description' => $task->getDescription(),
+            'status' => $task->getStatus(),
+            'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
+            'completedAt' => $task->getCompletedAt()?->format('Y-m-d H:i:s'),
             'assignedUser' => $task->getAssignedUser() ? [
-                'id'    => $task->getAssignedUser()->getId(),
+                'id' => $task->getAssignedUser()->getId(),
                 'email' => $task->getAssignedUser()->getEmail(),
             ] : null,
         ];

@@ -15,6 +15,7 @@ final class GeminiClient
 
     /**
      * @param array<int, array{role:string, content:string}> $messages
+     * @return array<string, mixed>
      */
     public function chat(array $messages): array
     {

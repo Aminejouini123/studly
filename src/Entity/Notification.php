@@ -11,6 +11,7 @@ class Notification
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'notifications')]
@@ -24,7 +25,7 @@ class Notification
     private ?string $link = null;
 
     #[ORM\Column]
-    private ?bool $isRead = false;
+    private bool $isRead = false;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -75,7 +76,7 @@ class Notification
         return $this;
     }
 
-    public function isRead(): ?bool
+    public function isRead(): bool
     {
         return $this->isRead;
     }

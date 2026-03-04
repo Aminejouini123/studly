@@ -20,14 +20,13 @@ final class TempsController extends AbstractController
 {
     #[Route('/temps', name: 'app_temps')]
     public function index(
-        EventRepository $eventRepository, 
-        Request $request, 
-        EntityManagerInterface $em, 
+        EventRepository $eventRepository,
+        Request $request,
+        EntityManagerInterface $em,
         \App\Service\PomodoroService $pomodoroService,
         \App\Service\GoogleCalendarService $calendarService,
         #[Autowire(service: 'cache.app')] CacheInterface $cache
-    ): Response
-    {
+    ): Response {
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
             throw $this->createAccessDeniedException();
@@ -39,7 +38,7 @@ final class TempsController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $event->setUser($user);
-            
+
             // Sync with Google if connected
             if ($user->getGoogleAccessToken()) {
                 try {
@@ -49,7 +48,7 @@ final class TempsController extends AbstractController
                     // Log or handle sync error
                 }
             }
-            
+
             // Auto-generate Pomodoro sessions
             $pomodoroService->generateSessionsForEvent($event);
 
@@ -65,7 +64,9 @@ final class TempsController extends AbstractController
             $errors = [];
             foreach ($form as $child) {
                 foreach ($child->getErrors(true) as $err) {
-                    $errors[] = $child->getName() . ': ' . $err->getMessage();
+                    if ($err instanceof \Symfony\Component\Form\FormError) {
+                        $errors[] = $child->getName() . ': ' . $err->getMessage();
+                    }
                 }
             }
             if (count($errors) > 0) {
@@ -119,13 +120,12 @@ final class TempsController extends AbstractController
 
     #[Route('/temps/{id}/edit', name: 'app_temps_edit')]
     public function edit(
-        Event $event, 
-        Request $request, 
-        EntityManagerInterface $em, 
+        Event $event,
+        Request $request,
+        EntityManagerInterface $em,
         \App\Service\PomodoroService $pomodoroService,
         \App\Service\GoogleCalendarService $calendarService
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('edit', $event);
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
@@ -136,7 +136,7 @@ final class TempsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
+
             // Sync with Google if connected
             if ($user->getGoogleAccessToken()) {
                 try {
@@ -163,11 +163,10 @@ final class TempsController extends AbstractController
 
     #[Route('/temps/{id}/sync', name: 'app_temps_sync')]
     public function sync(
-        Event $event, 
-        EntityManagerInterface $em, 
+        Event $event,
+        EntityManagerInterface $em,
         \App\Service\GoogleCalendarService $calendarService
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('edit', $event);
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
@@ -192,21 +191,20 @@ final class TempsController extends AbstractController
 
     #[Route('/temps/{id}/delete', name: 'app_temps_delete', methods: ['POST'])]
     public function delete(
-        Event $event, 
-        EntityManagerInterface $em, 
+        Event $event,
+        EntityManagerInterface $em,
         Request $request,
         \App\Service\GoogleCalendarService $calendarService
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('delete', $event);
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
             throw $this->createAccessDeniedException();
         }
 
-        $token = $request->request->get('_token');
+        $token = (string) $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $token)) {
-            
+
             // Delete from Google if linked
             if ($event->getGoogleEventId() && $user->getGoogleAccessToken()) {
                 try {
@@ -226,15 +224,14 @@ final class TempsController extends AbstractController
 
     #[Route('/temps/analyze', name: 'app_temps_analyze', methods: ['POST'])]
     public function analyze(
-        Request $request, 
+        Request $request,
         \App\Service\SmartPlanningService $planningService,
         EventRepository $eventRepository
-    ): Response
-    {
+    ): Response {
         $user = $this->getUser();
-        $energy = (int)$request->request->get('energy', 5);
-        $stress = (int)$request->request->get('stress', 5);
-        $sleep = (int)$request->request->get('sleep', 5);
+        $energy = (int) $request->request->get('energy', 5);
+        $stress = (int) $request->request->get('stress', 5);
+        $sleep = (int) $request->request->get('sleep', 5);
         $mood = $request->request->get('mood', '');
 
         // Fetch user's non-completed events to optimize
@@ -243,7 +240,7 @@ final class TempsController extends AbstractController
         foreach ($events as $event) {
             if ($event->getStatus() !== 'Completed' && $event->getStatus() !== 'Terminé') {
                 $tasksData[] = [
-                    'id' => $event->getId(),
+                    'id' => (int) $event->getId(),
                     'title' => $event->getTitle(),
                     'difficulty' => $event->getDifficulty(),
                     'initial_duration' => $event->getDuration()
@@ -256,7 +253,7 @@ final class TempsController extends AbstractController
                 'energy' => $energy,
                 'stress' => $stress,
                 'sleep_quality' => $sleep,
-                'mood_text' => $mood,
+                'mood_text' => (string) $mood,
                 'date' => (new \DateTime())->format('d-m-Y')
             ];
 
@@ -264,10 +261,10 @@ final class TempsController extends AbstractController
 
             if ($result['status'] === 'success') {
                 $this->addFlash('success', 'Intelligence Artificielle : Planning optimisé avec succès (Niveau de motivation : ' . $result['motivation']['level'] . ')');
-                
+
                 // Store path in session to allow download
                 $request->getSession()->set('last_planning_pdf', $result['pdf_path']);
-                
+
                 return $this->redirectToRoute('app_temps');
             } else {
                 $this->addFlash('error', 'Erreur IA : ' . ($result['message'] ?? 'Erreur inconnue'));

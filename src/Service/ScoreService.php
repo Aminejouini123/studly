@@ -21,6 +21,7 @@ class ScoreService
 
     /**
      * Reset scores for a collection of users
+     * @param Collection<int, User> $users
      */
     public function resetScores(Collection $users): void
     {
@@ -155,8 +156,10 @@ class ScoreService
         $points = 10; // Base points for project task completion
 
         // Bonus for completing before project deadline
-        if ($projectTask->getProject() && $projectTask->getProject()->getDeadline() &&
-            $projectTask->getCompletedAt() && $projectTask->getCompletedAt() <= $projectTask->getProject()->getDeadline()) {
+        if (
+            $projectTask->getProject() && $projectTask->getProject()->getDeadline() &&
+            $projectTask->getCompletedAt() && $projectTask->getCompletedAt() <= $projectTask->getProject()->getDeadline()
+        ) {
             $points += 10; // Additional 10 points for early completion
         }
 
@@ -171,8 +174,10 @@ class ScoreService
         $points = 10; // Base points for project task completion
 
         // Bonus for completing before project deadline
-        if ($projectTask->getProject() && $projectTask->getProject()->getDeadline() &&
-            $projectTask->getCompletedAt() && $projectTask->getCompletedAt() <= $projectTask->getProject()->getDeadline()) {
+        if (
+            $projectTask->getProject() && $projectTask->getProject()->getDeadline() &&
+            $projectTask->getCompletedAt() && $projectTask->getCompletedAt() <= $projectTask->getProject()->getDeadline()
+        ) {
             $points += 10; // Additional 10 points for early completion
         }
 
@@ -200,16 +205,17 @@ class ScoreService
     /**
      * Get the old status from the database (for comparison)
      * This is a simplified version - in a real implementation, you'd track changes differently
+     * @param object $entity
      */
-    private function getOldStatus($entity): ?string
+    private function getOldStatus(object $entity): ?string
     {
         $uow = $this->entityManager->getUnitOfWork();
-        
+
         // Compute changesets if not already done
         if ($entity instanceof ProjectTask || $entity instanceof Task || $entity instanceof Activity) {
             $uow->computeChangeSets();
         }
-        
+
         $changeset = $uow->getEntityChangeSet($entity);
 
         if (isset($changeset['status'])) {
@@ -229,6 +235,7 @@ class ScoreService
 
     /**
      * Get all users' scores (for admin)
+     * @return array<int, array<string, mixed>>
      */
     public function getAllUsersScores(): array
     {
@@ -245,7 +252,7 @@ class ScoreService
         }
 
         // Sort by score descending
-        usort($scores, function($a, $b) {
+        usort($scores, function ($a, $b) {
             return $b['score'] <=> $a['score'];
         });
 

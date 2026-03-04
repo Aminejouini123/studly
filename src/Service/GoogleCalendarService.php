@@ -27,8 +27,8 @@ class GoogleCalendarService
     {
         $accessToken = $user->getGoogleAccessToken();
         $refreshToken = $user->getGoogleRefreshToken();
-        
-        $this->client->setAccessToken($accessToken);
+
+        $this->client->setAccessToken($accessToken ?? '');
 
         if ($this->client->isAccessTokenExpired()) {
             if ($refreshToken) {
@@ -106,7 +106,7 @@ class GoogleCalendarService
     public function createEvent(User $user, array $data): array
     {
         $service = $this->getCalendarService($user);
-        
+
         $event = new Event([
             'summary' => $data['summary'],
             'location' => $data['location'] ?? '',
@@ -148,16 +148,19 @@ class GoogleCalendarService
         $service = $this->getCalendarService($user);
         $event = $service->events->get('primary', $eventId);
 
-        if (isset($updates['summary'])) $event->setSummary($updates['summary']);
-        if (isset($updates['description'])) $event->setDescription($updates['description']);
-        if (isset($updates['location'])) $event->setLocation($updates['location']);
-        
+        if (isset($updates['summary']))
+            $event->setSummary($updates['summary']);
+        if (isset($updates['description']))
+            $event->setDescription($updates['description']);
+        if (isset($updates['location']))
+            $event->setLocation($updates['location']);
+
         if (isset($updates['start'])) {
             $start = new EventDateTime();
             $start->setDateTime($updates['start']);
             $event->setStart($start);
         }
-        
+
         if (isset($updates['end'])) {
             $end = new EventDateTime();
             $end->setDateTime($updates['end']);
@@ -182,7 +185,7 @@ class GoogleCalendarService
     public function syncEvent(User $user, \App\Entity\Event $localEvent): string
     {
         $service = $this->getCalendarService($user);
-        
+
         $gEvent = new \Google\Service\Calendar\Event();
         $gEvent->setSummary($localEvent->getTitle());
         $gEvent->setDescription($localEvent->getDescription());
@@ -235,7 +238,7 @@ class GoogleCalendarService
     public function getFreeSlots(User $user, string $timeMin, string $timeMax, int $durationMinutes = 60): array
     {
         $service = $this->getCalendarService($user);
-        
+
         $request = new \Google\Service\Calendar\FreeBusyRequest();
         $request->setTimeMin((new \DateTime($timeMin))->format(\DateTime::RFC3339));
         $request->setTimeMax((new \DateTime($timeMax))->format(\DateTime::RFC3339));

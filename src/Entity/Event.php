@@ -12,6 +12,7 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -68,6 +69,7 @@ class Event
     #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
+    /** @var \Doctrine\Common\Collections\Collection<int, PomodoroSession> */
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $pomodoroSessions;
 
@@ -262,6 +264,16 @@ class Event
     public function getEndTime(): ?\DateTimeImmutable
     {
         return $this->endTime;
+    }
+
+    public function setEndTime(?\DateTimeInterface $endTime): static
+    {
+        if ($endTime instanceof \DateTime) {
+            $this->endTime = \DateTimeImmutable::createFromMutable($endTime);
+        } else {
+            $this->endTime = $endTime;
+        }
+        return $this;
     }
 
     public function getColor(): ?string

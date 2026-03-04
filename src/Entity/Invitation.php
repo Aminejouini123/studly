@@ -15,6 +15,7 @@ class Invitation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentInvitations')]
@@ -30,7 +31,7 @@ class Invitation
     private ?Group $group = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $status = self::STATUS_PENDING;
+    private string $status = self::STATUS_PENDING;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -81,7 +82,7 @@ class Invitation
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }

@@ -71,10 +71,14 @@ class FileScannerService // Service pour extraire le texte de différents types 
         if ($zip->open($filePath) === true) { // Si l'archive s'ouvre correctement
             for ($i = 0; $i < $zip->numFiles; $i++) { // On parcourt tous les fichiers à l'intérieur du ZIP
                 $stat = $zip->statIndex($i); // Récupération des infos du fichier actuel
-                if (preg_match('/ppt\/slides\/slide\d+\.xml/', $stat['name'])) { // Si c'est un fichier XML de diapositive
-                    $xml = $zip->getFromName($stat['name']); // On lit le contenu XML de la slide
-                    $fullText .= strip_tags($xml) . " "; // On enlève les balises XML pour garder le texte
-                } // Fin de la condition slide
+                if ($stat !== false) {
+                    if (preg_match('/ppt\/slides\/slide\d+\.xml/', $stat['name'])) { // Si c'est un fichier XML de diapositive
+                        $xml = $zip->getFromName($stat['name']); // On lit le contenu XML de la slide
+                        if ($xml !== false) {
+                            $fullText .= strip_tags($xml) . " "; // On enlève les balises XML pour garder le texte
+                        }
+                    } // Fin de la condition slide
+                }
             } // Fin de la boucle
             $zip->close(); // Fermeture de l'archive ZIP
         } // Fin du test d'ouverture
@@ -88,7 +92,9 @@ class FileScannerService // Service pour extraire le texte de différents types 
         if ($zip->open($filePath) === true) { // Si ouverture réussie
             if (($index = $zip->locateName($xmlPath)) !== false) { // Si le fichier XML cible est trouvé
                 $xml = $zip->getFromIndex($index); // Lecture du XML
-                $content = strip_tags($xml); // Extraction du texte brut
+                if ($xml !== false) {
+                    $content = strip_tags($xml); // Extraction du texte brut
+                }
             } // Fin du test XML
             $zip->close(); // Fermeture ZIP
         } // Fin du test ZIP
@@ -99,7 +105,10 @@ class FileScannerService // Service pour extraire le texte de différents types 
     { // Début de la fonction
         try { // Bloc de sécurité
             $content = file_get_contents($filePath); // Lecture directe du contenu du fichier
-            return $this->cleanText($content); // Retour après nettoyage
+            if ($content !== false) {
+                return $this->cleanText($content); // Retour après nettoyage
+            }
+            return "";
         } catch (\Exception $e) { // En cas d'erreur
             return ""; // Retourne vide
         } // Fin du try-catch
@@ -108,17 +117,17 @@ class FileScannerService // Service pour extraire le texte de différents types 
     private function cleanText(string $text): string // Fonction pour nettoyer le texte extrait
     { // Début de la fonction
         // Remove non-printable characters except common whitespace (newlines, tabs)
-        $text = preg_replace('/[^\x20-\x7E\s\r\n\t]/u', '', $text); 
-        
+        $text = preg_replace('/[^\x20-\x7E\s\r\n\t]/u', '', $text);
+
         // Normalize line endings
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
-        
+        $text = str_replace(["\r\n", "\r"], "\n", (string) $text);
+
         // Collapse multiple spaces but keep newlines
-        $text = preg_replace('/[ \t]+/', ' ', $text);
-        
+        $text = preg_replace('/[ \t]+/', ' ', (string) $text);
+
         // Collapse multiple newlines into max two (single empty line between blocks)
-        $text = preg_replace('/\n{3,}/', "\n\n", $text);
-        
-        return trim($text); // Suppression des espaces inutiles au début et à la fin
+        $text = preg_replace('/\n{3,}/', "\n\n", (string) $text);
+
+        return trim((string) $text); // Suppression des espaces inutiles au début et à la fin
     } // Fin de la fonction de nettoyage
 }

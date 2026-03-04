@@ -54,7 +54,9 @@ final class CoursesController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
 
-                $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/courses';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $targetDir = $projectDir . '/public/uploads/courses';
                 try {
                     $uploadedFile->move($targetDir, $newFilename);
                     $course->setCourseFile($newFilename);
@@ -67,7 +69,7 @@ final class CoursesController extends AbstractController
             $entityManager->persist($course);
 
             // Log the action
-            $actionLogger->log($this->getUser(), 'course_created', 'Created a new course: ' . $course->getName(), $course);
+            $actionLogger->log($user, 'course_created', 'Created a new course: ' . $course->getName(), $course);
 
             $entityManager->flush();
 
@@ -100,7 +102,9 @@ final class CoursesController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
 
-                $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/courses';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $targetDir = $projectDir . '/public/uploads/courses';
                 try {
                     $uploadedFile->move($targetDir, $newFilename);
                     $course->setCourseFile($newFilename);
@@ -114,7 +118,8 @@ final class CoursesController extends AbstractController
             $this->addFlash('success', 'The course has been successfully updated!');
 
             // Redirect based on role/referer might be better, but for now:
-            if ($this->isGranted('ROLE_ADMIN') && strpos($request->headers->get('referer'), '/admin') !== false) {
+            $referer = $request->headers->get('referer', '');
+            if ($this->isGranted('ROLE_ADMIN') && strpos((string) $referer, '/admin') !== false) {
                 return $this->redirectToRoute('app_admin_courses');
             }
             return $this->redirectToRoute('app_courses');
@@ -187,7 +192,9 @@ final class CoursesController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
 
-                $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/courses';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $targetDir = $projectDir . '/public/uploads/courses';
                 try {
                     $uploadedFile->move($targetDir, $newFilename);
                     $course->setCourseFile($newFilename);

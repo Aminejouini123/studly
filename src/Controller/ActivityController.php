@@ -67,11 +67,13 @@ final class ActivityController extends AbstractController
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/activities',
+                        $projectDir . '/public/uploads/activities',
                         $newFilename
                     );
                     $activity->setFile($newFilename);
@@ -108,11 +110,13 @@ final class ActivityController extends AbstractController
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/activities',
+                        $projectDir . '/public/uploads/activities',
                         $newFilename
                     );
                     $activity->setFile($newFilename);
@@ -137,7 +141,8 @@ final class ActivityController extends AbstractController
     public function show(Activity $activity): Response
     {
         $user = $this->getUser();
-        if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+        $course = $activity->getCourse();
+        if (!$course || ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException('You do not have permission to view this activity.');
         }
 
@@ -150,7 +155,8 @@ final class ActivityController extends AbstractController
     public function edit(Request $request, Activity $activity, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
-        if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+        $course = $activity->getCourse();
+        if (!$course || ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException('You do not have permission to edit this activity.');
         }
 
@@ -158,16 +164,18 @@ final class ActivityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             /** @var UploadedFile|null $file */
+            /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/activities',
+                        $projectDir . '/public/uploads/activities',
                         $newFilename
                     );
                     $activity->setFile($newFilename);
@@ -175,10 +183,10 @@ final class ActivityController extends AbstractController
                     $this->addFlash('error', 'Error uploading file');
                 }
             }
-            
+
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_course_activities', ['id' => $activity->getCourse()->getId()]);
+            return $this->redirectToRoute('app_course_activities', ['id' => $course->getId()]);
         }
 
         return $this->render('activity/edit.html.twig', [
@@ -191,20 +199,27 @@ final class ActivityController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function editAdmin(Request $request, Activity $activity, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $course = $activity->getCourse();
+        if (!$course) {
+            throw $this->createNotFoundException('Activity must belong to a course.');
+        }
+
         $form = $this->createForm(ActivityType::class, $activity);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             /** @var UploadedFile|null $file */
+            /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/activities',
+                        $projectDir . '/public/uploads/activities',
                         $newFilename
                     );
                     $activity->setFile($newFilename);
@@ -212,10 +227,10 @@ final class ActivityController extends AbstractController
                     $this->addFlash('error', 'Error uploading file');
                 }
             }
-            
+
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_course_activities', ['id' => $activity->getCourse()->getId()]);
+            return $this->redirectToRoute('app_course_activities', ['id' => $course->getId()]);
         }
 
         return $this->render('activity/backEdit.html.twig', [
@@ -228,15 +243,16 @@ final class ActivityController extends AbstractController
     public function delete(Request $request, Activity $activity, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-        if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+        $course = $activity->getCourse();
+        if (!$course || ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException('You do not have permission to delete this activity.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$activity->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $activity->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($activity);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_course_activities', ['id' => $activity->getCourse()->getId()]);
+        return $this->redirectToRoute('app_course_activities', ['id' => $course->getId()]);
     }
 }

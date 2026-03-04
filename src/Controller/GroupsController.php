@@ -31,9 +31,12 @@ final class GroupsController extends AbstractController
     public function index(GroupRepository $groupRepository, Request $request): Response
     {
         $user = $this->getUser();
-        $searchTerm = $request->query->get('q');
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
+        $searchTerm = (string) $request->query->get('q', '');
 
-        if ($searchTerm) {
+        if ($searchTerm !== '') {
             // For search, we might want to see all groups OR just ours?
             // The story says "Un étudiant peut... rechercher et lister des groupes".
             // Let's assume they search within their own groups first, or globally?
@@ -72,13 +75,17 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw $this->createAccessDeniedException();
+            }
             // Set the current user as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
 
             $entityManager->persist($group);
 
             // Log the action
-            $actionLogger->log($this->getUser(), 'group_created', 'Created a new group: ' . $group->getCategory(), $group);
+            $actionLogger->log($user, 'group_created', 'Created a new group: ' . $group->getCategory(), $group);
 
             $entityManager->flush();
 
@@ -105,26 +112,30 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw $this->createAccessDeniedException();
+            }
             // Set the current admin as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
 
             $entityManager->persist($group);
 
             // Log action
-            $actionLogger->log($this->getUser(), 'group_created', 'Created a new group (Admin): ' . $group->getCategory(), $group);
+            $actionLogger->log($user, 'group_created', 'Created a new group (Admin): ' . $group->getCategory(), $group);
 
             $entityManager->flush();
 
             $this->addFlash('success', 'Group created successfully!');
             return $this->redirectToRoute('app_admin_groups_index', [], Response::HTTP_SEE_OTHER);
         }
-        $searchTerm = $request->query->get('q');
-        $sort = $request->query->get('sort');
-        $direction = $request->query->get('direction', 'ASC');
+        $searchTerm = (string) $request->query->get('q', '');
+        $sort = (string) $request->query->get('sort', '');
+        $direction = (string) $request->query->get('direction', 'ASC');
 
-        if ($searchTerm) {
+        if ($searchTerm !== '') {
             $groups = $groupRepository->searchByCategory($searchTerm);
-        } elseif ($sort) {
+        } elseif ($sort !== '') {
             $groups = $groupRepository->findAllSorted($sort, $direction);
         } else {
             $groups = $groupRepository->findAllOrderedByCreation();
@@ -146,6 +157,9 @@ final class GroupsController extends AbstractController
         $groups = $groupRepository->findAllOrderedByCreation();
 
         $fp = fopen('php://temp', 'w');
+        if ($fp === false) {
+            throw new \RuntimeException('Unable to open memory stream');
+        }
 
         // Add BOM for Excel compatibility
         fputs($fp, "\xEF\xBB\xBF");
@@ -186,8 +200,12 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw $this->createAccessDeniedException();
+            }
             // Set the current admin as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
 
             $entityManager->persist($group);
             $entityManager->flush();
@@ -263,22 +281,30 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager, UserActionLogger $actionLogger): Response
     {
-        if ($invitation->getReceiver() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($invitation->getReceiver() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
         $invitation->setStatus(Invitation::STATUS_ACCEPTED);
         $group = $invitation->getGroup();
-        $group->addMember($this->getUser());
+        if (!$group) {
+            throw $this->createNotFoundException('Group not found');
+        }
+        $group->addMember($user);
 
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
-        $notification->setContent($this->getUser()->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
+        $notification->setContent($user->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
 
         $entityManager->persist($notification);
 
         // Log action
-        $actionLogger->log($this->getUser(), 'group_joined', 'Joined the group: ' . $group->getCategory(), $group);
+        $actionLogger->log($user, 'group_joined', 'Joined the group: ' . $group->getCategory(), $group);
 
         $entityManager->flush();
 
@@ -290,15 +316,25 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function refuseInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
     {
-        if ($invitation->getReceiver() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($invitation->getReceiver() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
         $invitation->setStatus(Invitation::STATUS_REJECTED);
 
+        $group = $invitation->getGroup();
+        if (!$group) {
+            throw $this->createNotFoundException('Group not found');
+        }
+
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
-        $notification->setContent($this->getUser()->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
+        $notification->setContent($user->getFirstName() . ' refused your invitation to ' . $group->getCategory());
 
         $entityManager->persist($notification);
         $entityManager->flush();
@@ -392,7 +428,9 @@ final class GroupsController extends AbstractController
             throw $this->createAccessDeniedException('You can only delete your own groups.');
         }
 
-        if ($this->isCsrfTokenValid('delete' . $group->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $group->getId(), $token)) {
             // Reset scores of members
             $scoreService->resetScores($group->getMembers());
 
@@ -412,7 +450,9 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminDelete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $group->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $group->getId(), $token)) {
             // Reset scores of members
             $scoreService->resetScores($group->getMembers());
 
@@ -499,14 +539,19 @@ final class GroupsController extends AbstractController
             throw $this->createAccessDeniedException('You are not a member of this group.');
         }
 
-        $content = $request->request->get('content');
+        $content = (string) $request->request->get('content', '');
         if (empty($content)) {
             $this->addFlash('error', 'Message cannot be empty.');
             return $this->redirectToRoute('app_groups_show', ['id' => $group->getId()]);
         }
 
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $message = new \App\Entity\Message();
-        $message->setSender($this->getUser());
+        $message->setSender($user);
         $message->setGroup($group);
         $message->setContent($content);
 

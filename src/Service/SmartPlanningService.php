@@ -41,6 +41,9 @@ class SmartPlanningService
             'user_state' => $userState,
             'tasks' => $tasks
         ]);
+        if ($inputData === false) {
+            throw new \RuntimeException('Failed to encode input data for Python service.');
+        }
 
         $scriptPath = $this->projectDir . DIRECTORY_SEPARATOR . 'python_services' . DIRECTORY_SEPARATOR . 'time_management' . DIRECTORY_SEPARATOR . 'main.py';
 

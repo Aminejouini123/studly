@@ -35,16 +35,14 @@ class TempsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             // ensure DB non-nullable fields have defaults
-            if (null === $event->getDescription()) $event->setDescription('');
-            if (null === $event->getType()) $event->setType('');
-            if (null === $event->getDuration()) $event->setDuration(0);
-            if (null === $event->getLocation()) $event->setLocation('');
-            if (null === $event->getDifficulty()) $event->setDifficulty(1);
-            
+            // ensure DB non-nullable fields have defaults
+            // Redundant checks removed entirely because properties are typed non-nullable
+
             // Assign current admin user or a specific user if needed? 
             // For now, let's assign the current admin user as the creator/owner
-            $event->setUser($this->getUser());
+            /** @var \App\Entity\User|null $user */
+            $user = $this->getUser();
+            $event->setUser($user);
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -83,7 +81,9 @@ class TempsController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $event->getId(), $token)) {
             $entityManager->remove($event);
             $entityManager->flush();
             $this->addFlash('success', 'Event deleted successfully.');
@@ -102,10 +102,12 @@ class TempsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $motivation->setEvent($event);
             $event->setMotivation($motivation);
-            
+
             // If new motivation, set user to event owner or current admin
             if (!$motivation->getId()) {
-                 $motivation->setUser($event->getUser() ?? $this->getUser());
+                /** @var \App\Entity\User|null $currentUser */
+                $currentUser = $this->getUser();
+                $motivation->setUser($event->getUser() ?? $currentUser);
             }
 
             $entityManager->persist($motivation);
@@ -128,12 +130,14 @@ class TempsController extends AbstractController
     public function deleteMotivation(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
         $motivation = $event->getMotivation();
-        if ($motivation && $this->isCsrfTokenValid('delete_motivation'.$event->getId(), $request->request->get('_token'))) {
-             $event->setMotivation(null);
-             $entityManager->persist($event);
-             $entityManager->remove($motivation);
-             $entityManager->flush();
-             $this->addFlash('success', 'Motivation deleted successfully.');
+        /** @var string|null $token */
+        $token = $request->request->get('_token');
+        if ($motivation && $this->isCsrfTokenValid('delete_motivation' . $event->getId(), $token)) {
+            $event->setMotivation(null);
+            $entityManager->persist($event);
+            $entityManager->remove($motivation);
+            $entityManager->flush();
+            $this->addFlash('success', 'Motivation deleted successfully.');
         }
 
         return $this->redirectToRoute('app_admin_temps_motivation', ['id' => $event->getId()]);

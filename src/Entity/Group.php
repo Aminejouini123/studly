@@ -16,6 +16,7 @@ class Group
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column]
@@ -40,6 +41,7 @@ class Group
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
+    /** @var Collection<int, User> */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'memberGroups')]
     private Collection $members;
 
@@ -50,9 +52,11 @@ class Group
     private Collection $projects;
 
 
+    /** @var Collection<int, Message> */
     #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $messages;
 
+    /** @var Collection<int, Invitation> */
     #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $invitations;
 

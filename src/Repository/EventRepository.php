@@ -40,7 +40,7 @@ class EventRepository extends ServiceEntityRepository
      *
      * @return array<int, array{year:int, week:int, totalMinutes:int}>
      */
-    public function getWeeklyDurationMinutesForUser($user): array
+    public function getWeeklyDurationMinutesForUser(User $user): array
     {
         // Fetch only the needed fields to keep the query light
         $rows = $this->createQueryBuilder('e')
@@ -59,14 +59,14 @@ class EventRepository extends ServiceEntityRepository
 
             // ISO-8601 week-numbering year and week
             $weekYear = (int) $date->format('o');
-            $weekNum  = (int) $date->format('W');
+            $weekNum = (int) $date->format('W');
 
             $key = sprintf('%d-W%02d', $weekYear, $weekNum);
 
             if (!isset($stats[$key])) {
                 $stats[$key] = [
-                    'year'         => $weekYear,
-                    'week'         => $weekNum,
+                    'year' => $weekYear,
+                    'week' => $weekNum,
                     'totalMinutes' => 0,
                 ];
             }
@@ -83,6 +83,9 @@ class EventRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * @return Event[]
+     */
     public function findUpcomingByUser(User $user, int $limit = 5): array
     {
         return $this->createQueryBuilder('e')
@@ -100,7 +103,7 @@ class EventRepository extends ServiceEntityRepository
     /**
      * @return Event[] Returns an array of Event objects sorted by priority (High > Medium > Low)
      */
-    public function findByUserSortedByPriority($user)
+    public function findByUserSortedByPriority(User $user)
     {
         return $this->createQueryBuilder('e')
             ->andWhere('e.user = :user')
@@ -112,7 +115,7 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-//    public function findOneBySomeField($value): ?Event
+    //    public function findOneBySomeField($value): ?Event
 //    {
 //        return $this->createQueryBuilder('e')
 //            ->andWhere('e.exampleField = :val')

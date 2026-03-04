@@ -22,6 +22,9 @@ class ScoreController extends AbstractController
     public function myScore(): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
         $score = $this->scoreService->getUserScore($user);
 
         return $this->render('score/my_score.html.twig', [
