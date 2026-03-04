@@ -25,6 +25,9 @@ final class TempsController extends AbstractController
     ): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
         $sort = $request->query->get('sort');
 
         if ($sort === 'priority') {
@@ -35,7 +38,7 @@ final class TempsController extends AbstractController
         }
 
         $googleEvents = [];
-        if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+        if ($user->getGoogleAccessToken()) {
             try {
                 // Fetch events for the current week to show in stats/chart
                 $timeMin = (new \DateTime('monday this week'))->format(\DateTime::RFC3339);
@@ -73,7 +76,7 @@ final class TempsController extends AbstractController
             $event->setUser($user);
             
             // Sync with Google if connected
-            if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            if ($user->getGoogleAccessToken()) {
                 try {
                     $googleId = $calendarService->syncEvent($user, $event);
                     $event->setGoogleEventId($googleId);
@@ -133,6 +136,9 @@ final class TempsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('edit', $event);
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
@@ -140,7 +146,7 @@ final class TempsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             
             // Sync with Google if connected
-            if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            if ($user->getGoogleAccessToken()) {
                 try {
                     $googleId = $calendarService->syncEvent($user, $event);
                     $event->setGoogleEventId($googleId);
@@ -172,8 +178,11 @@ final class TempsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('edit', $event);
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
 
-        if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+        if ($user->getGoogleAccessToken()) {
             try {
                 $googleId = $calendarService->syncEvent($user, $event);
                 $event->setGoogleEventId($googleId);
@@ -199,12 +208,15 @@ final class TempsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('delete', $event);
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $token = $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $token)) {
             
             // Delete from Google if linked
-            if ($event->getGoogleEventId() && $user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            if ($event->getGoogleEventId() && $user->getGoogleAccessToken()) {
                 try {
                     $calendarService->deleteEvent($user, $event->getGoogleEventId());
                 } catch (\Exception $e) {

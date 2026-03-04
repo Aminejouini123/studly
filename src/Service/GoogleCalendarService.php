@@ -6,7 +6,9 @@ use App\Entity\User;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
+use Google\Service\Calendar\EventAttendee;
 use Google\Service\Calendar\EventDateTime;
+use Google\Service\Calendar\FreeBusyRequestItem;
 
 class GoogleCalendarService
 {
@@ -45,6 +47,16 @@ class GoogleCalendarService
         return new Calendar($this->client);
     }
 
+    /**
+     * @return list<array{
+     *   id: string|null,
+     *   summary: string|null,
+     *   description: string|null,
+     *   start: string|null,
+     *   end: string|null,
+     *   location: string|null
+     * }>
+     */
     public function listEvents(User $user, string $timeMin = 'now', string $timeMax = null, int $maxResults = 10, string $q = null): array
     {
         $service = $this->getCalendarService($user);
@@ -80,6 +92,17 @@ class GoogleCalendarService
         return $events;
     }
 
+    /**
+     * @param array{
+     *   summary: string,
+     *   start: string,
+     *   end: string,
+     *   location?: string,
+     *   description?: string,
+     *   attendees?: list<string>
+     * } $data
+     * @return array{id: string|null, htmlLink: string|null}
+     */
     public function createEvent(User $user, array $data): array
     {
         $service = $this->getCalendarService($user);
@@ -95,7 +118,9 @@ class GoogleCalendarService
         if (!empty($data['attendees'])) {
             $attendees = [];
             foreach ($data['attendees'] as $email) {
-                $attendees[] = ['email' => $email];
+                $attendee = new EventAttendee();
+                $attendee->setEmail($email);
+                $attendees[] = $attendee;
             }
             $event->setAttendees($attendees);
         }
@@ -108,6 +133,16 @@ class GoogleCalendarService
         ];
     }
 
+    /**
+     * @param array{
+     *   summary?: string,
+     *   description?: string,
+     *   location?: string,
+     *   start?: string,
+     *   end?: string
+     * } $updates
+     * @return array{id: string|null, htmlLink: string|null}
+     */
     public function updateEvent(User $user, string $eventId, array $updates): array
     {
         $service = $this->getCalendarService($user);
@@ -194,6 +229,9 @@ class GoogleCalendarService
         }
     }
 
+    /**
+     * @return list<array{start: string, end: string, duration: int}>
+     */
     public function getFreeSlots(User $user, string $timeMin, string $timeMax, int $durationMinutes = 60): array
     {
         $service = $this->getCalendarService($user);
@@ -201,7 +239,9 @@ class GoogleCalendarService
         $request = new \Google\Service\Calendar\FreeBusyRequest();
         $request->setTimeMin((new \DateTime($timeMin))->format(\DateTime::RFC3339));
         $request->setTimeMax((new \DateTime($timeMax))->format(\DateTime::RFC3339));
-        $request->setItems([['id' => 'primary']]);
+        $item = new FreeBusyRequestItem();
+        $item->setId('primary');
+        $request->setItems([$item]);
 
         $query = $service->freebusy->query($request);
         $busySlots = $query->getCalendars()['primary']->getBusy();

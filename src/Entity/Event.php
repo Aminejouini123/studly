@@ -15,37 +15,37 @@ class Event
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private string $title = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $type = '';
 
     #[ORM\Column]
-    private ?int $duration = null;
+    private int $duration = 0;
 
     #[ORM\Column(length: 255)]
-    private ?string $location = null;
+    private string $location = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $priority = null;
+    private string $priority = '';
 
     #[ORM\Column]
-    private ?int $difficulty = null;
+    private int $difficulty = 1;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    private \DateTime $date;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $startTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $endTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $color = null;
@@ -68,7 +68,7 @@ class Event
     #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
     private ?Motivation $motivation = null;
 
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $pomodoroSessions;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
@@ -77,6 +77,7 @@ class Event
     public function __construct()
     {
         $this->pomodoroSessions = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->date = new \DateTime();
     }
 
     /**
@@ -115,7 +116,7 @@ class Event
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -127,7 +128,7 @@ class Event
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -139,7 +140,7 @@ class Event
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -151,7 +152,7 @@ class Event
         return $this;
     }
 
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }
@@ -163,7 +164,7 @@ class Event
         return $this;
     }
 
-    public function getLocation(): ?string
+    public function getLocation(): string
     {
         return $this->location;
     }
@@ -175,7 +176,7 @@ class Event
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -187,7 +188,7 @@ class Event
         return $this;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): string
     {
         return $this->priority;
     }
@@ -199,7 +200,7 @@ class Event
         return $this;
     }
 
-    public function getDifficulty(): ?int
+    public function getDifficulty(): int
     {
         return $this->difficulty;
     }
@@ -211,12 +212,12 @@ class Event
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): \DateTime
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTime $date): static
+    public function setDate(\DateTime $date): static
     {
         $this->date = $date;
 
@@ -247,28 +248,25 @@ class Event
         return $this;
     }
 
-    public function getStartTime(): ?\DateTime
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTime $startTime): static
+    protected function setStartTime(?\DateTimeInterface $startTime): static
     {
-        $this->startTime = $startTime;
+        if ($startTime instanceof \DateTime) {
+            $this->startTime = \DateTimeImmutable::createFromMutable($startTime);
+        } else {
+            $this->startTime = $startTime;
+        }
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTime
+    public function getEndTime(): ?\DateTimeImmutable
     {
         return $this->endTime;
-    }
-
-    public function setEndTime(?\DateTime $endTime): static
-    {
-        $this->endTime = $endTime;
-
-        return $this;
     }
 
     public function getColor(): ?string

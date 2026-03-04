@@ -20,9 +20,20 @@ class SmartPlanningService
     /**
      * Executes the Python script to analyze motivation and optimize tasks.
      *
-     * @param array $userState ['energy', 'stress', 'sleep_quality', 'mood_text', 'date']
-     * @param array $tasks [['id', 'title', 'difficulty', 'initial_duration']]
-     * @return array Result from Python service
+     * @param array{
+     *   energy: int,
+     *   stress: int,
+     *   sleep_quality: int,
+     *   mood_text: string,
+     *   date: string
+     * } $userState
+     * @param list<array{
+     *   id: int,
+     *   title: string,
+     *   difficulty: int|null,
+     *   initial_duration: int|null
+     * }> $tasks
+     * @return array<string, mixed> Result from Python service
      */
     public function analyze(array $userState, array $tasks): array
     {
@@ -46,6 +57,9 @@ class SmartPlanningService
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \RuntimeException('Invalid JSON output from Python service: ' . $output);
+        }
+        if (!is_array($result)) {
+            throw new \RuntimeException('Unexpected non-array output from Python service.');
         }
 
         return $result;
