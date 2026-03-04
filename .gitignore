@@ -28,3 +28,7 @@
 
 # Sensitive logs
 /recommendation_api/*.log
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

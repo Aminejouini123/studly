@@ -14,16 +14,16 @@ class Motivation
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $motivationLevel = null;
+    private int $motivationLevel = 0;
 
     #[ORM\Column(length: 255)]
-    private ?string $emotion = null;
+    private string $emotion = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $preparation = null;
+    private string $preparation = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $reward = null;
+    private string $reward = '';
 
     #[ORM\OneToOne(mappedBy: 'motivation', targetEntity: Event::class)]
     private ?Event $event = null;
@@ -36,7 +36,7 @@ class Motivation
         return $this->id;
     }
 
-    public function getMotivationLevel(): ?int
+    public function getMotivationLevel(): int
     {
         return $this->motivationLevel;
     }
@@ -48,7 +48,7 @@ class Motivation
         return $this;
     }
 
-    public function getEmotion(): ?string
+    public function getEmotion(): string
     {
         return $this->emotion;
     }
@@ -60,7 +60,7 @@ class Motivation
         return $this;
     }
 
-    public function getPreparation(): ?string
+    public function getPreparation(): string
     {
         return $this->preparation;
     }
@@ -72,7 +72,7 @@ class Motivation
         return $this;
     }
 
-    public function getReward(): ?string
+    public function getReward(): string
     {
         return $this->reward;
     }

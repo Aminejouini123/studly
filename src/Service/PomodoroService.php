@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class PomodoroService
 {
-    private $em;
+    private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {
