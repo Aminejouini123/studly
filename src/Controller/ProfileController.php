@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserActionRepository;
 use App\Form\ProfileType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,10 +19,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProfileController extends AbstractController
 {
     #[Route('/', name: 'app_user_profile', methods: ['GET'])]
-    public function index(): Response
+    public function index(UserActionRepository $actionRepository): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+        $currentYear = (int) date('Y');
+
+        $heatmapData = $actionRepository->countActionsForLastYear($user);
+        $recentActions = $actionRepository->findBy(['user' => $user], ['createdAt' => 'DESC'], 10);
+
         return $this->render('user/profile.html.twig', [
-            'user' => $this->getUser(),
+            'user' => $user,
+            'heatmapData' => $heatmapData,
+            'recentActions' => $recentActions,
         ]);
     }
 

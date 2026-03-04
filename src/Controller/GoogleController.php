@@ -28,7 +28,7 @@ class GoogleController extends AbstractController
     }
 
     #[Route('/connect/google/check', name: 'connect_google_check')]
-    public function connectCheckAction()
+    public function connectCheckAction(): void
     {
         // ** if you want to *authenticate* the user, then
         // leave this method blank and create a Guard authenticator

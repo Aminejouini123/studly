@@ -29,7 +29,7 @@ class FaceController extends AbstractController
         $user = $this->getUser();
 
         try {
-            $result = $faceService->register($user->getId(), $data['descriptor']);
+            $result = $faceService->register((int) $user->getId(), $data['descriptor']);
             return new JsonResponse($result);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);

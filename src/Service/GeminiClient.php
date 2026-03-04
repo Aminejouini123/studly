@@ -10,7 +10,8 @@ final class GeminiClient
         private HttpClientInterface $http,
         private string $apiKey,
         private string $model = 'gemini-1.5-flash'
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<int, array{role:string, content:string}> $messages
@@ -34,7 +35,7 @@ final class GeminiClient
         // Ensure model name is trimmed
         $model = trim($this->model);
 
-        $response = $this->http->request('POST', "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$this->apiKey}", [
+        $response = $this->http->request('POST', "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$this->apiKey}", [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],

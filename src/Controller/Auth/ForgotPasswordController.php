@@ -37,9 +37,10 @@ final class ForgotPasswordController extends AbstractController
                     UrlGeneratorInterface::ABSOLUTE_URL
                 );
 
+                $fromAddress = $this->getParameter('mailer.from_address');
                 $message = (new TemplatedEmail())
-                    ->from($this->getParameter('mailer.from_address'))
-                    ->to($user->getEmail())
+                    ->from(is_string($fromAddress) ? $fromAddress : '')
+                    ->to((string) $user->getEmail())
                     ->subject('Reset your password')
                     ->htmlTemplate('emails/reset_password.html.twig')
                     ->context([

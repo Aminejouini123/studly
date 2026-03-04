@@ -42,6 +42,11 @@ final class ResetPasswordController extends AbstractController
             }
 
             $user = $reset->getUser();
+            if (!$user) {
+                $this->addFlash('error', 'User associated with this token not found.');
+                return $this->redirectToRoute('app_forgot_password');
+            }
+
             $hashed = $passwordHasher->hashPassword($user, $password);
             $user->setPassword($hashed);
 

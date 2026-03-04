@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\CourseRepository;
 use App\Repository\EventRepository;
+use App\Entity\User;
 use App\Repository\ExamRepository;
 use App\Repository\TaskRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +23,7 @@ final class FrontController extends AbstractController
         ExamRepository $examRepository,
         TaskRepository $taskRepository,
     ): Response {
+        /** @var User|null $user */
         $user = $this->getUser();
 
         $userCoursesCount = 0;
@@ -35,7 +37,7 @@ final class FrontController extends AbstractController
 
         if ($user !== null) {
             $userCoursesCount = $courseRepository->countByUser($user);
-            $userEventsCount =  $eventRepository->countByUser($user);
+            $userEventsCount = $eventRepository->countByUser($user);
             $completedEventsCount = $eventRepository->countCompletedByUser($user);
             $upcomingExamsCount = $examRepository->countUpcomingByUser($user);
             $pendingTasksCount = $taskRepository->countPendingByUser($user);

@@ -16,13 +16,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use App\Service\UserActionLogger;
 
 #[Route('/project')]
 final class ProjectController extends AbstractController
 {
     #[Route('/new/{group}', name: 'app_project_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(Group $group, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(Group $group, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, UserActionLogger $actionLogger): Response
     {
         // Only the creator of the group or an admin can add projects
         if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
@@ -44,11 +45,11 @@ final class ProjectController extends AbstractController
             if ($resourceFile) {
                 $originalFilename = pathinfo($resourceFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$resourceFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $resourceFile->guessExtension();
 
                 try {
                     $resourceFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/projects',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/projects',
                         $newFilename
                     );
                     $project->setResource($newFilename);
@@ -58,6 +59,10 @@ final class ProjectController extends AbstractController
             }
 
             $entityManager->persist($project);
+
+            // Log action
+            $actionLogger->log($this->getUser(), 'project_created', 'Created a new project: ' . $project->getTitle() . ' in group ' . $group->getCategory(), $project);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Project created successfully!');
@@ -91,22 +96,22 @@ final class ProjectController extends AbstractController
             if ($resourceFile) {
                 $originalFilename = pathinfo($resourceFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$resourceFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $resourceFile->guessExtension();
 
                 try {
                     $resourceFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/projects',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/projects',
                         $newFilename
                     );
-                    
+
                     // Remove old file
                     if ($project->getResource()) {
-                        $oldFilePath = $this->getParameter('kernel.project_dir').'/public/uploads/projects/'.$project->getResource();
+                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/projects/' . $project->getResource();
                         if (file_exists($oldFilePath)) {
                             unlink($oldFilePath);
                         }
                     }
-                    
+
                     $project->setResource($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Could not upload file.');
@@ -135,10 +140,10 @@ final class ProjectController extends AbstractController
             throw $this->createAccessDeniedException('Only the group creator can delete projects.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
             // Remove file
             if ($project->getResource()) {
-                $filePath = $this->getParameter('kernel.project_dir').'/public/uploads/projects/'.$project->getResource();
+                $filePath = $this->getParameter('kernel.project_dir') . '/public/uploads/projects/' . $project->getResource();
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }

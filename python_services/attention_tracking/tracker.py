@@ -58,7 +58,10 @@ class AttentionTracker:
             current_session_scores = []
             
             print(json.dumps({"status": "started", "message": "Camera tracking active (Haar)"}))
+            with open(os.path.join(self.project_dir, 'exports', 'pythonw_crash.log'), 'a') as f:
+                f.write(f"Tracking loop starting for session {self.session_id}\n")
             sys.stdout.flush()
+
         except Exception as e:
             with open(os.path.join(self.project_dir, 'exports', 'pythonw_crash.log'), 'a') as f:
                 f.write(f"CRASH ON INIT: {str(e)}\n")

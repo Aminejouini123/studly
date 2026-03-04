@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Service\UserActionLogger;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -23,10 +24,10 @@ final class ExamenController extends AbstractController
     {
         // specific course exams
         $user = $this->getUser();
-        
+
         // Security check: Ensure user owns the course OR is admin
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
-             throw $this->createAccessDeniedException('You do not have permission to view exams for this course.');
+            throw $this->createAccessDeniedException('You do not have permission to view exams for this course.');
         }
 
         // Exams are already linked to the course, we can use $course->getExams() 
@@ -34,7 +35,7 @@ final class ExamenController extends AbstractController
         // Let's use the collection filter/sort in twig or repository if needed. 
         // For simple ordering by date, let's use a sorted collection or repository method.
         // Using repository for cleaner ordering:
-        
+
         $exams = $course->getExams()->toArray();
         usort($exams, fn($a, $b) => $a->getDate() <=> $b->getDate());
 
@@ -52,7 +53,7 @@ final class ExamenController extends AbstractController
     }
 
     #[Route('/course/{id}/exam/new', name: 'app_course_exam_new', methods: ['GET', 'POST'])]
-    public function new(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, UserActionLogger $actionLogger): Response
     {
         $user = $this->getUser();
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
@@ -60,24 +61,24 @@ final class ExamenController extends AbstractController
         }
 
         $exam = new Exam();
-        $exam->setCourse($course); 
+        $exam->setCourse($course);
         $exam->setDate(new \DateTime()); // Default to current date and time
-        
+
         $form = $this->createForm(ExamType::class, $exam);
         $form->handleRequest($request);
 
-     if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             // Handle file upload if present (assuming file field ex   ists in entity/form)
             /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -87,6 +88,10 @@ final class ExamenController extends AbstractController
             }
 
             $entityManager->persist($exam);
+
+            // Log action
+            $actionLogger->log($this->getUser(), 'exam_created', 'Created a new exam: ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Exam successfully added!');
@@ -102,26 +107,26 @@ final class ExamenController extends AbstractController
 
     #[Route('/admin/course/{id}/exam/new', name: 'app_admin_course_exam_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function newAdmin(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function newAdmin(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, UserActionLogger $actionLogger): Response
     {
         $exam = new Exam();
-        $exam->setCourse($course); 
+        $exam->setCourse($course);
         $exam->setDate(new \DateTime()); // Default to current date and time
-        
+
         $form = $this->createForm(ExamType::class, $exam);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             /** @var UploadedFile|null $file */
+            /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -129,8 +134,12 @@ final class ExamenController extends AbstractController
                     $this->addFlash('error', 'Error uploading file');
                 }
             }
-            
+
             $entityManager->persist($exam);
+
+            // Log action
+            $actionLogger->log($this->getUser(), 'exam_created', 'Created a new exam (Admin): ' . $exam->getTitle() . ' for course ' . $course->getName(), $exam);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Exam successfully added!');
@@ -156,17 +165,17 @@ final class ExamenController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             /** @var UploadedFile|null $file */
+            /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 // Delete old file if exists? Optional improvement
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -174,7 +183,7 @@ final class ExamenController extends AbstractController
                     $this->addFlash('error', 'Error uploading file');
                 }
             }
-            
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Exam successfully updated!');
@@ -202,21 +211,21 @@ final class ExamenController extends AbstractController
     public function editAdmin(Request $request, Exam $exam, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $course = $exam->getCourse();
-        
+
         $form = $this->createForm(ExamType::class, $exam);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-             /** @var UploadedFile|null $file */
+            /** @var UploadedFile|null $file */
             $file = $form->get('file')->getData();
             if ($file) {
                 $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
                     $file->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/exams',
                         $newFilename
                     );
                     $exam->setFile($newFilename);
@@ -224,7 +233,7 @@ final class ExamenController extends AbstractController
                     $this->addFlash('error', 'Error uploading file');
                 }
             }
-            
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Exam successfully updated!');
@@ -245,7 +254,7 @@ final class ExamenController extends AbstractController
         $course = $exam->getCourse();
         // Security check
         if ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
-             throw $this->createAccessDeniedException('You do not have permission to view this exam.');
+            throw $this->createAccessDeniedException('You do not have permission to view this exam.');
         }
 
         return $this->render('examen/show.html.twig', [
@@ -258,10 +267,10 @@ final class ExamenController extends AbstractController
     {
         $course = $exam->getCourse();
         if ($course->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
-             throw $this->createAccessDeniedException();
+            throw $this->createAccessDeniedException();
         }
 
-        if ($this->isCsrfTokenValid('delete'.$exam->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $exam->getId(), $request->request->get('_token'))) {
             $entityManager->remove($exam);
             $entityManager->flush();
             $this->addFlash('success', 'Exam successfully deleted!');
