@@ -34,7 +34,7 @@ class Group
     private ?string $category = null;
 
     #[ORM\ManyToOne(inversedBy: 'groups')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $creator = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -46,14 +46,14 @@ class Group
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $projects;
 
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $messages;
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $invitations;
 
     public function __construct()
@@ -151,12 +151,7 @@ class Group
 
     public function removeProject(Project $project): static
     {
-        if ($this->projects->removeElement($project)) {
-            // set the owning side to null (unless already changed)
-            if ($project->getGroup() === $this) {
-                $project->setGroup(null);
-            }
-        }
+        $this->projects->removeElement($project);
 
         return $this;
     }

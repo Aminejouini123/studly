@@ -17,18 +17,18 @@ class Exam
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Exam title is required")]
     #[Assert\Length(min: 3, max: 255, minMessage: "Title must be at least 3 characters long", maxMessage: "Title cannot be longer than {{ limit }} characters")]
-    private ?string $title = null;
+    private string $title = '';
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime_immutable')]
     #[Assert\NotBlank(message: "Exam date is required")]
     #[Assert\GreaterThan("today", message: "Exam date must be in the future")]
-    private ?\DateTime $date = null;
+    private \DateTimeImmutable $date;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Duration is required")]
     #[Assert\Positive(message: "Duration must be positive")]
     #[Assert\Type(type: 'integer', message: "Duration must be an integer")]
-    private ?int $duration = null;
+    private int $duration = 0;
 
     #[ORM\Column(nullable: true)]
     #[Assert\NotBlank(message: "Grade is required")]
@@ -39,12 +39,12 @@ class Exam
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Difficulty is required")]
     #[Assert\Length(max: 50, maxMessage: "Difficulty cannot be longer than {{ limit }} characters")]
-    private ?string $difficulty = null;
+    private string $difficulty = '';
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Status is required")]
     #[Assert\Length(max: 50, maxMessage: "Status cannot be longer than {{ limit }} characters")]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $file = null;
@@ -56,43 +56,53 @@ class Exam
     private ?string $link = null;
 
     #[ORM\ManyToOne(inversedBy: 'exams')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Course $course = null;
+
+    public function __construct()
+    {
+        $this->date = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    public function setTitle(?string $title): static
+    public function setTitle(string $title): static
     {
         $this->title = $title;
 
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): \DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTime $date): static
+    public function setDate(\DateTimeInterface $date): static
     {
-        $this->date = $date;
+        if ($date instanceof \DateTime) {
+            $this->date = \DateTimeImmutable::createFromMutable($date);
+        } else {
+            $this->date = $date;
+        }
 
         return $this;
     }
 
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }
 
-    public function setDuration(?int $duration): static
+    public function setDuration(int $duration): static
     {
         $this->duration = $duration;
 
@@ -111,24 +121,24 @@ class Exam
         return $this;
     }
 
-    public function getDifficulty(): ?string
+    public function getDifficulty(): string
     {
         return $this->difficulty;
     }
 
-    public function setDifficulty(?string $difficulty): static
+    public function setDifficulty(string $difficulty): static
     {
         $this->difficulty = $difficulty;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    public function setStatus(?string $status): static
+    public function setStatus(string $status): static
     {
         $this->status = $status;
 

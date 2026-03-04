@@ -32,7 +32,7 @@ class ProjectTask
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'projectTasks')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(inversedBy: 'assignedProjectTasks')]

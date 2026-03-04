@@ -86,7 +86,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
     private Collection $motivations;
 
-    #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $groups;
 
     #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'members')]
@@ -101,13 +101,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Activity::class)]
     private Collection $assignedActivities;
 
-    #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $sentInvitations;
 
-    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $receivedInvitations;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $notifications;
 
     #[ORM\Column(length: 255, nullable: true)]

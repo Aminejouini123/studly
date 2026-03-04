@@ -20,7 +20,7 @@ class Course
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Course name is required")]
     #[Assert\Length(min: 3, max: 255, minMessage: "Name must be at least 3 characters long", maxMessage: "Name cannot be longer than {{ limit }} characters")]
-    private ?string $name = null;
+    private string $name = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $courseFile = null;
@@ -35,52 +35,52 @@ class Course
     #[Assert\NotBlank(message: "Teacher email is required")]
     #[Assert\Email(message: "The email '{{ value }}' is not valid.")]
     #[Assert\Length(max: 255, maxMessage: "Email cannot be longer than {{ limit }} characters")]
-    private ?string $teacherEmail = null;
+    private string $teacherEmail = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Semester is required")]
     #[Assert\Length(max: 255, maxMessage: "Semester cannot be longer than {{ limit }} characters")]
-    private ?string $semester = null;
+    private string $semester = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Difficulty level is required")]
     #[Assert\Length(max: 255, maxMessage: "Difficulty level cannot be longer than {{ limit }} characters")]
-    private ?string $difficultyLevel = null;
+    private string $difficultyLevel = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Course type is required")]
     #[Assert\Length(max: 255, maxMessage: "Type cannot be longer than {{ limit }} characters")]
-    private ?string $type = null;
+    private string $type = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Priority is required")]
     #[Assert\Length(max: 255, maxMessage: "Priority cannot be longer than {{ limit }} characters")]
-    private ?string $priority = null;
+    private string $priority = '';
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Coefficient is required")]
     #[Assert\Positive(message: "Coefficient must be positive")]
     #[Assert\Type(type: 'float', message: "Coefficient must be a valid number")]
-    private ?float $coefficient = null;
+    private float $coefficient = 0.0;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Status is required")]
     #[Assert\Length(max: 50, maxMessage: "Status cannot be longer than {{ limit }} characters")]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Duration is required")]
     #[Assert\Positive(message: "Duration must be positive")]
     #[Assert\Type(type: 'integer', message: "Duration must be an integer")]
-    private ?int $duration = null;
+    private int $duration = 0;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\NotBlank(message: "Comment is required")]
     #[Assert\Length(max: 2000, maxMessage: "Comment cannot be longer than {{ limit }} characters")]
     private ?string $comment = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     /**
      * @var Collection<int, Activity>
@@ -98,6 +98,7 @@ class Course
     {
         $this->activities = new ArrayCollection();
         $this->exams = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -105,12 +106,12 @@ class Course
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -141,96 +142,96 @@ class Course
         return $this;
     }
 
-    public function getTeacherEmail(): ?string
+    public function getTeacherEmail(): string
     {
         return $this->teacherEmail;
     }
 
-    public function setTeacherEmail(?string $teacherEmail): static
+    public function setTeacherEmail(string $teacherEmail): static
     {
         $this->teacherEmail = $teacherEmail;
 
         return $this;
     }
 
-    public function getSemester(): ?string
+    public function getSemester(): string
     {
         return $this->semester;
     }
 
-    public function setSemester(?string $semester): static
+    public function setSemester(string $semester): static
     {
         $this->semester = $semester;
 
         return $this;
     }
 
-    public function getDifficultyLevel(): ?string
+    public function getDifficultyLevel(): string
     {
         return $this->difficultyLevel;
     }
 
-    public function setDifficultyLevel(?string $difficultyLevel): static
+    public function setDifficultyLevel(string $difficultyLevel): static
     {
         $this->difficultyLevel = $difficultyLevel;
 
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function setType(?string $type): static
+    public function setType(string $type): static
     {
         $this->type = $type;
 
         return $this;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): string
     {
         return $this->priority;
     }
 
-    public function setPriority(?string $priority): static
+    public function setPriority(string $priority): static
     {
         $this->priority = $priority;
 
         return $this;
     }
 
-    public function getCoefficient(): ?float
+    public function getCoefficient(): float
     {
         return $this->coefficient;
     }
 
-    public function setCoefficient(?float $coefficient): static
+    public function setCoefficient(float $coefficient): static
     {
         $this->coefficient = $coefficient;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    public function setStatus(?string $status): static
+    public function setStatus(string $status): static
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }
 
-    public function setDuration(?int $duration): static
+    public function setDuration(int $duration): static
     {
         $this->duration = $duration;
 
@@ -269,12 +270,7 @@ class Course
 
     public function removeActivity(Activity $activity): static
     {
-        if ($this->activities->removeElement($activity)) {
-            // set the owning side to null (unless already changed)
-            if ($activity->getCourse() === $this) {
-                $activity->setCourse(null);
-            }
-        }
+        $this->activities->removeElement($activity);
 
         return $this;
     }
@@ -299,12 +295,7 @@ class Course
 
     public function removeExam(Exam $exam): static
     {
-        if ($this->exams->removeElement($exam)) {
-            // set the owning side to null (unless already changed)
-            if ($exam->getCourse() === $this) {
-                $exam->setCourse(null);
-            }
-        }
+        $this->exams->removeElement($exam);
 
         return $this;
     }
@@ -341,14 +332,18 @@ class Course
         return (int) (($completedCount / $this->activities->count()) * 100);
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
-        $this->createdAt = $createdAt;
+        if ($createdAt instanceof \DateTime) {
+            $this->createdAt = \DateTimeImmutable::createFromMutable($createdAt);
+        } else {
+            $this->createdAt = $createdAt;
+        }
 
         return $this;
     }

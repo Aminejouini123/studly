@@ -100,12 +100,7 @@ class Event
 
     public function removePomodoroSession(PomodoroSession $pomodoroSession): static
     {
-        if ($this->pomodoroSessions->removeElement($pomodoroSession)) {
-            // set the owning side to null (unless already changed)
-            if ($pomodoroSession->getEvent() === $this) {
-                $pomodoroSession->setEvent(null);
-            }
-        }
+        $this->pomodoroSessions->removeElement($pomodoroSession);
 
         return $this;
     }

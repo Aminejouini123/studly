@@ -44,13 +44,13 @@ class Project
     private ?string $type = null;
 
     #[ORM\ManyToOne(inversedBy: 'projects')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Group $group = null;
 
     /**
      * @var Collection<int, ProjectTask>
      */
-    #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $projectTasks;
 
     public function __construct()
@@ -167,12 +167,7 @@ class Project
 
     public function removeProjectTask(ProjectTask $projectTask): static
     {
-        if ($this->projectTasks->removeElement($projectTask)) {
-            // set the owning side to null (unless already changed)
-            if ($projectTask->getProject() === $this) {
-                $projectTask->setProject(null);
-            }
-        }
+        $this->projectTasks->removeElement($projectTask);
 
         return $this;
     }

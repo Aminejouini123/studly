@@ -7,10 +7,13 @@ use App\Form\EventType;
 use App\Repository\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[IsGranted('ROLE_USER')]
 final class TempsController extends AbstractController
@@ -21,34 +24,13 @@ final class TempsController extends AbstractController
         Request $request, 
         EntityManagerInterface $em, 
         \App\Service\PomodoroService $pomodoroService,
-        \App\Service\GoogleCalendarService $calendarService
+        \App\Service\GoogleCalendarService $calendarService,
+        #[Autowire(service: 'cache.app')] CacheInterface $cache
     ): Response
     {
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
             throw $this->createAccessDeniedException();
-        }
-        $sort = $request->query->get('sort');
-
-        if ($sort === 'priority') {
-            $events = $eventRepository->findByUserSortedByPriority($user);
-        } else {
-            // Default sort by date
-            $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
-        }
-
-        $googleEvents = [];
-        if ($user->getGoogleAccessToken()) {
-            try {
-                // Fetch events for the current week to show in stats/chart
-                $timeMin = (new \DateTime('monday this week'))->format(\DateTime::RFC3339);
-                $timeMax = (new \DateTime('sunday this week'))->format(\DateTime::RFC3339);
-                $googleEvents = $calendarService->listEvents($user, $timeMin, $timeMax, 50);
-                // Save possible token update
-                $em->flush();
-            } catch (\Exception $e) {
-                // Silently fail or log if Google API is unreachable
-            }
         }
 
         $event = new Event();
@@ -56,23 +38,6 @@ final class TempsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // ensure DB non-nullable fields have defaults to avoid constraint errors
-            if (null === $event->getDescription()) {
-                $event->setDescription('');
-            }
-            if (null === $event->getType()) {
-                $event->setType('');
-            }
-            if (null === $event->getDuration()) {
-                $event->setDuration(0);
-            }
-            if (null === $event->getLocation()) {
-                $event->setLocation('');
-            }
-            if (null === $event->getDifficulty()) {
-                $event->setDifficulty(1);
-            }
-
             $event->setUser($user);
             
             // Sync with Google if connected
@@ -107,6 +72,33 @@ final class TempsController extends AbstractController
                 $this->addFlash('error', implode(' | ', $errors));
             } else {
                 $this->addFlash('error', 'Form is invalid.');
+            }
+        }
+
+        $sort = $request->query->get('sort');
+        if ($sort === 'priority') {
+            $events = $eventRepository->findByUserSortedByPriority($user);
+        } else {
+            // Default sort by date
+            $events = $eventRepository->findBy(['user' => $user], ['date' => 'ASC']);
+        }
+
+        $googleEvents = [];
+        if ($user->getGoogleAccessToken()) {
+            try {
+                // Cache short-lived weekly Google events to reduce repeated API latency.
+                $weekStart = (new \DateTimeImmutable('monday this week'))->format('Y-m-d');
+                $weekEnd = (new \DateTimeImmutable('sunday this week'))->format('Y-m-d');
+                $cacheKey = sprintf('temps_google_week_%d_%s_%s', (int) $user->getId(), $weekStart, $weekEnd);
+
+                $googleEvents = $cache->get($cacheKey, function (ItemInterface $item) use ($calendarService, $user): array {
+                    $item->expiresAfter(120);
+                    $timeMin = (new \DateTime('monday this week'))->format(\DateTime::RFC3339);
+                    $timeMax = (new \DateTime('sunday this week'))->format(\DateTime::RFC3339);
+                    return $calendarService->listEvents($user, $timeMin, $timeMax, 50);
+                });
+            } catch (\Exception $e) {
+                // Silently fail or log if Google API is unreachable
             }
         }
 
