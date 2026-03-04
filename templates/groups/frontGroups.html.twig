@@ -51,7 +51,13 @@
         <div class="section-header">
             <h2>Liste des Groupes</h2>
             <div class="search-filter">
-                <input type="text" id="searchInput" class="search-box" placeholder="Rechercher un groupe...">
+                <form action="{{ path('app_groups_index') }}" method="GET" style="display: flex; flex: 1; gap: 10px;">
+                    <input type="text" name="q" id="searchInput" class="search-box" placeholder="Rechercher par catégorie..." value="{{ search_term|default('') }}">
+                    <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem;"><i class="fas fa-search"></i></button>
+                    {% if search_term %}
+                        <a href="{{ path('app_groups_index') }}" class="btn-secondary-custom" style="display: flex; align-items: center; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;"><i class="fas fa-times"></i></a>
+                    {% endif %}
+                </form>
             </div>
         </div>
 
@@ -61,8 +67,8 @@
                     <div class="course-card" data-category="{{ group.category|lower }}">
                         <div class="card-header-row">
                             <h3 class="course-title">{{ group.category }}</h3>
-                            <span class="status-badge {{ group.memberGroup ? 'status-terminé' : 'status-en-attente' }}">
-                                {{ group.memberGroup ? 'Assigné' : 'Libre' }}
+                            <span class="status-badge {{ not group.members.isEmpty ? 'status-terminé' : 'status-en-attente' }}">
+                                {{ not group.members.isEmpty ? 'Assigné' : 'Libre' }}
                             </span>
                         </div>
 

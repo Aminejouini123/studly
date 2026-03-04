@@ -3,15 +3,15 @@
 {% block title %}New Event{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_temps_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Temps</a> / <span>New</span>
+    <a href="{{ path('app_admin_temps_index') }}">Temps</a> / <span>New</span>
 {% endblock %}
 
 {% block content %}
     <div class="dashboard-content">
 
-        <div style="margin-bottom: 24px;">
+        <div style="margin-bottom: 32px;">
             <h1 class="page-title" style="margin-bottom: 8px;">Create New Event</h1>
-            <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Add a new schedule entry for time management.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Add a new schedule entry for time management.</p>
         </div>
 
         <div class="content-card">
@@ -20,73 +20,73 @@
                 <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back to List</a>
             </div>
 
-            <div class="card-body" style="padding: 24px;">
+            <div class="card-body" style="padding: 32px;">
                 {{ form_start(form) }}
                     {% if not form.vars.valid %}
-                    <div class="alert alert-danger" style="margin-bottom: 20px; color: #dc2626;">
-                        {{ form_errors(form) }}
+                    <div class="alert alert-danger" style="margin-bottom: 24px; padding: 16px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> Please correct the errors below.
                     </div>
                     {% endif %}
 
-                    <div class="form-group">
-                        <label class="form-label">Title</label>
-                        {{ form_widget(form.title) }}
-                        <small style="color: #dc2626;">{{ form_errors(form.title) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.title, 'Event Title', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Mathematics Lecture'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.title) }}</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        {{ form_widget(form.description) }}
-                         <small style="color: #dc2626;">{{ form_errors(form.description) }}</small>
+                    <div class="admin-form-group">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Provide some details about this event...', 'rows': '4'}}) }}
+                        <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.description) }}</small>
                     </div>
                 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="form-group">
-                            <label class="form-label">Type</label>
-                            {{ form_widget(form.type) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.type) }}</small>
+                    <div class="form-grid">
+                        <div class="admin-form-group">
+                            {{ form_label(form.type, 'Event Type', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.type) }}</small>
                         </div>
-                         <div class="form-group">
-                            <label class="form-label">Date</label>
-                            {{ form_widget(form.date) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.date) }}</small>
+                        <div class="admin-form-group">
+                            {{ form_label(form.date, 'Date', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.date) }}</small>
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="form-group">
-                            <label class="form-label">Duration (minutes)</label>
-                            {{ form_widget(form.duration) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.duration) }}</small>
+                    <div class="form-grid">
+                        <div class="admin-form-group">
+                            {{ form_label(form.duration, 'Duration (min)', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.duration, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 60'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.duration) }}</small>
                         </div>
-                         <div class="form-group">
-                            <label class="form-label">Location</label>
-                            {{ form_widget(form.location) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.location) }}</small>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                        <div class="form-group">
-                            <label class="form-label">Status</label>
-                            {{ form_widget(form.status) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.status) }}</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Priority</label>
-                            {{ form_widget(form.priority) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.priority) }}</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Difficulty (1-5)</label>
-                            {{ form_widget(form.difficulty) }}
-                             <small style="color: #dc2626;">{{ form_errors(form.difficulty) }}</small>
+                        <div class="admin-form-group">
+                            {{ form_label(form.location, 'Location', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.location, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Room 101'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.location) }}</small>
                         </div>
                     </div>
 
-                    <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
-                        <a href="{{ path('app_admin_temps_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border);">Cancel</a>
-                        <button type="submit" class="btn-action"><i class="fas fa-save"></i> {{ button_label|default('Save Event') }}</button>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="admin-form-group">
+                            {{ form_label(form.status, 'Status', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.status) }}</small>
+                        </div>
+                        <div class="admin-form-group">
+                            {{ form_label(form.priority, 'Priority', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.priority, {'attr': {'class': 'form-control'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.priority) }}</small>
+                        </div>
+                        <div class="admin-form-group">
+                            {{ form_label(form.difficulty, 'Difficulty (1-5)', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.difficulty, {'attr': {'class': 'form-control'}}) }}
+                            <small style="color: #dc2626; font-weight: 600; margin-top: 4px; display: block;">{{ form_errors(form.difficulty) }}</small>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end; padding-top: 24px; border-top: 1px solid var(--border);">
+                        <a href="{{ path('app_admin_temps_index') }}" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-action"><i class="fas fa-save"></i> Save Event</button>
                     </div>
                 {{ form_end(form) }}
             </div>

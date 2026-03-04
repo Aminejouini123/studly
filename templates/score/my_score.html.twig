@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Score - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">My Productivity Score</h2>
+                </div>
+                <div class="card-body text-center">
+                    <div class="score-display mb-4">
+                        <h1 class="display-1 text-primary">{{ score }}</h1>
+                        <p class="lead">Productivity Points</p>
+                    </div>
+
+                    <div class="score-info">
+                        <h5>How to earn points:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <span class="badge bg-success me-2">+10</span>
+                                Complete a task
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-success me-2">+20</span>
+                                Complete a task before deadline
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-info me-2">+5</span>
+                                Active participation in activities
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-danger me-2">-5</span>
+                                Late submission
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ path('app_objectives') }}" class="btn btn-primary me-2">View Objectives</a>
+                        <a href="{{ path('app_front') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.score-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin: 2rem 0;
+}
+
+.score-info {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.badge {
+    font-size: 0.9em;
+}
+</style>
+{% endblock %}

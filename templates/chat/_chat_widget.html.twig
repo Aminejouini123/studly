@@ -343,7 +343,7 @@
             <div>
                 <div style="font-weight: 700; font-size: 15px; letter-spacing: -0.01em;">Studly Assistant</div>
                 <div class="status">
-                    <span class="status-dot"></span> Online • Intelligent Support
+                    <span class="status-dot"></span> Online - Intelligent Support
                 </div>
             </div>
         </div>
@@ -402,21 +402,21 @@
 
             if (chatContext) {
                 if (chatContext.exam_title) {
-                    greeting = `Bonjour ! Je suis l'assistant Studly. Je vois que vous préparez l'examen **"${chatContext.exam_title}"** du cours **"${chatContext.course_name}"**. Comment puis-je vous aider pour vos révisions ?`;
+                    greeting = `Bonjour ! Je suis l'assistant Studly. Je vois que vous preparez l'examen "${chatContext.exam_title}" du cours "${chatContext.course_name}". Comment puis-je vous aider pour vos revisions ?`;
                     suggestions = [
-                        `Qu'est-ce qui est testé dans cet examen ?`,
-                        `Comment me préparer pour cet examen ?`,
-                        `Donnez-moi des conseils pour réussir`
+                        `Qu'est-ce qui est teste dans cet examen ?`,
+                        `Comment me preparer pour cet examen ?`,
+                        `Donnez-moi des conseils pour reussir`
                     ];
                     if (chatContext.exam_file) suggestions.unshift(`Explique-moi cet examen`);
                 } else if (chatContext.course_name) {
-                    greeting = `Bonjour ! Je suis l'assistant Studly. Je vois que vous étudiez le cours **"${chatContext.course_name}"**. Comment puis-je vous aider aujourd'hui ?`;
+                    greeting = `Bonjour ! Je suis l'assistant Studly. Je vois que vous etudiez le cours "${chatContext.course_name}". Comment puis-je vous aider aujourd'hui ?`;
                     suggestions = [
                         `C'est quoi ce cours ?`,
                         `Qui est le prof ?`,
-                        `Quelle est la difficulté ?`
+                        `Quelle est la difficulte ?`
                     ];
-                    if (chatContext.course_file) suggestions.unshift(`Résumé du cours`);
+                    if (chatContext.course_file) suggestions.unshift(`Resume du cours`);
                 }
 
                 if (suggestions.length > 0) {
@@ -427,7 +427,7 @@
                         btn.textContent = s;
                         btn.onclick = () => {
                             msgInput.value = s;
-                            sendMessage((s.includes('Résumé') || s.includes('Explique-moi')) ? 'summarize_file' : null);
+                            sendMessage((s.includes('Resume') || s.includes('Explique-moi')) ? 'summarize_file' : null);
                         };
                         suggestionsContainer.appendChild(btn);
                     });
@@ -466,7 +466,7 @@
             if (!message && !action) return;
 
             msgInput.value = '';
-            addMessage(message || "Résume-moi ce cours...", 'user');
+            addMessage(message || "Resume-moi ce cours...", 'user');
             
             // Show typing
             typingIndicator.style.display = 'flex';
@@ -483,14 +483,14 @@
                     })
                 });
 
-                const data = await r.json();
+                const data = await r.json().catch(() => ({}));
                 typingIndicator.style.display = 'none';
                 
                 if (r.ok && data.answer) {
                     addMessage(data.answer, 'bot');
                 } else {
-                    const errorMsg = data.error || (data.answer ? "Réponse vide" : "Erreur inattendue");
-                    addMessage(`Désolé, je ne peux pas traiter votre demande : ${errorMsg}`, 'bot');
+                    const errorMsg = data.error || (data.answer ? "Reponse vide" : `HTTP ${r.status}`);
+                    addMessage(`Desole, je ne peux pas traiter votre demande : ${errorMsg}`, 'bot');
                 }
             } catch (e) {
                 typingIndicator.style.display = 'none';

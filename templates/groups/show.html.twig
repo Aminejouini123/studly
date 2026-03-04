@@ -28,8 +28,8 @@
             <div class="hero-content">
                 <div class="hero-meta">
                     <span class="badge-pill type">Groupe</span>
-                    <span class="badge-pill status {{ group.memberGroup ? 'status-terminé' : 'status-en-attente' }}">
-                        {{ group.memberGroup ? 'Assigné' : 'Libre' }}
+                    <span class="badge-pill status {{ not group.members.isEmpty ? 'status-terminé' : 'status-en-attente' }}">
+                        {{ not group.members.isEmpty ? 'Assigné' : 'Libre' }}
                     </span>
                 </div>
                 <h1 class="hero-title">{{ group.category }}</h1>
@@ -71,10 +71,255 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- Internal Chat -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <i class="fas fa-comments icon-gradient"></i>
+                        <h2>Chat Interne</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-container" id="chat-messages" style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                            {% for message in messages %}
+                                <div class="message {{ message.sender == app.user ? 'own-message' : '' }}" style="margin-bottom: 10px; padding: 8px; border-radius: 8px; background: {{ message.sender == app.user ? '#dcf8c6' : '#fff' }}; align-self: {{ message.sender == app.user ? 'flex-end' : 'flex-start' }}; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">{{ message.sender.firstName }}</div>
+                                    <div style="color: #1e293b;">{{ message.content }}</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">{{ message.createdAt|date('H:i') }}</div>
+                                </div>
+                            {% else %}
+                                <p style="text-align: center; color: #94a3b8;">Aucun message. Commencez la discussion !</p>
+                            {% endfor %}
+                        </div>
+                        <form action="{{ path('app_groups_send_message', {id: group.id}) }}" method="POST" style="display: flex; gap: 10px;">
+                            <input type="text" name="content" class="form-control" placeholder="Votre message..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer;">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Projects & Tasks -->
+                <div class="glass-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-project-diagram icon-gradient"></i>
+                            <h2>Projets du groupe</h2>
+                        </div>
+                        {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_project_new', {group: group.id}) }}" class="btn-primary" style="padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; text-decoration: none;">
+                                <i class="fas fa-plus"></i> Ajouter un Projet
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% for project in group.projects %}
+                            <div class="project-item" style="margin-bottom: 25px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <div>
+                                        <h3 style="font-size: 1.2rem; color: #0059A9; margin: 0;">{{ project.title }}</h3>
+                                        <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">{{ project.type }}</span>
+                                    </div>
+                                    {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                                        <div class="project-actions" style="display: flex; gap: 8px;">
+                                            <a href="{{ path('app_project_edit', {id: project.id}) }}" class="text-primary" title="Modifier le projet"><i class="fas fa-edit"></i></a>
+                                            <a href="{{ path('app_project_task_new', {id: project.id}) }}" class="text-success" title="Ajouter une tâche"><i class="fas fa-plus-square"></i></a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px;">{{ project.description }}</p>
+                                
+                                <div class="project-meta" style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.85rem; color: #94a3b8;">
+                                    <span><i class="fas fa-calendar-check"></i> Expire le: {{ project.deadline|date('d/m/Y') }}</span>
+                                    {% if project.resource %}
+                                        <a href="{{ asset('uploads/projects/' ~ project.resource) }}" target="_blank" style="color: #0059A9; text-decoration: none;" download>
+                                            <i class="fas fa-file-download"></i> Télécharger Ressources
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Centralized Shared Resources from Members -->
+                                {% set shared_resources = false %}
+                                {% for task in project.projectTasks %}
+                                    {% if task.deliverable %}
+                                        {% set shared_resources = true %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if shared_resources %}
+                                    <div class="shared-resources-box" style="background: #f1f5f9; padding: 12px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #0059A9;">
+                                        <h4 style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-share-alt me-1"></i> Ressources partagées par les membres
+                                        </h4>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                            {% for task in project.projectTasks %}
+                                                {% if task.deliverable %}
+                                                    <div style="display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding-right: 8px;">
+                                                        <button type="button" 
+                                                                onclick="previewFile('{{ asset('uploads/deliverables/' ~ task.deliverable) }}', '{{ task.deliverable|split('.')|last|lower }}')"
+                                                                class="btn btn-sm btn-light" 
+                                                                style="background: transparent; border: none; font-size: 0.75rem; color: #1e293b; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+                                                            <i class="fas fa-file-alt text-primary" style="font-size: 1.1rem;"></i>
+                                                            <div style="text-align: left;">
+                                                                <div style="font-weight: 600; line-height: 1;">{{ task.title }}</div>
+                                                                <div style="font-size: 0.65rem; color: #94a3b8;">Par @{{ task.assignedUser.firstName }}</div>
+                                                            </div>
+                                                        </button>
+                                                        <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" style="color: #94a3b8; font-size: 0.8rem;" title="Télécharger"><i class="fas fa-download"></i></a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="tasks-list">
+                                    <h4 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">Tâches</h4>
+                                    {% for task in project.projectTasks %}
+                                        <div id="task-card-{{ task.id }}" class="task-item" style="display: flex; flex-direction: column; padding: 12px; background: {{ task.status == 'DONE' ? '#f0fdf4' : '#f8fafc' }}; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1') }}; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                                <div style="font-weight: 600; color: #1e293b; display: flex; align-items: center;">
+                                                    {{ task.title }}
+                                                    {% if task.deliverable and (group.creator.id == app.user.id or (task.assignedUser and task.assignedUser.id == app.user.id) or is_granted('ROLE_ADMIN')) %}
+                                                        <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" title="Télécharger le travail" style="margin-left: 8px; color: #22c55e; font-size: 1.1rem;">
+                                                            <i class="fas fa-file-download"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if task.assignedUser %}
+                                                        <span style="font-size: 0.75rem; color: #64748b; margin-left: 8px; font-weight: 400;">(Assigné à @{{ task.assignedUser.firstName }})</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                                                    {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                                                        <a href="{{ path('app_project_task_edit', {id: task.id}) }}" style="color: #94a3b8; font-size: 0.8rem;"><i class="fas fa-cog"></i></a>
+                                                    {% endif %}
+                                                    <span id="task-badge-{{ task.id }}" class="badge" style="background: {{ task.status == 'DONE' ? '#22c55e' : (task.status == 'IN_PROGRESS' ? '#eab308' : '#64748b') }}; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;">
+                                                        {% if task.status == 'DONE' %}Terminé{% elseif task.status == 'IN_PROGRESS' %}En cours{% else %}À faire{% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 10px 0;">{{ task.description }}</p>
+                                            
+                                            <!-- Status Controls for Members -->
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-top: 5px;">
+                                                <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <div class="status-controls-{{ task.id }}" style="display: flex; gap: 8px;">
+                                                        <a href="javascript:void(0)" onclick="updateTaskStatus({{ task.id }}, 'TO_DO')"
+                                                           id="status-link-{{ task.id }}-TO_DO"
+                                                           style="color: {{ task.status == 'TO_DO' ? '#64748b' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'TO_DO' ? '700' : '400' }}; transition: all 0.2s;" 
+                                                           title="Mettre à faire">
+                                                            <i class="{{ task.status == 'TO_DO' ? 'fas' : 'far' }} fa-clipboard"></i> À faire
+                                                        </a>
+                                                        <a href="javascript:void(0)" onclick="updateTaskStatus({{ task.id }}, 'IN_PROGRESS')"
+                                                           id="status-link-{{ task.id }}-IN_PROGRESS"
+                                                           style="color: {{ task.status == 'IN_PROGRESS' ? '#eab308' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'IN_PROGRESS' ? '700' : '400' }}; transition: all 0.2s;" 
+                                                           title="Mettre en cours">
+                                                            <i class="fas {{ task.status == 'IN_PROGRESS' ? 'fa-spinner fa-spin' : 'fa-hourglass-half' }}"></i> En cours
+                                                        </a>
+                                                        <a href="javascript:void(0)" onclick="updateTaskStatus({{ task.id }}, 'DONE')"
+                                                           id="status-link-{{ task.id }}-DONE"
+                                                           style="color: {{ task.status == 'DONE' ? '#22c55e' : '#cbd5e1' }}; text-decoration: none; font-weight: {{ task.status == 'DONE' ? '700' : '400' }}; transition: all 0.2s;" 
+                                                           title="Terminer">
+                                                            <i class="{{ task.status == 'DONE' ? 'fas' : 'far' }} fa-check-circle"></i> Terminé
+                                                        </a>
+                                                    </div>
+                                                    
+                                                    {% if task.assignedUser == app.user and task.status != 'DONE' %}
+                                                        <a href="{{ path('app_project_task_upload', {id: task.id}) }}" class="btn btn-sm btn-primary" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px;">
+                                                            <i class="fas fa-upload"></i> Déposer
+                                                        </a>
+                                                    {% endif %}
+
+                                                    {% if task.deliverable and (group.creator.id == app.user.id or (task.assignedUser and task.assignedUser.id == app.user.id) or is_granted('ROLE_ADMIN')) %}
+                                                        <div style="display: flex; gap: 8px; align-items: center; margin-left: 10px; border-left: 2px solid #22c55e; padding-left: 15px;">
+                                                            <button type="button" 
+                                                                    onclick="previewFile('{{ asset('uploads/deliverables/' ~ task.deliverable) }}', '{{ task.deliverable|split('.')|last|lower }}')"
+                                                                    class="btn btn-sm" 
+                                                                    style="font-size: 0.75rem; padding: 6px 12px; border-radius: 10px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-weight: 700;">
+                                                                <i class="fas fa-eye"></i> Aperçu
+                                                            </button>
+                                                            <a href="{{ path('app_project_task_download_deliverable', {id: task.id}) }}" 
+                                                               class="btn btn-sm" 
+                                                               style="font-size: 0.75rem; padding: 6px 12px; border-radius: 10px; background: #22c55e; color: #fff; border: none; text-decoration: none; font-weight: 700; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);">
+                                                                <i class="fas fa-download"></i> Télécharger le Travail
+                                                            </a>
+                                                        </div>
+                                                    {% elseif not task.deliverable and (group.creator.id == app.user.id or is_granted('ROLE_ADMIN')) %}
+                                                        <span style="font-size: 0.75rem; color: #94a3b8; font-style: italic; margin-left: 10px; display: flex; align-items: center; gap: 5px;">
+                                                            <i class="fas fa-hourglass-half" style="font-size: 0.8rem;"></i> (En attente du dépôt)
+                                                        </span>
+                                                    {% endif %}
+
+                                                    {% if (group.creator == app.user or is_granted('ROLE_ADMIN')) and task.status == 'DONE' %}
+                                                        <a href="{{ path('app_project_task_grade', {id: task.id}) }}" class="btn btn-sm {% if task.grade is not null %}btn-outline-info{% else %}btn-success{% endif %}" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px;">
+                                                            <i class="fas fa-star"></i> {% if task.grade is not null %}Note: {{ task.grade }}/20{% else %}Noter{% endif %}
+                                                        </a>
+                                                    {% elseif task.grade is not null %}
+                                                        <span class="badge bg-info text-dark" style="font-size: 0.7rem;"><i class="fas fa-star text-warning"></i> {{ task.grade }}/20</span>
+                                                    {% endif %}
+                                                </div>
+                                                    <div id="task-dates-{{ task.id }}" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                                                        {% if task.deadline %}
+                                                            <span style="color: #94a3b8; font-size: 0.7rem;"><i class="far fa-clock"></i> Expire le: {{ task.deadline|date('d/m/Y H:i') }}</span>
+                                                        {% endif %}
+                                                        <span id="completed-at-{{ task.id }}">
+                                                            {% if task.completedAt %}
+                                                                <span style="color: #22c55e; font-size: 0.7rem;"><i class="fas fa-check-double"></i> Terminé le: {{ task.completedAt|date('d/m/Y') }}</span>
+                                                            {% endif %}
+                                                        </span>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <p style="font-size: 0.85rem; color: #94a3b8; font-style: italic;">Aucune tâche pour ce projet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div style="text-align: center; padding: 40px 20px;">
+                                <i class="fas fa-folder-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
+                                <p style="color: #94a3b8;">Aucun projet actif. Demandez au créateur d'en créer un !</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
 
-            <div class="sidebar-column">
                 <div class="glass-card sidebar-compact">
+                    <h3 class="sidebar-heading">Membres</h3>
+                    <div class="meta-list">
+                        <div class="meta-row">
+                            <span class="meta-label">{{ group.creator.firstName }} (Créateur)</span>
+                            <span class="meta-value">{{ group.creator.score }} pts</span>
+                        </div>
+                        {% for member in group.members %}
+                            <div class="meta-row">
+                                <span class="meta-label">{{ member.firstName }}</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="meta-value">{{ member.score }} pts</span>
+                                    {% if group.creator == app.user or is_granted('ROLE_ADMIN') %}
+                                        <form method="POST" action="{{ path('app_groups_remove_member', {id: group.id, userId: member.id}) }}" onsubmit="return confirm('Retirer ce membre ?');" style="display:inline;">
+                                            <button type="submit" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.8rem;" title="Retirer du groupe">
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if group.creator == app.user %}
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #f1f5f9;">
+                        <h3 class="sidebar-heading">Inviter un membre</h3>
+                        <form action="{{ path('app_groups_invite', {id: group.id}) }}" method="POST">
+                            <input type="email" name="email" class="form-control" placeholder="Email de l'utilisateur" required style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;">
+                            <button type="submit" class="btn-primary" style="width: 100%; padding: 8px; border-radius: 8px; background: #0059A9; color: #fff; border: none; cursor: pointer; font-weight: 600;">Inviter</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="glass-card sidebar-compact" style="margin-top: 1rem;">
                     <h3 class="sidebar-heading">Métadonnées</h3>
                     <div class="meta-list">
                         <div class="meta-row">
@@ -85,13 +330,8 @@
                             <span class="meta-label">Créé le</span>
                             <span class="meta-value">{{ group.createdAt|date('d M Y') }}</span>
                         </div>
-                        <div class="meta-row">
-                            <span class="meta-label">Créateur</span>
-                            <span class="meta-value">{{ group.creator.firstName }} {{ group.creator.lastName }}</span>
-                        </div>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 </div>
@@ -127,6 +367,143 @@
     .meta-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; }
     .meta-label { font-size: 0.9rem; color: #64748b; }
     .meta-value { font-weight: 600; color: #1e293b; }
-    @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: #fff; border-radius: var(--radius-lg); padding: 2rem; width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 </style>
+
+<!-- File Preview Modal -->
+<div id="previewModal" class="modal-overlay" style="z-index: 2000;">
+    <div class="modal-content" style="max-width: 90%; width: 1000px; height: 90vh; display: flex; flex-direction: column; padding: 0; border: none;">
+        <div class="modal-header" style="padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #0059A9; color: white;">
+            <h3 class="h6 mb-0" id="previewTitle" style="color: white;"><i class="fas fa-file-alt me-2"></i> Prévisualisation du fichier</h3>
+            <button onclick="closePreviewModal()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="previewBody" style="flex: 1; overflow: auto; padding: 0; background: #f8fafc; display: flex; align-items: center; justify-content: center;">
+            <!-- Content will be injected by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Existing Delete Modal logic (if needed)
+
+    async function updateTaskStatus(taskId, status) {
+        const url = `/project-task/${taskId}/status/${status}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                alert(data.error || 'Une erreur est survenue.');
+                return;
+            }
+
+            const data = await response.json();
+            
+            // 1. Update Badge
+            const badge = document.getElementById(`task-badge-${taskId}`);
+            const labels = { 'DONE': 'Terminé', 'IN_PROGRESS': 'En cours', 'TO_DO': 'À faire' };
+            badge.textContent = labels[data.status] || data.status;
+            badge.className = `badge ${data.badgeClass}`;
+            badge.style.background = getStatusColor(data.status);
+
+            // 2. Update Card Border and Background
+            const card = document.getElementById(`task-card-${taskId}`);
+            card.style.borderLeftColor = getStatusColor(data.status);
+            card.style.background = data.status === 'DONE' ? '#f0fdf4' : '#f8fafc';
+
+            // 3. Update Icons and Links
+            updateStatusLinks(taskId, data.status);
+
+            // 4. Update Completion Date
+            const completedSpan = document.getElementById(`completed-at-${taskId}`);
+            if (data.completedAt) {
+                completedSpan.innerHTML = `<span style="color: #22c55e; font-size: 0.7rem;"><i class="fas fa-check-double"></i> Terminé le: ${data.completedAt}</span>`;
+            } else {
+                completedSpan.innerHTML = '';
+            }
+
+        } catch (error) {
+            console.error('Error updating task status:', error);
+            alert('Erreur de connexion au serveur.');
+        }
+    }
+
+    function getStatusColor(status) {
+        switch(status) {
+            case 'DONE': return '#22c55e';
+            case 'IN_PROGRESS': return '#eab308';
+            default: return '#64748b';
+        }
+    }
+
+    function updateStatusLinks(taskId, activeStatus) {
+        const statuses = ['TO_DO', 'IN_PROGRESS', 'DONE'];
+        const config = {
+            'TO_DO': { icon: 'fa-clipboard', color: '#64748b', label: 'À faire' },
+            'IN_PROGRESS': { icon: 'fa-spinner fa-spin', color: '#eab308', label: 'En cours' },
+            'DONE': { icon: 'fa-check-circle', color: '#22c55e', label: 'Terminé' }
+        };
+
+        statuses.forEach(status => {
+            const link = document.getElementById(`status-link-${taskId}-${status}`);
+            const icon = link.querySelector('i');
+            const isActive = status === activeStatus;
+
+            link.style.color = isActive ? config[status].color : '#cbd5e1';
+            link.style.fontWeight = isActive ? '700' : '400';
+            link.innerHTML = `<i class="${isActive ? (status === 'IN_PROGRESS' ? 'fas fa-spinner fa-spin' : 'fas ' + config[status].icon) : (status === 'IN_PROGRESS' ? 'fas fa-hourglass-half' : 'far ' + config[status].icon)}"></i> ${config[status].label}`;
+        });
+    }
+
+    // Existing previewFile function...
+    function previewFile(url, extension) {
+        const body = document.getElementById('previewBody');
+        const modal = document.getElementById('previewModal');
+        body.innerHTML = '';
+        
+        if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.objectFit = 'contain';
+            body.appendChild(img);
+        } else if (extension === 'pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            body.appendChild(iframe);
+        } else {
+            body.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-file-download fa-4x text-muted mb-3"></i>
+                    <p>Ce type de fichier (${extension}) ne peut pas être prévisualisé directement.</p>
+                    <a href="${url}" download class="btn btn-primary">Télécharger le fichier</a>
+                </div>
+            `;
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function closePreviewModal() {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewBody').innerHTML = '';
+    }
+
+    // Close preview modal on click outside
+    document.getElementById('previewModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closePreviewModal();
+    });
+</script>
 {% endblock %}

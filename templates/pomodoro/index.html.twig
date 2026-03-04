@@ -4,17 +4,46 @@
 
 {% block content %}
 <style>
-.pomodoro-container { display:flex; justify-content:center; max-width:800px; margin:0 auto; }
-.timer-card { background:#fff; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center; padding:40px; width:100%; }
-.timer-display { font-size:5rem; font-weight:800; color:#2c3e50; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:20px; }
-.timer-controls { display:flex; gap:12px; justify-content:center; margin-bottom:30px; }
-.btn-round { width:60px; height:60px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:0.2s; }
-.btn-start { background:#2ecc71; color:white; } .btn-start:hover { transform:scale(1.1); box-shadow:0 5px 15px rgba(46,204,113,0.3); }
-.btn-pause { background:#f1c40f; color:white; } .btn-reset { background:#e74c3c; color:white; }
+.pomodoro-container { display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:40px; width:100%; max-width:1300px; margin:0 auto; padding-bottom: 50px; }
+.timer-card { background:#fff; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.08); text-align:center; padding:50px 40px; width:100%; max-width: 600px; flex: 1 1 500px; }
+.timer-display { font-size:5.5rem; font-weight:800; color:#0f172a; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:30px; letter-spacing:-2px; }
+.timer-controls { display:flex; gap:15px; justify-content:center; margin-bottom:10px; }
+.btn-round { width:65px; height:65px; border-radius:50%; font-size:1.4rem; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.btn-start { background:#10b981; color:white; } .btn-start:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 12px 25px rgba(16,185,129,0.35); }
+.btn-pause { background:#f59e0b; color:white; } .btn-pause:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 12px 25px rgba(245,158,11,0.35); }
+.btn-reset { background:#ef4444; color:white; } .btn-reset:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 12px 25px rgba(239,68,68,0.35); }
 
-.timer-mode { display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
-.mode-btn { padding:8px 16px; border-radius:20px; border:1px solid #eee; background:transparent; cursor:pointer; }
-.mode-btn.active { background:#2c3e50; color:white; border-color:#2c3e50; }
+.timer-mode { display:flex; gap:12px; justify-content:center; margin-bottom:30px; }
+.mode-btn { padding:10px 22px; border-radius:30px; border:1px solid #e2e8f0; background:#f8fafc; color:#64748b; font-weight:600; cursor:pointer; transition:all 0.3s ease; }
+.mode-btn:hover { background:#f1f5f9; color:#334155; }
+.mode-btn.active { background:#0f172a; color:white; border-color:#0f172a; box-shadow:0 6px 15px rgba(15,23,42,0.2); }
+
+/* Custom Modern Toggle Switch */
+.switch { position: relative; display: inline-block; width: 52px; height: 28px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+input:checked + .slider { background-color: #0ea5e9; }
+input:focus + .slider { box-shadow: 0 0 1px #0ea5e9; }
+input:checked + .slider:before { transform: translateX(24px); }
+
+/* SaaS Analytics Styles */
+.stats-card { background:#fff; border-radius:24px; box-shadow:0 10px 35px rgba(0,0,0,0.03); padding:40px; width:100%; max-width: 600px; flex: 1 1 500px; text-align: left; border: 1px solid rgba(0,0,0,0.02); margin:0; }
+.saas-box { background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; }
+.saas-box:hover { transform: translateY(-4px); box-shadow: 0 12px 25px -5px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+.session-row { padding: 22px 24px; border: 1px solid #f1f5f9; border-radius: 16px; margin-bottom: 16px; background: #fff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.session-row:hover { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06); border-color: #e2e8f0; transform: scale(1.015); }
+.section-title { font-size: 1.4rem; color: #0f172a; font-weight: 700; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; letter-spacing:-0.5px; }
+.ai-toggle-box { margin-bottom: 35px; padding: 20px 25px; background: #fff; border: 1px solid #e0f2fe; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-shadow: 0 8px 20px rgba(14,165,233,0.06); transition: all 0.3s ease; }
+.ai-toggle-box:hover { box-shadow: 0 12px 30px rgba(14,165,233,0.12); transform: translateY(-3px); border-color: #bae6fd; }
+.val-label { color:#64748b; font-size:0.95rem; font-weight:500; margin-bottom:8px; }
+.val-metric { font-size:1.8rem; font-weight:800; color:#0f172a; line-height:1; }
+/* Quote API Styles */
+.quote-container { margin-top:25px; padding:20px 30px; border-radius:16px; background:linear-gradient(135deg, #f0f9ff, #e0f2fe); border:1px solid #bae6fd; min-height:100px; display:none; flex-direction:column; justify-content:center; align-items:center; transition:opacity 0.5s ease; opacity:0; box-shadow:0 8px 20px rgba(14,165,233,0.08); }
+.quote-container.visible { display:flex; opacity:1; }
+.quote-text { font-size:1.15rem; font-style:italic; font-weight:600; color:#0369a1; text-align:center; margin-bottom:10px; line-height:1.5; }
+.quote-author { font-size:0.9rem; font-weight:700; color:#0ea5e9; text-transform:uppercase; letter-spacing:1px; }
+
 </style>
 
 <div class="row" style="margin-bottom:20px; align-items:center;">
@@ -23,23 +52,185 @@
 </div>
 
 <div class="pomodoro-container">
-    <div class="timer-section" style="width:100%;">
-        <div class="timer-card">
-            <h2 style="margin:0 0 10px;">{{ event.title }}</h2>
-            <p class="text-muted" id="current-session-label">Select a session to start</p>
-            
-            <div class="timer-mode">
-                <button class="mode-btn active" onclick="setTimer(25, 'WORK', this)">Work (25m)</button>
-                <button class="mode-btn" onclick="setTimer(5, 'BREAK', this)">Short Break (5m)</button>
-                <button class="mode-btn" onclick="setTimer(15, 'BREAK', this)">Long Break (15m)</button>
-            </div>
+    <div class="timer-card">
+        <h2 style="margin:0 0 12px; font-weight:800; color:#0f172a; font-size:1.8rem; letter-spacing:-0.5px;">{{ event.title }}</h2>
+        <p style="color:#64748b; font-size:1rem; font-weight:500; margin-bottom:30px;" id="current-session-label">Select a session to start</p>
+        
+        <div class="timer-mode">
+            <button class="mode-btn active" onclick="setTimer(25, 'WORK', this)">Work (25m)</button>
+            <button class="mode-btn" onclick="setTimer(5, 'BREAK', this)">Short Break (5m)</button>
+            <button class="mode-btn" onclick="setTimer(15, 'BREAK', this)">Long Break (15m)</button>
+        </div>
 
-            <div class="timer-display" id="timer">25:00</div>
+        <div class="timer-display" id="timer">25:00</div>
+
+        <div class="ai-toggle-box">
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <label class="switch">
+                    <input type="checkbox" id="ai-tracking-toggle">
+                    <span class="slider"></span>
+                </label>
+                <label for="ai-tracking-toggle" style="font-weight: 700; color: #0ea5e9; cursor: pointer; margin: 0; font-size: 1.1rem; letter-spacing:-0.3px;">
+                    <i class="fas fa-video" style="margin-right: 6px;"></i> Activer la Caméra
+                </label>
+            </div>
+            <div id="ai-status" style="display: none; font-size: 0.95rem; color: #10b981; font-weight: 700; background: #d1fae5; padding: 6px 14px; border-radius: 10px;">
+                <i class="fas fa-video"></i> Actif
+            </div>
+        </div>
 
             <div class="timer-controls">
-                <button class="btn-round btn-start" onclick="startTimer()"><i class="fas fa-play"></i></button>
-                <button class="btn-round btn-pause" onclick="pauseTimer()"><i class="fas fa-pause"></i></button>
+                <button class="btn-round btn-start" id="start-btn" onclick="onStartBtn()"><i class="fas fa-play"></i></button>
+                <button class="btn-round btn-pause" id="pause-btn" onclick="pauseTimer()"><i class="fas fa-pause"></i></button>
                 <button class="btn-round btn-reset" onclick="resetTimer()"><i class="fas fa-redo"></i></button>
+            </div>
+
+            <!-- Quotable API Motivational Quote Container -->
+            <div id="quote-container" class="quote-container">
+                <div class="quote-text" id="quote-text">"Patience, the API is thinking..."</div>
+                <div class="quote-author" id="quote-author">- Artificial Intelligence</div>
+            </div>
+
+            <!-- Instant Stats Card (Hidden by default) -->
+            <div id="instant-stats-card" style="display: none; margin-top: 30px; padding: 30px; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.06); text-align: left;">
+                <h4 style="margin-top: 0; color: #0f172a; font-size: 1.25rem; font-weight:700; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px;">
+                    <i class="fas fa-poll-h" style="color:#0ea5e9; margin-right:8px;"></i> Bilan de la session
+                </h4>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div class="val-label">Score de concentration IA</div>
+                        <div id="instant-stats-score" style="font-size: 2.2rem; font-weight: 800; color: #0f172a;">--%</div>
+                    </div>
+                    <div>
+                        <div id="instant-stats-icon" style="font-size: 3rem; color: #cbd5e1;">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div id="instant-stats-msg" style="margin-top: 15px; font-size: 0.95rem; color: #64748b; font-weight:500;">
+                    Calcul en cours...
+                </div>
+                <div id="ai-timeline-container" style="display: none; margin-top: 25px; max-height: 180px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 12px; padding: 15px; background: #f8fafc;">
+                    <div style="font-weight: 700; margin-bottom: 12px; font-size: 0.9rem; color: #334155;"><i class="fas fa-history" style="margin-right:5px;"></i> Historique (toutes les 10s) :</div>
+                    <ul id="ai-timeline-list" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: #64748b;">
+                    </ul>
+                </div>
+                <div style="margin-top: 25px; text-align: right;">
+                    <button class="btn btn-primary" onclick="location.reload()" style="padding: 10px 20px; font-size: 1rem; border-radius:12px; font-weight:600; background: #0f172a; border:none; box-shadow:0 4px 10px rgba(15,23,42,0.2); transition:all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        Fermer & Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% set validScores = [] %}
+        {% for s in sessions %}
+            {% if s.focusScore is not null %}
+                {% set validScores = validScores|merge([s.focusScore]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% set countScore = validScores|length %}
+        {% set avgScore = countScore > 0 ? (validScores|reduce((carry, v) => carry + v, 0) / countScore) : 0 %}
+
+        {% set trend = 'neutral' %}
+        {% if countScore >= 2 %}
+            {% set lastScore = validScores|last %}
+            {% set prevScore = validScores[countScore - 2] %}
+            {% if lastScore > prevScore + 0.05 %}
+                {% set trend = 'up' %}
+            {% elseif lastScore < prevScore - 0.05 %}
+                {% set trend = 'down' %}
+            {% endif %}
+        {% endif %}
+
+        {% set recommendation = '' %}
+        {% if trend == 'down' and countScore >= 2 %}
+            {% set recommendation = 'Votre concentration baisse après vos dernières sessions consécutives. Pause recommandée.' %}
+        {% elseif trend == 'up' %}
+            {% set recommendation = 'Excellente dynamique ! Vous êtes dans la zone. Continuez !' %}
+        {% elseif avgScore > 0.7 %}
+            {% set recommendation = 'Très bonne concentration générale aujourd\'hui. Ne lâchez rien.' %}
+        {% elseif countScore > 0 %}
+            {% set recommendation = 'Essayez de minimiser les distractions externes pour votre prochaine session.' %}
+        {% else %}
+            {% set recommendation = 'Activez le suivi intelligent pour analyser votre courbe de concentration.' %}
+        {% endif %}
+
+        <div class="stats-card">
+            <h3 class="section-title">
+                <span><i class="fas fa-chart-line" style="color:#0ea5e9; margin-right:8px;"></i> Statistiques Globales</span>
+                
+                {% if countScore > 0 %}
+                <div style="display:flex; align-items:flex-end; gap:4px; height:28px; background:#f8fafc; padding:6px 14px; border-radius:20px; border:1px solid #f1f5f9;" title="Mini Courbe d'évolution">
+                    {% for score in validScores|slice(-10) %}
+                       {% set color = score > 0.7 ? '#10b981' : (score > 0.4 ? '#f59e0b' : '#ef4444') %}
+                       <div style="width:6px; height:{{ score * 100 }}%; background:{{ color }}; border-radius:3px; min-height:4px; transition:all 0.3s ease;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'"></div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </h3>
+
+            <div style="display:flex; gap:20px; margin-bottom: 25px;">
+                <div class="saas-box" style="flex:1;">
+                    <div class="val-label">📊 Moyenne générale</div>
+                    <div class="val-metric">
+                        {{ countScore > 0 ? (avgScore * 100)|round ~ '%' : '--' }}
+                    </div>
+                </div>
+                <div class="saas-box" style="flex:1;">
+                    <div class="val-label">📈 Tendance</div>
+                    <div style="font-size:1.2rem; font-weight:700; margin-top:8px;">
+                        {% if countScore < 2 %}
+                            <span style="color:#94a3b8;">--</span>
+                        {% elseif trend == 'up' %}
+                            <span style="color:#10b981;"><i class="fas fa-arrow-trend-up"></i> En amélioration</span>
+                        {% elseif trend == 'down' %}
+                            <span style="color:#ef4444;"><i class="fas fa-arrow-trend-down"></i> En baisse</span>
+                        {% else %}
+                            <span style="color:#f59e0b;"><i class="fas fa-minus"></i> Stable</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#fff7ed; padding:18px 24px; border-radius:16px; margin-bottom:35px; display:flex; gap:16px; align-items:center; border: 1px solid #ffedd5; transition: transform 0.3s ease; box-shadow: 0 4px 6px -1px rgba(249,115,22,0.05);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div style="background:#ffedd5; width:45px; height:45px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-bolt" style="color:#f97316; font-size:1.4rem;"></i>
+                </div>
+                <div>
+                    <strong style="color: #c2410c; font-size: 1.05rem; display:block; margin-bottom:4px;">Recommandation</strong>
+                    <span style="color: #431407; font-size: 0.95rem; font-weight:500;">{{ recommendation }}</span>
+                </div>
+            </div>
+
+            <div class="stats-list" id="stats-list">
+                {% set trackedSessions = sessions|filter(s => s.focusScore is not null) %}
+                {% for s in trackedSessions|reverse %}
+                    {% set scoreColor = s.focusScore > 0.7 ? '#10b981' : (s.focusScore > 0.4 ? '#f59e0b' : '#ef4444') %}
+                    <div class="session-row">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:12px;">
+                            <div>
+                                <strong style="color: #0f172a; font-size:1.1rem; letter-spacing:-0.3px;">{{ s.type }}</strong> <span style="color: #64748b; font-weight:500;">- {{ s.duration }}m</span>
+                                <div style="font-size: 0.85rem; color: #94a3b8; margin-top:4px; font-weight:500;">{{ s.startedAt|date('d/m H:i') }}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="background: {{ scoreColor }}; color: white; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size:0.95rem; box-shadow: 0 4px 10px {{ scoreColor }}40;">
+                                    {{ (s.focusScore * 100)|round }}% Focus
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Horizontal Progress Bar -->
+                        <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 15px;">
+                            <div style="height: 100%; width: {{ (s.focusScore * 100)|round }}%; background: {{ scoreColor }}; border-radius: 4px; transition: width 1s ease-in-out;"></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="padding:40px 20px; text-align:center; border:2px dashed #e2e8f0; border-radius:16px; background:#f8fafc;">
+                        <i class="fas fa-folder-open" style="font-size:2.5rem; color:#cbd5e1; margin-bottom:15px; display:block;"></i>
+                        <p style="color:#64748b; font-weight:500; margin:0; font-size:1.05rem;">Aucune session d'Intelligence Artificielle enregistrée.</p>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -61,24 +252,208 @@ function updateDisplay() {
     document.title = formatTime(timeLeft) + " - Pomodoro";
 }
 
+let currentSessionId = null;
+let aiEnabled = false;
+
+function onStartBtn() {
+    aiEnabled = document.getElementById('ai-tracking-toggle').checked;
+    window.aiSessionScores = []; // Clear array for new session calculation
+    window.aiSessionLogs = [];
+    window.lastLogTime = Date.now();
+    
+    if (aiEnabled && !currentSessionId) {
+        // Must create a session first to have an ID for the tracker
+        createSessionAndStart();
+    } else {
+        if (aiEnabled && currentSessionId) {
+            startAITracking(currentSessionId);
+        }
+        startTimer();
+    }
+}
+
+function createSessionAndStart() {
+    const formData = new FormData();
+    formData.append('type', document.querySelector('.mode-btn.active').textContent.includes('Work') ? 'WORK' : 'BREAK');
+    formData.append('duration', currentDuration);
+
+    fetch("{{ path('app_pomodoro_new', {id: event.id}) }}", {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            currentSessionId = data.id;
+            startAITracking(currentSessionId);
+            startTimer();
+        }
+    });
+}
+
+function startAITracking(sessionId) {
+    document.getElementById('ai-status').style.display = 'block';
+    
+    fetch("{{ path('app_pomodoro_launch_tracker', {id: event.id, sessionId: 'SESSION_ID'}) }}".replace('SESSION_ID', sessionId), {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('AI Tracker Launch:', data);
+    });
+}
+
 function startTimer() {
     if (timerId) return;
+    
+    // Set start date if not set
+    if (currentSessionId) {
+        // We could send an AJAX to set startedAt, but for simplicity we rely on the tracker's final report
+    }
+
     timerId = setInterval(() => {
         if (timeLeft > 0) {
             timeLeft--;
             updateDisplay();
         } else {
-            clearInterval(timerId);
-            timerId = null;
-            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
-            alert("Timer Finished!");
+            stopTimer("Timer Finished!");
         }
     }, 1000);
+
+    // AI Status Polling
+    if (aiEnabled && currentSessionId) {
+        window.aiStatusInterval = setInterval(() => {
+            fetch("{{ path('app_pomodoro_tracker_status', {id: event.id, sessionId: 'SESSION_ID'}) }}".replace('SESSION_ID', currentSessionId))
+            .then(r => r.json())
+            .then(data => {
+                const statusEl = document.getElementById('ai-status');
+                if (data.status === 'active') {
+                    if (window.aiSessionScores === undefined) window.aiSessionScores = [];
+                    window.aiSessionScores.push(data.score); // Collect score for final average
+                    
+                    if (window.aiSessionLogs === undefined) window.aiSessionLogs = [];
+                    if (window.lastLogTime === undefined) window.lastLogTime = Date.now();
+                    
+                    if (Date.now() - window.lastLogTime >= 10000) {
+                        window.aiSessionLogs.push({
+                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}),
+                            state: data.state,
+                            scoreInt: Math.round(data.score * 100),
+                            scoreStr: Math.round(data.score * 100) + '%'
+                        });
+                        window.lastLogTime = Date.now();
+                    }
+                    
+                    let color = data.score > 0.7 ? '#2ecc71' : (data.score > 0.4 ? '#f1c40f' : '#e74c3c');
+                    let icon = data.score > 0.7 ? 'fa-eye' : 'fa-eye-slash';
+                    statusEl.innerHTML = `<span style="color: ${color}; font-weight: bold;"><i class="fas ${icon}"></i> IA Active : ${data.state} (${Math.round(data.score * 100)}%)</span>`;
+                } else if (data.status === 'initializing') {
+                    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> IA en cours de démarrage...';
+                }
+            }).catch(e => console.log("Status poll error", e));
+        }, 2000); // Poll every 2 seconds
+    }
+}
+
+function stopTimer(msg) {
+    clearInterval(timerId);
+    timerId = null;
+    
+    if (window.aiStatusInterval) {
+        clearInterval(window.aiStatusInterval);
+        window.aiStatusInterval = null;
+    }
+    
+    // Disable start/pause buttons to prevent multiple clicks while fetching
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('pause-btn').disabled = true;
+    
+    if (aiEnabled && currentSessionId) {
+        document.getElementById('ai-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Arrêt du tracking et calcul...';
+        
+        // Show card in loading state
+        document.getElementById('instant-stats-card').style.display = 'block';
+        
+        // Signal tracker to stop
+        fetch("{{ path('app_pomodoro_stop_tracker', {id: event.id, sessionId: 'SESSION_ID'}) }}".replace('SESSION_ID', currentSessionId), {
+            method: 'POST'
+        })
+        .then(() => {
+            document.getElementById('ai-status').style.display = 'none';
+            
+            // Calculate local average from collected scores
+            let finalScore = undefined;
+            if (window.aiSessionScores && window.aiSessionScores.length > 0) {
+                const sum = window.aiSessionScores.reduce((a, b) => a + b, 0);
+                finalScore = sum / window.aiSessionScores.length;
+                
+                // Immediately post to backend to save exactly what the frontend saw
+                fetch("{{ path('app_pomodoro_save_stats', {id: event.id, sessionId: 'SESSION_ID'}) }}".replace('SESSION_ID', currentSessionId), {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({average_focus: finalScore})
+                });
+            }
+            
+            currentSessionId = null; // Reset for next session
+            
+            // Populate the card immediately without polling
+            if (finalScore !== undefined) {
+                let percentage = Math.round(finalScore * 100);
+                document.getElementById('instant-stats-score').textContent = percentage + '%';
+                
+                let iconHtml = '';
+                let msgHtml = '';
+                if (finalScore > 0.7) {
+                    document.getElementById('instant-stats-score').style.color = '#2ecc71';
+                    iconHtml = '<i class="fas fa-check-circle" style="color: #2ecc71;"></i>';
+                    msgHtml = 'Excellente concentration ! Continuez comme ça.';
+                } else if (finalScore > 0.4) {
+                    document.getElementById('instant-stats-score').style.color = '#f1c40f';
+                    iconHtml = '<i class="fas fa-exclamation-triangle" style="color: #f1c40f;"></i>';
+                    msgHtml = 'Concentration moyenne. Essayez de rester focus.';
+                } else {
+                    document.getElementById('instant-stats-score').style.color = '#e74c3c';
+                    iconHtml = '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>';
+                    msgHtml = 'Vous semblez distrait ou fatigué. Une pause s\'impose ?';
+                }
+                document.getElementById('instant-stats-icon').innerHTML = iconHtml;
+                document.getElementById('instant-stats-msg').innerHTML = msgHtml;
+                
+                // Populate timeline
+                if (window.aiSessionLogs && window.aiSessionLogs.length > 0) {
+                    document.getElementById('ai-timeline-container').style.display = 'block';
+                    const list = document.getElementById('ai-timeline-list');
+                    list.innerHTML = '';
+                    window.aiSessionLogs.forEach(log => {
+                        let color = log.scoreInt > 70 ? '#2ecc71' : (log.scoreInt > 40 ? '#f1c40f' : '#e74c3c');
+                        list.innerHTML += `<li style="margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; display: flex; justify-content: space-between;">
+                            <span><strong>${log.time}</strong></span>
+                            <span style="color: ${color}; font-weight: bold;">${log.state} (${log.scoreStr})</span>
+                        </li>`;
+                    });
+                } else {
+                    document.getElementById('ai-timeline-container').style.display = 'none';
+                }
+            } else {
+                document.getElementById('instant-stats-score').textContent = '--';
+                document.getElementById('instant-stats-icon').innerHTML = '';
+                document.getElementById('instant-stats-msg').textContent = 'Données non disponibles pour cette session.';
+                document.getElementById('ai-timeline-container').style.display = 'none';
+            }
+        });
+    } else {
+        if (msg) {
+            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
+            alert(msg);
+            location.reload(); 
+        }
+    }
 }
 
 function pauseTimer() {
-    clearInterval(timerId);
-    timerId = null;
+    stopTimer("Vous avez mis la session en pause.");
 }
 
 function resetTimer() {
@@ -94,6 +469,16 @@ function setTimer(minutes, type, btn) {
     updateDisplay();
     document.getElementById('current-session-label').textContent = type === 'WORK' ? 'Focus Time' : 'Time for a break';
 
+    // Quote API Logic: Fetch new quote if it's a break
+    const quoteContainer = document.getElementById('quote-container');
+    if (type === 'BREAK') {
+        quoteContainer.classList.add('visible');
+        fetchMotivationalQuote();
+    } else {
+        quoteContainer.classList.remove('visible');
+        setTimeout(() => { quoteContainer.style.display = 'none'; }, 500); // Wait for fade out
+    }
+
     // Update active button state
     document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
     if (btn) {
@@ -105,6 +490,28 @@ function setTimer(minutes, type, btn) {
                 el.classList.add('active');
             }
         });
+    }
+}
+
+async function fetchMotivationalQuote() {
+    const textEl = document.getElementById('quote-text');
+    const authorEl = document.getElementById('quote-author');
+    
+    textEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement de votre dose de motivation...';
+    authorEl.textContent = '';
+
+    try {
+        const response = await fetch('https://api.quotable.io/random?tags=technology,famous-quotes,wisdom');
+        if (!response.ok) throw new Error("API Limit Reached");
+        const data = await response.json();
+        
+        textEl.textContent = `"${data.content}"`;
+        authorEl.textContent = `- ${data.author}`;
+    } catch (error) {
+        console.error("Quote fetching failed: ", error);
+        // Beautiful fallback if offline or API blocked
+        textEl.textContent = "« Le succès est la somme de petits efforts, répétés jour après jour. »";
+        authorEl.textContent = "- Robert Collier";
     }
 }
 

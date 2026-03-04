@@ -5,11 +5,11 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
-    openrouter.api_key: '%env(OPENROUTER_API_KEY)%'
-    openrouter.model: '%env(resolve:OPENROUTER_MODEL)%'
-    openrouter.app_url: '%env(resolve:OPENROUTER_APP_URL)%'
-    openrouter.app_title: '%env(resolve:OPENROUTER_APP_TITLE)%'
+    gemini.api_key: '%env(GEMINI_API_KEY)%'
+    gemini.model: '%env(resolve:GEMINI_MODEL)%'
     voicerss.api_key: '%env(VOICERSS_API_KEY)%'
+    python_exe: '%env(resolve:PYTHON_EXE)%'
+    openrouter.app_url: '%env(OPENROUTER_APP_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -28,12 +28,27 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Service\GeminiClient:
+        arguments:
+            $apiKey: '%gemini.api_key%'
+            $model: '%gemini.model%'
+
+    App\Service\GoogleCalendarService:
+        arguments:
+            $googleClientId: '%env(GOOGLE_CLIENT_ID)%'
+            $googleClientSecret: '%env(GOOGLE_CLIENT_SECRET)%'
+
+    App\Service\FaceRecognitionService:
+        arguments:
+            $faceApiUrl: '%env(FACE_API_URL)%'
+
+    # Default OpenRouter client (Chatbot)
     App\Service\OpenRouterClient:
         arguments:
-            $apiKey: '%openrouter.api_key%'
-            $model: '%openrouter.model%'
+            $apiKey: '%env(OPENROUTER_API_KEY)%'
+            $model: '%env(OPENROUTER_MODEL)%'
             $appUrl: '%openrouter.app_url%'
-            $appTitle: '%openrouter.app_title%'
+            $appTitle: '%env(OPENROUTER_APP_TITLE)%'
 
     # Dedicated client for Quiz Generation
     app.quiz_api_client:
@@ -48,7 +63,11 @@ services:
         arguments:
             $client: '@app.quiz_api_client'
 
-
     App\Service\VoiceRssService:
         arguments:
             $apiKey: '%voicerss.api_key%'
+
+    App\Service\SmartPlanningService:
+        arguments:
+            $pythonExe: '%python_exe%'
+

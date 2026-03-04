@@ -19,8 +19,12 @@ class GoogleController extends AbstractController
             ->getClient('google') // key used in config/packages/knpu_oauth2_client.yaml
             ->redirect([
                 'email',
-                'profile' // the scopes you want to access
-            ], []);
+                'profile',
+                'https://www.googleapis.com/auth/calendar'
+            ], [
+                'access_type' => 'offline',
+                'prompt' => 'consent'
+            ]);
     }
 
     #[Route('/connect/google/check', name: 'connect_google_check')]

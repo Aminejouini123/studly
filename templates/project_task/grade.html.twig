@@ -1,0 +1,45 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Noter le travail{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4" style="background: #f8fafc; min-height: 90vh;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                <div class="card-header" style="background: #0059A9; color: white; border: none; padding: 20px;">
+                    <h3 class="card-title mb-0 h5">
+                        <i class="fas fa-star me-2"></i> Noter la tâche : {{ project_task.title }}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label text-muted small uppercase fw-bold">Détails de la tâche</label>
+                        <div class="p-3 bg-light rounded" style="border-left: 4px solid #0059A9;">
+                            <p class="mb-1"><strong>Membre :</strong> {{ project_task.assignedUser.firstName }} {{ project_task.assignedUser.lastName }}</p>
+                            <p class="mb-0"><strong>Fichier déposé :</strong> 
+                                <a href="{{ asset('uploads/deliverables/' ~ project_task.deliverable) }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-download"></i> Voir le travail
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+
+                    {{ form_start(form) }}
+                        {{ form_widget(form) }}
+                        
+                        <div class="mt-4 d-flex justify-content-between align-items-center">
+                            <a href="{{ path('app_groups_show', {id: project_task.project.group.id}) }}" class="btn btn-light" style="border-radius: 8px;">
+                                <i class="fas fa-arrow-left me-1"></i> Annuler
+                            </a>
+                            <button class="btn btn-primary" style="background: #00ca09; border: none; border-radius: 8px; padding: 10px 25px;">
+                                <i class="fas fa-save me-1"></i> Enregistrer la note
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

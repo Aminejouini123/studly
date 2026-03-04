@@ -425,9 +425,7 @@
             <p class="page-subtitle">Créez et gérez vos événements et plannings</p>
         </div>
         <div style="display:flex; gap:10px;">
-            <a href="{{ path('app_temps_calendar') }}" class="btn-primary btn-lg form-toggle-btn" style="background: white; color: var(--primary-dark); border: 1px solid var(--border-color); display:inline-flex; text-decoration:none;">
-                <i class="fas fa-calendar-alt"></i> Voir le Calendrier
-            </a>
+            <button id="toggle-view-btn" class="btn-primary" style="background: var(--sidebar-bg);"><i class="fas fa-calendar-alt"></i> <span>Voir Calendrier</span></button>
             <button type="button" id="toggle-event-form" class="btn-primary btn-lg form-toggle-btn">
                 <i class="fas fa-calendar-plus"></i> Ajouter un événement
             </button>
@@ -463,6 +461,11 @@
                 <div class="stat-label">Total</div>
             </div>
         </div>
+    </div>
+    
+    <!-- Unified Visual Calendar -->
+    <div id="calendar-view-container" class="courses-section" style="display: none; margin-bottom: 2rem;">
+        <div id="calendar"></div>
     </div>
 
     {# Create form template (not rendered until Add clicked) #}
@@ -576,7 +579,324 @@
 
         <div id="event-form-container"></div>
 
-        {# Events list - same section style as Courses #}
+        <!-- Section IA Planning Styling -->
+        <style>
+            .premium-ai-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 20px;
+                box-shadow: 0 12px 35px rgba(0, 89, 169, 0.05);
+                margin-bottom: 35px;
+                overflow: hidden;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .premium-ai-card:hover {
+                box-shadow: 0 15px 45px rgba(0, 89, 169, 0.08);
+            }
+            .ai-card-header {
+                padding: 24px 30px;
+                background: linear-gradient(135deg, #f8fafc 0%, #f0f7ff 100%);
+                border-bottom: 1px solid transparent;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                transition: border-color 0.3s ease;
+            }
+            .ai-card-header.open {
+                border-bottom-color: #e2e8f0;
+            }
+            .ai-card-header-main {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .ai-icon-wrapper {
+                width: 48px;
+                height: 48px;
+                border-radius: 14px;
+                background: linear-gradient(135deg, #0ea5e9, #2563eb);
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.4rem;
+                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            }
+            .ai-header-text h2 {
+                margin: 0 0 4px 0;
+                font-size: 1.4rem;
+                color: #0f172a;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .badge-ia {
+                background: #eff6ff;
+                color: #2563eb;
+                font-size: 0.75rem;
+                font-weight: 700;
+                padding: 4px 10px;
+                border-radius: 20px;
+                box-shadow: inset 0 0 0 1px #bfdbfe;
+                letter-spacing: 0.5px;
+            }
+            .ai-header-text p {
+                margin: 0;
+                color: #64748b;
+                font-size: 0.95rem;
+                font-weight: 500;
+            }
+            .ai-body-content {
+                padding: 30px;
+            }
+            .slider-group {
+                background: #f8fafc;
+                border: 1px solid #f1f5f9;
+                border-radius: 16px;
+                padding: 20px;
+                transition: border-color 0.2s;
+            }
+            .slider-group:hover {
+                border-color: #e2e8f0;
+            }
+            .slider-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            .slider-label {
+                font-weight: 600;
+                color: #334155;
+                font-size: 0.95rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .slider-value-badge {
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+            /* Custom Range Sliders */
+            .modern-slider {
+                -webkit-appearance: none;
+                width: 100%;
+                height: 6px;
+                border-radius: 6px;
+                outline: none;
+                transition: background 0.15s ease-in-out;
+            }
+            
+            .modern-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: #ffffff;
+                cursor: pointer;
+                border: 3px solid;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                transition: transform 0.1s;
+            }
+            .modern-slider::-webkit-slider-thumb:hover {
+                transform: scale(1.15);
+            }
+            
+            /* Energy Slider */
+            .slider-energy { background: #e2e8f0; }
+            .slider-energy::-webkit-slider-thumb { border-color: #10b981; }
+            .badge-energy { background: #d1fae5; color: #059669; }
+            
+            /* Stress Slider */
+            .slider-stress { background: #e2e8f0; }
+            .slider-stress::-webkit-slider-thumb { border-color: #ef4444; }
+            .badge-stress { background: #fee2e2; color: #dc2626; }
+
+            /* Sleep Slider */
+            .slider-sleep { background: #e2e8f0; }
+            .slider-sleep::-webkit-slider-thumb { border-color: #3b82f6; }
+            .badge-sleep { background: #dbeafe; color: #2563eb; }
+
+            /* Textarea area */
+            .ai-textarea-wrapper {
+                margin-top: 25px;
+                background: #fbfdff;
+                border: 1px solid #e0f2fe;
+                border-radius: 16px;
+                padding: 24px;
+                position: relative;
+            }
+            .ai-textarea-label {
+                font-weight: 600;
+                color: #0f172a;
+                font-size: 1.05rem;
+                margin-bottom: 6px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .ai-textarea-subtitle {
+                font-size: 0.85rem;
+                color: #64748b;
+                margin-bottom: 12px;
+            }
+            .premium-textarea {
+                width: 100%;
+                border: 2px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 16px;
+                font-size: 1rem;
+                color: #334155;
+                background: #ffffff;
+                transition: all 0.3s ease;
+                resize: vertical;
+                min-height: 90px;
+                box-sizing: border-box;
+            }
+            .premium-textarea:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            }
+            .char-counter {
+                position: absolute;
+                bottom: 35px;
+                right: 35px;
+                font-size: 0.8rem;
+                color: #94a3b8;
+                font-weight: 500;
+                background: rgba(255,255,255,0.8);
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+
+            /* Submit Button */
+            .btn-ai-submit {
+                background: linear-gradient(135deg, #2563eb, #4f46e5);
+                color: white;
+                border: none;
+                border-radius: 14px;
+                padding: 14px 28px;
+                font-size: 1.05rem;
+                font-weight: 700;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .btn-ai-submit:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+            }
+            .btn-ai-submit:active {
+                transform: translateY(1px);
+            }
+            .btn-ai-submit i {
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-3px); }
+                100% { transform: translateY(0px); }
+            }
+        </style>
+
+        <!-- Section IA Planning -->
+        <div class="premium-ai-card">
+            <div class="ai-card-header" id="ai-planning-header">
+                <div class="ai-card-header-main">
+                    <div class="ai-icon-wrapper">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div class="ai-header-text">
+                        <h2>Planification <span class="badge-ia">IA Agent</span></h2>
+                        <p>Laissez l'algorithme organiser votre emploi du temps selon votre humeur.</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="ai-download-container" onclick="event.stopPropagation();">
+                        {% if app.session.get('last_planning_pdf') %}
+                            <a href="{{ path('app_temps_download_planning') }}" id="btn-download-planning" class="btn-primary" style="background: #10b981; border:none; padding: 10px 18px; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 15px rgba(16,185,129,0.2);">
+                                <i class="fas fa-file-pdf"></i> PDF Planning
+                            </a>
+                        {% endif %}
+                    </div>
+                    <i class="fas fa-chevron-down" id="ai-caret" style="color: #64748b; transition: transform 0.3s; font-size: 1.2rem;"></i>
+                </div>
+            </div>
+
+            <div id="ai-planning-body" style="display: none;">
+                <div class="ai-body-content">
+                    <form id="ai-planning-form" action="{{ path('app_temps_analyze') }}" method="POST">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            
+                            <!-- Energy -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <div class="slider-label">
+                                        <i class="fas fa-bolt" style="color: #10b981;"></i> Énergie
+                                    </div>
+                                    <div class="slider-value-badge badge-energy"><span id="val-energy">5</span>/10</div>
+                                </div>
+                                <input type="range" name="energy" id="energy" min="1" max="10" value="5" class="modern-slider slider-energy js-ai-input" 
+                                    oninput="document.getElementById('val-energy').innerText = this.value; this.style.background = `linear-gradient(to right, #10b981 ${(this.value-1)*11.1}%, #e2e8f0 ${(this.value-1)*11.1}%)`"
+                                    style="background: linear-gradient(to right, #10b981 44.4%, #e2e8f0 44.4%)">
+                            </div>
+
+                            <!-- Stress -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <div class="slider-label">
+                                        <i class="fas fa-brain" style="color: #ef4444;"></i> Stress
+                                    </div>
+                                    <div class="slider-value-badge badge-stress"><span id="val-stress">5</span>/10</div>
+                                </div>
+                                <input type="range" name="stress" id="stress" min="1" max="10" value="5" class="modern-slider slider-stress js-ai-input"
+                                    oninput="document.getElementById('val-stress').innerText = this.value; this.style.background = `linear-gradient(to right, #ef4444 ${(this.value-1)*11.1}%, #e2e8f0 ${(this.value-1)*11.1}%)`"
+                                    style="background: linear-gradient(to right, #ef4444 44.4%, #e2e8f0 44.4%)">
+                            </div>
+
+                            <!-- Sleep -->
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <div class="slider-label">
+                                        <i class="fas fa-bed" style="color: #3b82f6;"></i> Sommeil
+                                    </div>
+                                    <div class="slider-value-badge badge-sleep"><span id="val-sleep">5</span>/10</div>
+                                </div>
+                                <input type="range" name="sleep" id="sleep" min="1" max="10" value="5" class="modern-slider slider-sleep js-ai-input"
+                                    oninput="document.getElementById('val-sleep').innerText = this.value; this.style.background = `linear-gradient(to right, #3b82f6 ${(this.value-1)*11.1}%, #e2e8f0 ${(this.value-1)*11.1}%)`"
+                                    style="background: linear-gradient(to right, #3b82f6 44.4%, #e2e8f0 44.4%)">
+                            </div>
+                        </div>
+
+                        <div class="ai-textarea-wrapper">
+                            <div class="ai-textarea-label">
+                                <i class="fas fa-comment-dots" style="color: #0ea5e9;"></i> Contexte du jour
+                            </div>
+                            <div class="ai-textarea-subtitle">
+                                L'intelligence artificielle analysera le sentiment de votre texte pour affiner les durées de travail.
+                            </div>
+                            <textarea name="mood" id="mood" class="premium-textarea js-ai-input" placeholder="Ex: Je me sens un peu fatigué mais motivé pour finir mon projet..." oninput="document.getElementById('char-count').innerText = this.value.length;"></textarea>
+                            <div class="char-counter"><span id="char-count">0</span> caractères</div>
+                        </div>
+
+                        <div style="margin-top: 25px; text-align: right;">
+                            <button type="submit" class="btn-ai-submit" id="ai-submit-btn" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin\'></i> Génération en cours...'; this.style.opacity='0.8';">
+                                <i class="fas fa-wand-magic-sparkles"></i> Générer le Planning Intelligent
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="courses-section">
             <div class="section-header">
                 <h2 style="margin:0; font-size:1.5rem; color:#1F1F1F;">Liste des événements</h2>
@@ -629,6 +949,11 @@
                                     {% if event.status %}
                                         <span class="badge status"><i class="fas fa-info-circle"></i> {{ event.status }}</span>
                                     {% endif %}
+                                    {% if event.googleEventId %}
+                                        <span class="badge" style="background: rgba(66, 133, 244, 0.1); color: #4285F4;" title="Linked with Google Calendar">
+                                            <i class="fab fa-google"></i> Synced
+                                        </span>
+                                    {% endif %}
                                     {% if event.pomodoroSessions|length > 0 %}
                                         <div class="pomodoro-summary" style="margin-top:10px;">
                                             <details>
@@ -661,6 +986,12 @@
                                                 <i class="fas fa-stopwatch"></i>
                                                 <span>Focus</span>
                                             </a>
+                                            {% if not event.googleEventId and app.user and app.user.googleAccessToken %}
+                                                <a href="{{ path('app_temps_sync', {id: event.id}) }}" class="btn-motivation" style="background: #4285F4;" title="Sync to Google">
+                                                    <i class="fab fa-google"></i>
+                                                    <span>Sync</span>
+                                                </a>
+                                            {% endif %}
                                         </div>
 
                                         <div class="event-actions-secondary">
@@ -685,6 +1016,39 @@
                     </div>
                 {% endif %}
             </div>
+
+            {% if google_events is not empty %}
+                <div class="section-header" style="margin-top: 40px;">
+                    <h2 style="margin:0; font-size:1.5rem; color:#1F1F1F; display: flex; align-items: center; gap: 10px;">
+                        <i class="fab fa-google" style="color: #4285F4;"></i> Google Calendar (Cette semaine)
+                    </h2>
+                </div>
+                <div class="events-grid">
+                    {% for g_event in google_events %}
+                        <div class="event-card" style="border-left: 5px solid #4285F4;">
+                            <div class="event-header">
+                                <h3 class="event-title">{{ g_event.summary }}</h3>
+                                <div class="event-date">
+                                    <i class="fas fa-clock"></i> {{ g_event.start|date('M d, H:i') }}
+                                </div>
+                            </div>
+                            <div class="event-description">
+                                {{ g_event.description|default('No description provided.') }}
+                                {% if g_event.location %}
+                                    <div style="margin-top: 8px; font-size: 0.85rem;">
+                                        <i class="fas fa-map-marker-alt" style="color: #ea4335;"></i> {{ g_event.location }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="event-badges">
+                                <span class="badge" style="background: rgba(66, 133, 244, 0.1); color: #4285F4;">
+                                    <i class="fab fa-google"></i> External Event
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         {# Weekly stats card – API visualisation #}
@@ -705,6 +1069,11 @@
     </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -860,6 +1229,8 @@
             var ctx = document.getElementById('weekly-time-chart');
             if(!ctx) return;
             
+            var googleEventsData = {{ google_events|default([])|json_encode|raw }};
+            
             // Gather data from DOM
             var events = [];
             document.querySelectorAll('.event-card').forEach(function(card){
@@ -868,11 +1239,20 @@
                 var duration = parseInt(durationText) || 0; // minutes
                 
                 if(dateText && duration > 0){
-                    // approximate parsing "M d, Y" e.g. "Feb 17, 2026"
                     var date = new Date(dateText);
                     if(!isNaN(date.getTime())){
                         events.push({date: date, duration: duration});
                     }
+                }
+            });
+
+            // Add Google Events to data
+            googleEventsData.forEach(function(ev){
+                var start = new Date(ev.start);
+                var end = new Date(ev.end);
+                if(!isNaN(start.getTime()) && !isNaN(end.getTime())){
+                    var duration = Math.round((end - start) / (1000 * 60)); // minutes
+                    events.push({date: start, duration: duration, isGoogle: true});
                 }
             });
 
@@ -945,7 +1325,200 @@
         
         initWeeklyStats();
 
+        // View Toggling logic
+        var toggleViewBtn = document.getElementById('toggle-view-btn');
+        var listView = document.getElementById('events-list').closest('.courses-section');
+        var googleView = document.querySelector('.section-header + .events-grid'); // Search for the Google grid
+        var calendarContainer = document.getElementById('calendar-view-container');
+        var isCalendar = false;
 
+        toggleViewBtn.addEventListener('click', function() {
+            isCalendar = !isCalendar;
+            if (isCalendar) {
+                listView.style.display = 'none';
+                if (googleView) googleView.previousElementSibling.style.display = 'none';
+                if (googleView) googleView.style.display = 'none';
+                calendarContainer.style.display = 'block';
+                toggleViewBtn.innerHTML = '<i class="fas fa-arrow-left"></i> <span>Retour</span>';
+                calendar.render();
+            } else {
+                listView.style.display = 'block';
+                if (googleView) googleView.previousElementSibling.style.display = 'block';
+                if (googleView) googleView.style.display = 'grid';
+                calendarContainer.style.display = 'none';
+                toggleViewBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> <span>Voir Calendrier</span>';
+            }
+        });
+
+        // FullCalendar Initialization
+        var calendarEl = document.getElementById('calendar');
+        var localEventsData = [
+            {% for event in events %}
+            {
+                id: "{{ event.id }}",
+                title: "{{ event.title|escape('js') }}",
+                start: "{{ event.date|date('Y-m-d') }}{% if event.startTime %}T{{ event.startTime|date('H:i:s') }}{% endif %}",
+                {% if event.endTime %}
+                end: "{{ event.endTime|date('Y-m-d H:i:s') }}",
+                {% elseif event.duration %}
+                end: moment("{{ event.date|date('Y-m-d') }}").add({{ event.duration }}, 'minutes').toISOString(),
+                {% endif %}
+                allDay: {% if event.startTime %}false{% else %}true{% endif %},
+                color: '#0059A9',
+                extendedProps: {
+                    type: 'local',
+                    description: "{{ event.description|default('')|escape('js') }}",
+                    deleteUrl: "{{ path('app_temps_delete', {id: event.id}) }}",
+                    csrfToken: "{{ csrf_token('delete' ~ event.id) }}"
+                }
+            },
+            {% endfor %}
+        ];
+
+        var googleEventsData = {{ google_events|default([])|json_encode|raw }};
+        var mappedGoogleEvents = googleEventsData.map(function(ev) {
+            return {
+                id: ev.id,
+                title: ev.summary,
+                start: ev.start,
+                end: ev.end,
+                allDay: !ev.start.includes('T'),
+                color: '#4285F4',
+                extendedProps: {
+                    type: 'google',
+                    description: ev.description || ''
+                }
+            };
+        });
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            displayEventTime: true,
+            eventDisplay: 'block',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: localEventsData.concat(mappedGoogleEvents),
+            dateClick: function(info) {
+                Swal.fire({
+                    title: 'Ajouter un événement ?',
+                    text: 'Voulez-vous créer un nouvel événement pour le ' + info.dateStr + ' ?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0059A9',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-plus"></i> Oui, ajouter',
+                    cancelButtonText: 'Annuler',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Switch to List View if in Calendar
+                        if (isCalendar) {
+                            toggleViewBtn.click();
+                        }
+                        // Open add form if not open
+                        if (container.children.length === 0) {
+                            document.getElementById('toggle-event-form').click();
+                        }
+                        // Pre-fill date
+                        var dateInput = container.querySelector('input[type="date"]');
+                        if (dateInput) {
+                            dateInput.value = info.dateStr;
+                            // Trigger live preview update
+                            dateInput.dispatchEvent(new Event('input'));
+                        }
+                        // Scroll to form
+                        container.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            },
+            eventClick: function(info) {
+                var event = info.event;
+                var props = event.extendedProps;
+                
+                if (props.type === 'local') {
+                    Swal.fire({
+                        title: 'Supprimer l\'événement ?',
+                        text: 'Voulez-vous vraiment supprimer "' + event.title + '" ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fas fa-trash"></i> Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Create a temporary form to submit the delete request
+                            var form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = props.deleteUrl;
+                            
+                            var tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = '_token';
+                            tokenInput.value = props.csrfToken;
+                            
+                            form.appendChild(tokenInput);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                } else if (props.type === 'google') {
+                    Swal.fire({
+                        title: 'Événement Google',
+                        text: 'Cet événement provient de Google Calendar. Pour le supprimer, utilisez la vue liste ou demandez à l\'assistant Studly.',
+                        icon: 'info',
+                        confirmButtonColor: '#4285F4',
+                        confirmButtonText: 'Compris'
+                    });
+                }
+            }
+        });
+
+        // AI Planning Button Visibility Logic
+        var aiForm = document.getElementById('ai-planning-form');
+        var downloadBtn = document.getElementById('btn-download-planning');
+        var downloadContainer = document.getElementById('ai-download-container');
+        var aiInputs = document.querySelectorAll('.js-ai-input');
+
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                // Hide the button when clicked
+                downloadContainer.style.display = 'none';
+            });
+        }
+
+        if (aiForm) {
+            aiInputs.forEach(function(input) {
+                input.addEventListener('input', function() {
+                    if (downloadContainer && downloadContainer.style.display === 'none') {
+                        downloadContainer.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // Collapsible Card Logic
+        var aiHeader = document.getElementById('ai-planning-header');
+        var aiBody = document.getElementById('ai-planning-body');
+        var aiCaret = document.getElementById('ai-caret');
+
+        if (aiHeader && aiBody) {
+            aiHeader.addEventListener('click', function() {
+                var isHidden = aiBody.style.display === 'none';
+                aiBody.style.display = isHidden ? 'block' : 'none';
+                if (aiCaret) {
+                    aiCaret.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+                
+                // Adjust header border
+                aiHeader.style.borderBottom = isHidden ? '1px solid #cce5ff' : 'none';
+            });
+        }
     });
 })();
 </script>

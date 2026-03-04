@@ -3,109 +3,143 @@
 namespace App\Controller;
 
 use App\Service\OpenRouterClient;
+use App\Service\PdfScannerService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
-final class ChatBotController extends AbstractController // Définition de la classe du contrôleur qui hérite des outils de Symfony
-{ // Début de la classe
-    #[Route('/api/chat', name: 'api_chat', methods: ['POST'])] // Définition de la route API pour le chat (méthode POST)
-    public function chat( // Fonction principale pour gérer les messages du chat
-        Request $request, // Injection de la requête HTTP
-        OpenRouterClient $client, // Injection du client API OpenRouter
-        \App\Service\FileScannerService $fileScanner // Injection du service pour lire les fichiers
-    ): JsonResponse { // La fonction retourne une réponse au format JSON
-        $payload = json_decode($request->getContent(), true) ?? []; // Récupération et décodage des données JSON envoyées
-        $userMessage = trim((string)($payload['message'] ?? '')); // Nettoyage et récupération du message de l'utilisateur
-        $context = $payload['context'] ?? null; // Récupération du contexte (infos sur le cours actuel)
-        $action = $payload['action'] ?? null; // Récupération de l'action spécifique (ex: résumé)
+final class ChatBotController extends AbstractController
+{
+    #[Route('/api/chat', name: 'api_chat', methods: ['POST'])]
+    public function chat(
+        Request $request,
+        OpenRouterClient $client,
+        PdfScannerService $pdfScanner,
+        #[Autowire(service: 'cache.app')] CacheInterface $cache
+    ): JsonResponse {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $userMessage = trim((string) ($payload['message'] ?? ''));
+        $context = is_array($payload['context'] ?? null) ? $payload['context'] : null;
+        $action = (string) ($payload['action'] ?? '');
 
-        if ($userMessage === '' && $action !== 'summarize_file') { // Vérification si le message est vide (sauf si c'est un résumé)
-            return $this->json(['error' => 'Empty message'], 400); // Retourne une erreur si rien n'est envoyé
-        } // Fin de la condition de vérification
+        if ($userMessage === '' && $action !== 'summarize_file') {
+            return $this->json(['error' => 'Empty message'], 400);
+        }
 
-        // Initialisation du prompt système
-        $systemPrompt = "You are an educational assistant for the 'Studly' platform.\n";
+        $systemPrompt = 'You are an educational assistant for a course platform.
+You must only answer questions related to courses, lessons, exams, or learning topics available on this website.
+If a question is unrelated to education or the platform content, politely refuse.
+Keep answers brief, clear, and helpful.';
 
         if ($context) {
-            // Détection du type de contexte
-            $isExam = isset($context['exam_file']) || (isset($context['type']) && strtolower($context['type']) === 'exam');
-            $isCourse = isset($context['course_file']) || (isset($context['semester']));
-            $isActivity = isset($context['activity_file']);
+            $systemPrompt .= "\n\nCONTEXT INFORMATION for the current learning item:\n";
+            $systemPrompt .= json_encode($this->compactContext($context), JSON_UNESCAPED_UNICODE);
 
-            // Définition des instructions spécifiques selon le contexte
-            if ($isExam) {
-                $systemPrompt .= "You are currently helping a student with an EXAM. 
-                Your goals are:
-                1. EXPLAIN the exam content and specific exercises.
-                2. HELP the student solve exercises if they ask.
-                3. CORRECT their answers if they provide them.
-                4. Give tips to succeed in this specific exam.
-                You HAVE full permission to discuss, solve, and analyze the exercises in the provided document.";
-            } elseif ($isCourse) {
-                $systemPrompt .= "You are currently helping a student with a COURSE. 
-                Your goals are:
-                1. Provide HIGH-QUALITY, PROFESSIONAL summaries.
-                2. Use a sophisticated yet pedagogical academic tone.
-                3. ASK insightful testing questions to the student to check their deep understanding.
-                4. Explain complex concepts with clarity and real-world relevance.
-                Focus on making the student a master of the subject.";
-            } else {
-                $systemPrompt .= "You are an educational assistant. Answer questions clearly and helpfully based on the context provided.";
-            }
+            $summaryRequested = $action === 'summarize_file'
+                || str_contains(mb_strtolower($userMessage), 'resume')
+                || str_contains(mb_strtolower($userMessage), 'resumer')
+                || str_contains(mb_strtolower($userMessage), 'résumé')
+                || str_contains(mb_strtolower($userMessage), 'résumer')
+                || str_contains(mb_strtolower($userMessage), 'explique');
 
-            $systemPrompt .= "\n\nCONTEXT INFORMATION:\n" . json_encode($context, JSON_PRETTY_PRINT);
-            
-            // Identification du fichier
-            $fileName = $context['course_file'] ?? $context['exam_file'] ?? $context['activity_file'] ?? null;
-            $subDir = $isExam ? 'exams' : ($isActivity ? 'activities' : 'courses');
+            $fileName = $context['course_file'] ?? $context['exam_file'] ?? null;
 
-            if (!empty($fileName)) {
-                $fileContent = $fileScanner->extractText($fileName, $subDir);
-                if (!empty($fileContent)) {
-                    $truncatedContent = mb_substr($fileContent, 0, 12000); 
-                    $systemPrompt .= "\n\nDOCUMENT CONTENT (Extracted from " . $subDir . "):\n" . $truncatedContent;
-                    
-                    // Si l'utilisateur demande explicitement un résumé ou si on est en mode "Action: Summarize"
-                    if ($action === 'summarize_file' || preg_match('/résumer|récapitululer|summary|summarize/i', $userMessage)) {
-                        $systemPrompt .= "\n\nINSTRUCTION FOR SUMMARY:
-                        Please provide a MASTER-LEVEL PROFESSIONAL SUMMARY using this structure:
-                        - **Executive Overview**: A high-level introduction to the core subject.
-                        - **Core Learning Pillars**: Break down the most critical concepts into deep, well-explained points.
-                        - **Practical Applications**: How this knowledge is applied in professional or real-world scenarios.
-                        - **Critical Takeaways**: Key points the student MUST remember.
-                        Use a very polished, professional, and expressive French.";
-                        
-                        if ($userMessage === '') $userMessage = "Résumez ce cours de manière professionnelle et détaillée s'il vous plaît.";
+            if ($summaryRequested && is_string($fileName) && $fileName !== '') {
+                $cacheKey = 'pdf_text_' . md5($fileName);
+                $fileContent = $cache->get($cacheKey, function (ItemInterface $item) use ($pdfScanner, $fileName): string {
+                    $item->expiresAfter(3600); // 1h cache to avoid repeated PDF parsing
+                    return $pdfScanner->extractText($fileName);
+                });
+
+                if ($fileContent !== '') {
+                    // Keep prompt smaller for faster model latency.
+                    $truncatedContent = mb_substr($fileContent, 0, 5000);
+                    $systemPrompt .= "\n\nDOCUMENT CONTENT (Extracted from file):\n{$truncatedContent}";
+                    $systemPrompt .= "\n\nINSTRUCTION: The user wants a summary of this document. Provide a concise and structured summary with key points.";
+                    if ($userMessage === '') {
+                        $userMessage = "Please summarize the current document.";
                     }
+                } else {
+                    return $this->json([
+                        'answer' => "Je n'ai pas pu lire le contenu du fichier. Verifiez que le document est lisible."
+                    ]);
                 }
+            } else {
+                $systemPrompt .= "\n\nPlease use this context to provide highly relevant answers to the user.";
             }
-        } else {
-            // Prompt par défaut sans contexte
-            $systemPrompt .= "Answer questions related to education, courses, or exams. If a question is unrelated to the platform or learning, politely refuse.";
         }
-        
-        $systemPrompt .= "\nAlways respond in the same language as the user (usually French). Keep answers clear and professional.";
 
-        $messages = [ // Préparation du tableau de messages pour l'API
-            ['role' => 'system', 'content' => $systemPrompt], // Le rôle système (les instructions)
-            ['role' => 'user', 'content' => $userMessage], // Le rôle utilisateur (la question)
-        ]; // Fin du tableau
+        try {
+            $data = $client->chat([
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userMessage],
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'AI request failed: ' . $e->getMessage(),
+            ], 502);
+        }
 
-        $data = $client->chat($messages); // Envoi de la requête à l'IA via le service OpenRouterClient
-        $answer = $data['choices'][0]['message']['content'] ?? null; // Récupération de la réponse textuelle de l'IA
+        if (isset($data['error'])) {
+            return $this->json([
+                'error' => 'AI API error: ' . ($data['error']['message'] ?? 'Unknown error'),
+            ], 502);
+        }
 
-        return $this->json([ // Retour de la réponse en JSON au frontend
-            'answer' => $answer, // Le texte de la réponse
-            'raw' => $data['usage'] ?? null, // Statistiques d'utilisation (options)
-        ]); // Fin du retour JSON
-    } // Fin de la fonction chat
+        $answer = $data['choices'][0]['message']['content'] ?? null;
+        if (!is_string($answer) || trim($answer) === '') {
+            return $this->json([
+                'error' => 'AI returned an empty answer',
+            ], 502);
+        }
 
-    #[Route('/chat', name: 'app_chat', methods: ['GET'])] // Route pour afficher l'interface graphique du chat
-    public function index(): Response // Fonction pour charger la page Twig
-    { // Début de la fonction
-        return $this->render('chat/index.html.twig'); // Rendu du template Twig
-    } // Fin de la fonction
+        return $this->json([
+            'answer' => $answer,
+            'raw' => $data['usage'] ?? null,
+        ]);
+    }
+
+    /**
+     * Keep only useful context keys and cap string sizes to reduce prompt/token size.
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function compactContext(array $context): array
+    {
+        $allowedKeys = [
+            'course_name', 'course_type', 'difficulty', 'description', 'semester', 'teacher',
+            'exam_title', 'exam_difficulty', 'exam_duration', 'exam_date',
+        ];
+
+        $result = [];
+        foreach ($allowedKeys as $key) {
+            if (!array_key_exists($key, $context)) {
+                continue;
+            }
+
+            $value = $context[$key];
+            if (is_string($value)) {
+                $result[$key] = mb_substr($value, 0, 300);
+                continue;
+            }
+
+            if (is_scalar($value) || $value === null) {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    #[Route('/chat', name: 'app_chat', methods: ['GET'])]
+    public function index(): Response
+    {
+        return $this->render('chat/index.html.twig');
+    }
 }

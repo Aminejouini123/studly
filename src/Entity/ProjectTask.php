@@ -3,27 +3,55 @@
 namespace App\Entity;
 
 use App\Repository\ProjectTaskRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProjectTaskRepository::class)]
 class ProjectTask
 {
+    public const STATUS_TO_DO = 'TO_DO';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_DONE = 'DONE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre de la tâche est obligatoire.')]
+    #[Assert\Length(min: 2, max: 255, minMessage: 'Le titre doit faire au moins {{ limit }} caractères.', maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La description de la tâche est obligatoire.')]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'projectTasks')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
+
+    #[ORM\ManyToOne(inversedBy: 'assignedProjectTasks')]
+    private ?User $assignedUser = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deadline = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $deliverable = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $grade = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $attachment = null;
 
     public function getId(): ?int
     {
@@ -74,6 +102,78 @@ class ProjectTask
     public function setProject(?Project $project): static
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): static
+    {
+        $this->assignedUser = $assignedUser;
+
+        return $this;
+    }
+
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(?\DateTimeInterface $deadline): static
+    {
+        $this->deadline = $deadline;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    {
+        $this->completedAt = $completedAt;
+
+        return $this;
+    }
+
+    public function getDeliverable(): ?string
+    {
+        return $this->deliverable;
+    }
+
+    public function setDeliverable(?string $deliverable): static
+    {
+        $this->deliverable = $deliverable;
+
+        return $this;
+    }
+
+    public function getGrade(): ?int
+    {
+        return $this->grade;
+    }
+
+    public function setGrade(?int $grade): static
+    {
+        $this->grade = $grade;
+
+        return $this;
+    }
+
+    public function getAttachment(): ?string
+    {
+        return $this->attachment;
+    }
+
+    public function setAttachment(?string $attachment): static
+    {
+        $this->attachment = $attachment;
 
         return $this;
     }

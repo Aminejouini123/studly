@@ -76,18 +76,13 @@ class ProfileType extends AbstractType
                 'widget' => 'single_text',
                 'label' => 'Date of Birth'
             ])
-            // Skills could be a CollectionType or simple text input for tags. 
-            // For simplicity/classic symfony, maybe a text input that converts to array in controller or DataTransformer?
-            // Or just exclude for now if complex. The user asked for "Skills" as option. 
-            // I'll skip skills field for now to keep it simple, or add as simple text "comma separated"
-            /*
             ->add('skills', TextType::class, [
-                'mapped' => false, // Handle manually
+                'mapped' => false,
                 'required' => false,
                 'label' => 'Skills (comma separated)',
-                'attr' => ['placeholder' => 'PHP, Symfony, JavaScript...']
+                'data' => $builder->getData() && $builder->getData()->getSkills() ? implode(', ', $builder->getData()->getSkills()) : '',
+                'attr' => ['placeholder' => 'Python, Cloud, Marketing...']
             ])
-            */
         ;
     }
 

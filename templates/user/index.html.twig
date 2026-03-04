@@ -88,18 +88,19 @@
 
         <div class="content-card">
     <style>
-        /* Enhanced Filter Toolbar Styles */
+        /* Refined Filter Toolbar Styles */
         .filter-toolbar {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 20px;
-            margin-bottom: 24px;
-            border: 1px solid var(--admin-border);
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
 
         .search-container {
@@ -110,34 +111,32 @@
 
         .search-icon {
             position: absolute;
-            left: 14px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: var(--text-muted);
             pointer-events: none;
-            transition: color 0.2s;
+            transition: var(--transition);
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 16px 12px 42px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px; /* Smooth rounded corners */
+            padding: 12px 16px 12px 48px;
+            background: #fff;
+            border: 1.5px solid #eef2f6;
+            border-radius: 12px;
             font-size: 0.95rem;
-            color: var(--admin-text-main);
-            background: #f8fafc;
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .search-input:focus {
             outline: none;
-            background: #fff;
-            border-color: var(--admin-accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
         
         .search-input:focus + .search-icon {
-            color: var(--admin-accent);
+            color: var(--primary);
         }
 
         .filter-actions {
@@ -147,43 +146,6 @@
 
         .custom-select-wrapper {
             position: relative;
-        }
-
-        .custom-select {
-            appearance: none;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 12px 36px 12px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--admin-text-main);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-            min-width: 140px;
-        }
-
-        .custom-select:hover {
-            background-color: #fff;
-            border-color: #cbd5e1;
-        }
-
-        .custom-select:focus {
-            outline: none;
-            background-color: #fff;
-            border-color: var(--admin-accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Custom dropdown arrow */
-        .select-arrow {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            pointer-events: none;
-            font-size: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -196,9 +158,6 @@
             }
             .filter-actions {
                 flex-wrap: wrap;
-            }
-            .custom-select {
-                flex: 1;
             }
         }
     </style>
@@ -249,22 +208,31 @@
                         <tr>
                             <td>{{ user.id }}</td>
                             <td>
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-weight: 600; color: var(--admin-text-main);">{{ user.firstName }} {{ user.lastName }}</span>
-                                    <span style="font-size: 0.85rem; color: var(--admin-text-muted);">{{ user.email }}</span>
-                                    <span style="font-size: 0.8rem; color: var(--admin-text-muted);">DOB: {{ user.dateOfBirth ? user.dateOfBirth|date('Y-m-d') : 'N/A' }}</span>
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">{{ user.firstName }} {{ user.lastName }}</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">{{ user.email }}</span>
+                                    <div style="margin-top: 4px; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted);">
+                                        <i class="fas fa-calendar-alt" style="font-size: 0.7rem;"></i>
+                                        <span>DOB: {{ user.dateOfBirth ? user.dateOfBirth|date('M d, Y') : 'N/A' }}</span>
+                                    </div>
                                 </div>
                             </td>
                             <td>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
                                     {% if user.phoneNumber %}
-                                        <span style="font-size: 0.9rem;"><i class="fas fa-phone" style="width: 16px; color: var(--admin-text-muted);"></i> {{ user.phoneNumber }}</span>
+                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                                            <i class="fas fa-phone" style="width: 14px; color: var(--primary); opacity: 0.7;"></i>
+                                            <span style="font-weight: 500;">{{ user.phoneNumber }}</span>
+                                        </div>
                                     {% endif %}
                                     {% if user.address %}
-                                        <span style="font-size: 0.9rem;" title="{{ user.address }}"><i class="fas fa-map-marker-alt" style="width: 16px; color: var(--admin-text-muted);"></i> {{ user.address|length > 20 ? user.address|slice(0, 20) ~ '...' : user.address }}</span>
+                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);" title="{{ user.address }}">
+                                            <i class="fas fa-map-marker-alt" style="width: 14px; color: var(--primary); opacity: 0.7;"></i>
+                                            <span>{{ user.address|length > 25 ? user.address|slice(0, 25) ~ '...' : user.address }}</span>
+                                        </div>
                                     {% endif %}
                                     {% if not user.phoneNumber and not user.address %}
-                                        <span style="color: var(--admin-text-muted); font-style: italic;">No contact info</span>
+                                        <span style="color: var(--text-muted); font-style: italic; font-size: 0.85rem;">No contact info</span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -283,11 +251,11 @@
                                     {{ user.statut }}
                                 </span>
                             </td>
-                            <td style="font-size: 0.85rem; color: var(--admin-text-muted);">
+                            <td style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
                                 {{ user.createdAt ? user.createdAt|date('M d, Y') : 'N/A' }}
                             </td>
                             <td style="display: flex; gap: 8px;">
-                                <button class="btn" style="background: none; border: none; padding: 0; color: var(--admin-accent); cursor: pointer;" 
+                                <button class="btn-secondary" style="color: var(--primary); border-color: rgba(99, 102, 241, 0.2);" 
                                     onclick='openEditModal({
                                         id: {{ user.id }},
                                         email: "{{ user.email|e("js") }}",
@@ -298,12 +266,12 @@
                                         phoneNumber: "{{ user.phoneNumber|default('')|e("js") }}",
                                         address: "{{ user.address|default('')|e("js")|replace({"\n": "\\n", "\r": ""}) }}",
                                         statut: "{{ user.statut|default('Pending')|e("js") }}"
-                                    })'>
+                                    })' title="Edit User">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Are you sure?');" style="display: inline;">
+                                <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');" style="display: inline;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                                    <button class="btn" style="background: none; border: none; padding: 0; color: #ef4444; cursor: pointer; margin: 0;">
+                                    <button class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;" title="Delete User">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

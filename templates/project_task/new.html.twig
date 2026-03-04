@@ -1,0 +1,171 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Nouvelle Tâche - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="course-form-container">
+    <div class="form-header">
+        <div style="margin-bottom: 20px;">
+            <a href="{{ path('app_groups_show', {id: project.group.id}) }}" class="btn-back-custom">
+                <i class="fas fa-arrow-left"></i> Retour au groupe
+            </a>
+        </div>
+        <div class="header-content">
+            <h1 class="page-title">Ajouter une Tâche</h1>
+            <p class="page-subtitle">Assignez une nouvelle mission pour le projet "{{ project.title }}"</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'class': 'course-form', 'novalidate': true}}) }}
+
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-tasks"></i> Détails de la Tâche</h3>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    {{ form_label(form.title, 'Titre de la Tâche') }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-input', 'placeholder': 'ex: Préparer les slides'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="form-group full-width">
+                    {{ form_label(form.description, 'Description / Instructions') }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 3}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.status, 'Statut Initial') }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.status) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.deadline, 'Date Limite') }}
+                    {{ form_widget(form.deadline, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.deadline) }}
+                </div>
+                <div class="form-group full-width">
+                    {{ form_label(form.assignedUser, 'Assigner à un membre') }}
+                    {{ form_widget(form.assignedUser, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.assignedUser) }}
+                    <small style="color: #666; margin-top: 5px;">Seuls les membres du groupe apparaîtront si vous avez filtré dans le formulaire (ou tous les utilisateurs sinon).</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-check-circle"></i> Ajouter la Tâche
+            </button>
+            <button type="button" id="btn-ai-analyze" class="btn-secondary-custom" style="border-color: #00c6ff; color: #003366;">
+                <i class="fas fa-robot"></i> Assistant IA
+            </button>
+            <a href="{{ path('app_groups_show', {id: project.group.id}) }}" class="btn-secondary-custom">Annuler</a>
+        </div>
+
+        <div id="ai-suggestion-box" style="display: none; margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: #f0f7ff; border: 1px solid #00c6ff;">
+            <h4 style="color: #003366; margin-bottom: 1rem;"><i class="fas fa-magic"></i> Suggestions de l'IA</h4>
+            <div id="ai-loading" style="display: none; text-align: center; padding: 1rem;">
+                <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+            </div>
+            <div id="ai-results" style="display: none;">
+                <p><strong>Estimation :</strong> <span id="ai-estimation"></span> minutes</p>
+                <p><strong>Priorité suggérée :</strong> <span id="ai-priority" class="badge"></span></p>
+                <p><strong>Conseil :</strong> <em id="ai-advice"></em></p>
+                <div style="margin-top: 1rem;">
+                    <button type="button" id="btn-apply-ai" class="btn-submit" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Appliquer la priorité
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAnalyze = document.getElementById('btn-ai-analyze');
+    const descriptionField = document.querySelector('[name*="[description]"]');
+    const statusField = document.querySelector('[name*="[status]"]'); // Actually priority is not in entity yet, but we requested it
+    const suggestionBox = document.getElementById('ai-suggestion-box');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiResults = document.getElementById('ai-results');
+    const btnApply = document.getElementById('btn-apply-ai');
+
+    let lastPriority = 'MEDIUM';
+
+    btnAnalyze.addEventListener('click', async function() {
+        const description = descriptionField.value;
+        if (!description.trim()) {
+            alert('Veuillez saisir une description pour l\'analyse.');
+            return;
+        }
+
+        suggestionBox.style.display = 'block';
+        aiLoading.style.display = 'block';
+        aiResults.style.display = 'none';
+
+        try {
+            const response = await fetch('{{ path("api_project_task_ai_analyze_task") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: description })
+            });
+
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error);
+
+            document.getElementById('ai-estimation').textContent = data.estimation;
+            const priorityBadge = document.getElementById('ai-priority');
+            priorityBadge.textContent = data.priority;
+            priorityBadge.className = 'badge ' + (data.priority === 'HIGH' ? 'bg-danger' : (data.priority === 'MEDIUM' ? 'bg-warning' : 'bg-info'));
+            document.getElementById('ai-advice').textContent = data.advice;
+
+            lastPriority = data.priority;
+            
+            aiLoading.style.display = 'none';
+            aiResults.style.display = 'block';
+        } catch (error) {
+            aiLoading.style.display = 'none';
+            alert('Erreur lors de l\'analyse : ' + error.message);
+        }
+    });
+
+    btnApply.addEventListener('click', function() {
+        // Since priority is not a field in the entity (based on my previous check),
+        // we might want to just store it in description or just show it.
+        // If the user wants to keep it, they'd need a field.
+        // For now, let's just show it.
+        alert('Analyse terminée. Vous pouvez utiliser ces suggestions pour affiner votre tâche.');
+    });
+});
+</script>
+
+<style>
+    .course-form-container { padding: 0; background-color: #f8f9fa; min-height: 100vh; padding-bottom: 4rem; padding-top: 2rem; }
+    .form-header { display: flex; flex-direction: column; background: radial-gradient(circle at 10% 20%, rgb(0, 89, 169) 0%, rgb(0, 31, 63) 90%); padding: 3rem 2rem 8rem 2rem; color: white; margin: 0 auto; width: 95%; max-width: 1250px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 51, 102, 0.15); }
+    .form-header > div:first-child { margin-bottom: 1.5rem; }
+    .header-content { text-align: center; max-width: 800px; margin: 0 auto; }
+    .header-content h1 { font-size: 2.5rem; color: #fff; margin-bottom: 0.8rem; font-weight: 700; }
+    .page-subtitle { color: rgba(255,255,255,0.9); font-size: 1.1rem; }
+    .btn-back-custom { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; }
+    .btn-back-custom:hover { color: #fff; }
+    .form-card { background: #fff; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); padding: 4rem; width: 95%; max-width: 1250px; margin: -5rem auto 0 auto; position: relative; z-index: 10; border: 1px solid rgba(0,0,0,0.02); }
+    .form-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #00c6ff, #0072ff); border-radius: 20px 20px 0 0; }
+    .form-section { border-bottom: 1px solid #e9ecef; padding-bottom: 2.5rem; margin-bottom: 1rem; }
+    .section-title { font-size: 1.25rem; color: #003366; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.8rem; border-left: 4px solid #00c6ff; padding-left: 0.5rem; }
+    .section-title i { color: #00c6ff; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem 3rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.7rem; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label { font-weight: 600; color: #344767; font-size: 0.95rem; }
+    .form-input { padding: 1rem 1.2rem; border: 1px solid #d2d6da; border-radius: 12px; font-size: 1rem; }
+    .form-input:focus { outline: none; border-color: #0059A9; box-shadow: 0 0 0 3px rgba(0, 89, 169, 0.1); }
+    .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+    .btn-submit { padding: 1rem 2rem; background: #0059A9; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-submit:hover { background: #001F3F; }
+    .btn-secondary-custom { padding: 1rem 2rem; border: 1px solid #d2d6da; border-radius: 12px; color: #344767; text-decoration: none; font-weight: 600; }
+    .btn-secondary-custom:hover { background: #f8f9fa; }
+</style>
+{% endblock %}

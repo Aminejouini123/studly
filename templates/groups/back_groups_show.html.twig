@@ -3,7 +3,7 @@
 {% block title %}Group Details{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_groups_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Groups</a> / <span>Details</span>
+    <a href="{{ path('app_admin_groups_index') }}">Groups</a> / <span>Details</span>
 {% endblock %}
 
 {% block content %}
@@ -13,16 +13,17 @@
         <div>
             <h1 class="page-title" style="margin-bottom: 8px;">{{ group.category }}</h1>
             <div style="display: flex; gap: 12px; align-items: center;">
-                <span class="status-badge {{ group.memberGroup ? 'status-active' : 'status-pending' }}">
-                    {{ group.memberGroup ? 'Assigned' : 'Unassigned' }}
+                <span class="status-badge {{ not group.members.isEmpty ? 'status-active' : 'status-pending' }}">
+                    <i class="fas {{ not group.members.isEmpty ? 'fa-check-circle' : 'fa-clock' }}" style="font-size: 0.7rem; margin-right: 4px;"></i>
+                    {{ not group.members.isEmpty ? 'Assigned' : 'Unassigned' }}
                 </span>
-                <span style="color: var(--admin-text-muted); font-size: 0.9rem;">
+                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
                     <i class="fas fa-calendar-alt"></i> Created on {{ group.createdAt ? group.createdAt|date('M d, Y') : 'N/A' }}
                 </span>
             </div>
         </div>
         <div style="display: flex; gap: 12px;">
-            <a href="{{ path('app_admin_groups_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border);">
+            <a href="{{ path('app_admin_groups_index') }}" class="btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
             <a href="{{ path('app_admin_groups_edit', {'id': group.id}) }}" class="btn-action">
@@ -31,37 +32,29 @@
         </div>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
-                </div>
-                <div class="stat-value">{{ group.capacity }}</div>
-                <div class="stat-label">Total Capacity</div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon blue" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);"><i class="fas fa-users"></i></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon green">
-                        {% if group.memberGroup %}
-                            <i class="fas fa-check-circle"></i>
-                        {% else %}
-                            <i class="fas fa-clock"></i>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="stat-value" style="font-size: 1.5rem;">
-                    {% if group.memberGroup %}Active{% else %}Pending{% endif %}
-                </div>
-                <div class="stat-label">Current Status</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
-                </div>
-                <div class="stat-value" style="font-size: 1.5rem;">{{ group.createdAt|date('d M Y') }}</div>
-                <div class="stat-label">Creation Date</div>
-            </div>
+            <div class="stat-value">{{ group.capacity }} members</div>
+            <div class="stat-label">Total Capacity</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon green" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="stat-value">{{ not group.members.isEmpty ? 'Active' : 'Pending' }}</div>
+            <div class="stat-label">Current Status</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon purple" style="background: linear-gradient(135deg, #faf5ff, #f3e8ff);"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+            <div class="stat-value">{{ group.createdAt|date('d M Y') }}</div>
+            <div class="stat-label">Creation Date</div>
+        </div>
+    </div>
 
     <div class="content-card">
         <div class="card-header">
@@ -103,17 +96,15 @@
                         </p>
                     </div>
 
-                    {% if group.memberGroup %}
+                    {% if not group.members.isEmpty %}
                     <div>
-                        <h4 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--admin-text-main);">Associations</h4>
-                        <div style="padding: 16px; border: 1px solid var(--admin-border); border-radius: 8px; display: flex; align-items: center; gap: 16px;">
-                            <div style="width: 48px; height: 48px; background: #ecfdf5; color: #059669; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
-                                <i class="fas fa-link"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight: 600;">Member Group Assigned</div>
-                                <div style="font-size: 0.9rem; color: var(--admin-text-muted);">ID: #{{ group.memberGroup.id }}</div>
-                            </div>
+                        <h4 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--admin-text-main);">Members</h4>
+                        <div style="padding: 16px; border: 1px solid var(--admin-border); border-radius: 8px;">
+                            <ul style="margin: 0; padding-left: 20px;">
+                                {% for member in group.members %}
+                                    <li style="margin-bottom: 5px;">{{ member.firstName }} {{ member.lastName }} ({{ member.email }})</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     {% endif %}

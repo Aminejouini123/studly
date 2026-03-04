@@ -181,10 +181,15 @@
                 <span class="stat-num">{{ user.createdAt|date('Y') }}</span>
                 <span class="stat-label">Joined</span>
             </div>
-            <!-- Placeholder stats -->
-            <div class="stat-box">
-                <span class="stat-num">0</span>
-                <span class="stat-label">Projects</span>
+            <div class="stat-box" style="{% if user.googleId %}background: rgba(34, 197, 94, 0.2);{% else %}background: rgba(239, 68, 68, 0.1);{% endif %}">
+                <span class="stat-num" style="font-size: 1rem;">
+                    {% if user.googleId %}
+                        <i class="fab fa-google"></i> Connected
+                    {% else %}
+                        <i class="fab fa-google"></i> Not Linked
+                    {% endif %}
+                </span>
+                <span class="stat-label">Google Calendar</span>
             </div>
         </div>
     </div>
@@ -281,6 +286,141 @@
             </div>
         </div>
         {% endif %}
+
+        <!-- Face ID Registration -->
+        <div class="section-card">
+            <div class="section-title">Face ID Authentication</div>
+            <div id="face-id-container">
+                <p>Register your face for faster and more secure login.</p>
+                <div id="face-video-container" style="display: none; position: relative; margin-top: 15px;">
+                    <video id="face-video" width="100%" height="auto" autoplay muted style="border-radius: 8px; border: 2px solid #0056b3;"></video>
+                </div>
+                <div id="face-feedback" style="margin-top: 10px; font-weight: 500; font-size: 0.9rem;"></div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="edit-btn" id="btn-start-camera" type="button" style="cursor: pointer; border: none; font-family: inherit;">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button class="edit-btn" id="btn-capture-face" type="button" style="cursor: pointer; border: none; font-family: inherit; display: none; background: #28a745;">
+                        <i class="fas fa-expand-scan"></i> Capture & Register
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const video = document.getElementById('face-video');
+        const btnStart = document.getElementById('btn-start-camera');
+        const btnCapture = document.getElementById('btn-capture-face');
+        const videoContainer = document.getElementById('face-video-container');
+        const feedback = document.getElementById('face-feedback');
+        let stream = null;
+
+        btnStart.addEventListener('click', async () => {
+            btnStart.disabled = true;
+            feedback.innerHTML = '<span style="color: #0056b3;">Loading AI Models... Please wait.</span>';
+            
+            try {
+                // Models must be placed in public/models
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+                ]);
+                
+                feedback.innerHTML = '<span style="color: #0056b3;">Accessing camera...</span>';
+                stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    videoContainer.style.display = 'block';
+                    btnStart.style.display = 'none';
+                    btnCapture.style.display = 'inline-flex';
+                    btnCapture.disabled = false; // Reset disabled state here!
+                    feedback.innerHTML = '<span style="color: #28a745;">Camera ready. Position your face clearly.</span>';
+                };
+            } catch (err) {
+                console.error(err);
+                feedback.innerHTML = '<span style="color: #dc3545;">Failed to load camera or models. Did you download them to /public/models?</span>';
+                btnStart.disabled = false;
+            }
+        });
+
+        btnCapture.addEventListener('click', async () => {
+            btnCapture.disabled = true;
+            feedback.innerHTML = '<span style="color: #0056b3;">Analyzing face (taking 3 captures)...</span>';
+
+            const descriptors = [];
+            const requiredCaptures = 3;
+
+            try {
+                for (let i = 0; i < requiredCaptures; i++) {
+                    const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                    
+                    if (!detection) {
+                        feedback.innerHTML = `<span style="color: #dc3545;">No face detected in capture ${i+1}. Please face the camera directly and try again.</span>`;
+                        btnCapture.disabled = false;
+                        return;
+                    }
+                    
+                    descriptors.push(detection.descriptor);
+                    feedback.innerHTML = `<span style="color: #0056b3;">Capture ${i+1}/${requiredCaptures} successful...</span>`;
+                    
+                    if (i < requiredCaptures - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                // Average the 3 descriptors
+                const averagedDescriptor = new Float32Array(128);
+                for (let i = 0; i < 128; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < requiredCaptures; j++) {
+                        sum += descriptors[j][i];
+                    }
+                    averagedDescriptor[i] = sum / requiredCaptures;
+                }
+
+                feedback.innerHTML = '<span style="color: #0056b3;">Saving Face ID securely...</span>';
+                const csrfToken = '{{ csrf_token('face_register') }}';
+
+                const response = await fetch('{{ path('app_face_register') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        descriptor: Array.from(averagedDescriptor)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    feedback.innerHTML = '<span style="color: #28a745;"><i class="fas fa-check-circle"></i> Face ID registered successfully!</span>';
+                } else {
+                    throw new Error(data.error || 'Server error');
+                }
+
+            } catch (err) {
+                console.error(err);
+                feedback.innerHTML = `<span style="color: #dc3545;">Error: ${err.message}</span>`;
+            } finally {
+                // Stop camera
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                btnCapture.style.display = 'none';
+                btnStart.style.display = 'inline-flex';
+                btnStart.innerHTML = '<i class="fas fa-camera"></i> Register Again';
+                btnStart.disabled = false;
+            }
+        });
+    });
+</script>
 {% endblock %}

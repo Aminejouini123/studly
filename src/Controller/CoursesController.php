@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Course;
+use App\Entity\User;
 use App\Form\CourseType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -18,11 +19,11 @@ final class CoursesController extends AbstractController
     #[Route('/courses', name: 'app_courses')]
     public function index(CourseRepository $courseRepository): Response
     {
-        // Filter courses by the current logged-in user
-        // Ensure the user is logged in (handled by firewall usually, but strict typing helps)
         $user = $this->getUser();
-        
-        $courses = $user ? $courseRepository->findBy(['user' => $user]) : [];
+
+        $courses = $user instanceof User
+            ? $courseRepository->findBy(['user' => $user])
+            : [];
         
         return $this->render('courses/frontCourses.html.twig', [
             'courses' => $courses,
@@ -37,8 +38,13 @@ final class CoursesController extends AbstractController
                 $form->handleRequest($request);
 
                 if ($form->isSubmitted() && $form->isValid()) {
+                    $user = $this->getUser();
+                    if (!$user instanceof User) {
+                        throw $this->createAccessDeniedException('You must be logged in to create a course.');
+                    }
+
                     // Assign the current user to the course
-                    $course->setUser($this->getUser());
+                    $course->setUser($user);
 
                     // handle uploaded file
                     /** @var UploadedFile|null $uploadedFile */

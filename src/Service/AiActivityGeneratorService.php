@@ -8,134 +8,252 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AiActivityGeneratorService
 {
-    public function __construct( // Constructeur pour injecter les dépendances nécessaires
-        private OpenRouterClient $client, // Injection du client API pour communiquer avec l'IA
-        private EntityManagerInterface $entityManager, // Injection de Doctrine pour sauvegarder en base de données
-        private FileScannerService $fileScanner // Injection du service pour lire le contenu des fichiers de cours
-    ) {} // Fin du constructeur
+    public function __construct(
+        private OpenRouterClient $client,
+        private EntityManagerInterface $entityManager
+    ) {}
 
-    public function generateActivityForCourse(Course $course, ?int $questionCount = null, ?string $quizType = 'multiple_choice', ?string $difficultyOverride = null, ?string $activityName = null): ?Activity // Fonction pour générer une activité (Quiz) pour un cours
-    { // Début de la fonction
-        $courseContent = ""; // Initialisation de la variable pour le texte du cours
-        if ($course->getCourseFile()) { // Vérification si le cours possède un fichier attaché (PDF, Word, etc.)
-            $courseContent = $this->fileScanner->extractText($course->getCourseFile()); // Extraction du texte à partir du fichier
-            // Truncate to avoid context window issues (approx 10,000 characters is safe for most models)
-            if (strlen($courseContent) > 10000) { // Si le texte est trop long (plus de 10 000 caractères)
-                $courseContent = substr($courseContent, 0, 10000) . "... [Content Truncated]"; // On coupe le texte pour ne pas saturer l'IA
-            } // Fin de la condition de tronquage
-        } // Fin de la condition de fichier
+    public function generateActivityForCourse(
+        Course $course,
+        ?int $questionCount = null,
+        string $quizType = 'multiple_choice',
+        ?string $difficulty = null,
+        ?string $activityName = null
+    ): ?Activity {
+        $resolvedDifficulty = $difficulty ?? $course->getDifficultyLevel() ?? 'Medium';
+        $type = $this->resolveType($quizType, $resolvedDifficulty);
 
-        $prompt = $this->buildPrompt($course, $courseContent, $questionCount, $quizType, $difficultyOverride); // Construction de la consigne (prompt) détaillée pour l'IA
-
-        $messages = [ // Préparation de la structure de discussion pour l'API
-            ['role' => 'system', 'content' => 'You are an educational AI content generator. You must respond ONLY with valid JSON.'], // Consigne système : l'IA doit être un prof et répondre en JSON
-            ['role' => 'user', 'content' => $prompt], // Consigne utilisateur : les détails du cours et le texte extrait
-        ]; // Fin du tableau de messages
-
-        $response = $this->client->chat($messages); // Envoi au client OpenRouter et attente de la réponse
-        $content = $response['choices'][0]['message']['content'] ?? null; // Récupération du contenu textuel de la réponse
-
-        if (!$content) { // Si l'IA n'a rien renvoyé (échec de connexion ou erreur)
-            return null; // Retourne "vide" pour signaler l'échec
-        } // Fin de la sécurité anti-vide
-
-        // Clean JSON response (AI sometimes adds markdown fences)
-        $cleanJson = preg_replace('/^```json\s*|\s*```$/i', '', trim($content)); // Nettoyage de la réponse IA (on enlève les balises ```json si présentes)
-        $data = json_decode($cleanJson, true); // Décodage du texte JSON en tableau PHP exploitable
-
-        if (!$data || !isset($data['title'])) { // Si le JSON est invalide ou s'il manque le titre
-            return null; // Retourne "vide" pour signaler une réponse IA incorrecte
-        } // Fin de la sécurité JSON
-
-        $activity = new Activity(); // Création d'une nouvelle instance de l'entité Activité
-        $activity->setTitle($activityName ?: $data['title']); // Attribution du titre personnalisé ou celui généré par l'IA
-        $activity->setDescription($data['description'] ?? ''); // Attribution de la description générée
-        $activity->setDuration($data['duration'] ?? 30); // Attribution de la durée (ou 30 min par défaut)
-        $activity->setType($data['type'] ?? 'quiz'); // Attribution du type (toujours "quiz")
-        
-        $instructions = $data['instructions'] ?? ''; // Récupération des questions (format JSON)
-        if (is_array($instructions)) { // Si les instructions sont un tableau (cas des questions de quiz)
-            $instructions = json_encode($instructions); // On les transforme en texte JSON pour le stocker en base
-        } // Fin de la conversion
-        $activity->setInstructions($instructions); // Enregistrement des questions dans le champ instructions
-        $activity->setExpectedOutput($data['expected_output'] ?? ''); // Attribution du résultat attendu
-        $activity->setHints($data['hints'] ?? ''); // Attribution des conseils/astuces
-        
-        // Map Course fields
-        $activity->setCourse($course); // Liaison de l'activité au cours correspondant
-        $activity->setLevel($course->getSemester() ?? 'General'); // Utilisation du semestre comme niveau de l'activité
-        $activity->setDifficulty($difficultyOverride ?? $course->getDifficultyLevel() ?? 'Medium'); // Utilisation de la difficulté personnalisée ou celle du cours
-        $activity->setStatus('Active'); // Définition du statut sur "Actif" par défaut
-
-        $this->entityManager->persist($activity); // Préparation de l'enregistrement dans Doctrine
-        $this->entityManager->flush(); // Sauvegarde réelle dans la base de données SQL
-
-        return $activity; // Retourne l'objet Activité complet
-    } // Fin de la fonction principale
-
-    private function buildPrompt(Course $course, string $courseContent = "", ?int $questionCount = null, ?string $quizType = 'multiple_choice', ?string $difficultyOverride = null): string // Fonction privée pour fabriquer la consigne IA
-    { // Début de la fonction
-        $difficulty = $difficultyOverride ?? $course->getDifficultyLevel(); // Récupération du niveau de difficulté (priorité au override)
-        
-        // All generated activities are now quizzes
-        $suggestedType = 'quiz'; // Le type est fixé à "quiz"
-        
-        // Use provided question count or fallback to difficulty-based logic
-        if ($questionCount === null) {
-            $questionCount = 10; // Nombre de questions par défaut (Moyen)
-            if (stripos($difficulty, 'Easy') !== false) { // Si le cours est marqué comme "Easy"
-                $questionCount = 5; // On limite à 5 questions
-            } elseif (stripos($difficulty, 'Hard') !== false) { // Si le cours est marqué comme "Hard"
-                $questionCount = 15; // On monte à 15 questions pour plus de défi
-            } // Fin de la logique de nombre de questions
+        // Use a different prompt strategy for quizzes vs other types
+        if ($type === 'quiz') {
+            return $this->generateQuizActivity($course, $questionCount ?? 5, $quizType, $resolvedDifficulty, $activityName);
         }
 
-        $suggestedDuration = $questionCount * 2; // On calcule la durée idéale (2 minutes par question)
+        return $this->generateStandardActivity($course, $type, $resolvedDifficulty, $activityName);
+    }
 
-        $sourceContext = !empty($courseContent) ? "
-        ### SOURCE CONTENT FROM FILE (IMPORTANT):
-        Analyze this text and base your generation EXCLUSIVELY on it:
-        {$courseContent}
-        " : "No file content available. Please base the generation on the Course Title and Description provided below."; // Préparation du contenu source pour l'IA
+    /**
+     * Generate a quiz activity with properly structured JSON questions
+     * that the frontend quiz player can parse and render.
+     */
+    private function generateQuizActivity(
+        Course $course,
+        int $questionCount,
+        string $quizType,
+        string $difficulty,
+        ?string $activityName
+    ): ?Activity {
+        $titleHint = $activityName ? "Preferred title: \"{$activityName}\"." : '';
+        
+        $questionFormat = match ($quizType) {
+            'true_false' => 'Each question must have exactly 2 options: ["True", "False"]. correct_answer_index is 0 for True, 1 for False.',
+            'mixed'      => 'Mix multiple-choice questions (4 options) and true/false questions (2 options: ["True", "False"]).',
+            default      => 'Each question must have exactly 4 options (A, B, C, D).',
+        };
 
-        $contentConstraint = !empty($courseContent) 
-            ? "strictly related to the PROVIDED source content text above. DO NOT use external knowledge if it contradicts the file." 
-            : "strictly related to the course subject matter described in the title and description."; // Contraintes pour forcer l'IA à rester sur le sujet
+        $prompt = <<<PROMPT
+You are an expert quiz generator for educational platforms.
+{$titleHint}
 
-        return "Generate a highly professional learning activity for the following course:
-        Course Title: {$course->getName()}
-        Course Description: {$course->getComment()}
-        Level: {$course->getSemester()}
-        Difficulty: {$difficulty}
+Course: {$course->getName()}
+Description: {$course->getComment()}
+Level: {$course->getSemester()}
+Difficulty: {$difficulty}
 
-        {$sourceContext}
+Generate EXACTLY {$questionCount} quiz questions about this course.
 
-        Requirements:
-        1. Type: {$quizType}
-        2. Content Quality: Must be pedagogically sound, challenging, and {$contentConstraint}
-        3. Duration: must be realistic for the difficulty. Suggested: {$suggestedDuration} minutes.
-        4. Instructions: This field MUST be a JSON array of {$questionCount} high-quality questions.
-           
-           {% if quizType == 'true_false' %}
-           Schema for True/False: [{\"question\": \"string\", \"options\": [\"True\", \"False\"], \"correct_answer_index\": 0_or_1, \"explanation\": \"string\"}]
-           {% elseif quizType == 'multiple_choice' %}
-           Schema for Multiple Choice: [{\"question\": \"string\", \"options\": [\"a\", \"b\", \"c\", \"d\"], \"correct_answer_index\": 0_to_3, \"explanation\": \"string\"}]
-           {% else %}
-           Mixed Schema: Mix between Multiple Choice (4 options) and True/False (2 options).
-           {% endif %}
+RULES:
+- {$questionFormat}
+- correct_answer_index must be the 0-based index of the correct option in the options array.
+- explanation must explain WHY the correct answer is right (1-2 sentences).
+- Questions must be varied, covering different aspects of the course.
+- Questions must match the difficulty level: Easy = basic recall, Medium = understanding, Hard = analysis.
 
-        5. Expected Output: define exactly what success looks like.
-        6. Format: Final response must be valid JSON only.
-
-        Response JSON Format:
+Respond ONLY with this exact JSON structure, no extra text:
+{
+    "title": "Quiz title here",
+    "description": "Brief professional description of the quiz",
+    "duration": {$questionCount},
+    "questions": [
         {
-            \"title\": \"Professional Catchy Title\",
-            \"description\": \"Professional and motivating overview (2-3 sentences)\",
-            \"duration\": {$suggestedDuration},
-            \"type\": \"quiz\",
-            \"instructions\": JSON_ARRAY_OF_QUESTIONS,
-            \"expected_output\": \"Detailed success criteria\",
-            \"hints\": \"Helpful tips for students\"
-        }"; // Construction et retour du prompt final complet au format texte
-    } // Fin de la fonction de construction de prompt
+            "question": "Question text here?",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "correct_answer_index": 0,
+            "explanation": "Why this is the correct answer."
+        }
+    ],
+    "hints": "General tips for the student taking this quiz",
+    "expected_output": "Success criteria description"
+}
+PROMPT;
+
+        $messages = [
+            ['role' => 'system', 'content' => 'You are an educational quiz generator. Respond ONLY with valid JSON. No markdown fences, no explanation outside JSON.'],
+            ['role' => 'user', 'content' => $prompt],
+        ];
+
+        try {
+            $response = $this->client->chat($messages);
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $content = $response['choices'][0]['message']['content'] ?? null;
+        if (!$content) {
+            return null;
+        }
+
+        // Clean markdown fences
+        $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
+        $cleanJson = preg_replace('/\s*```$/i', '', $cleanJson);
+        $data = json_decode($cleanJson, true);
+
+        if (!$data || !isset($data['questions']) || !is_array($data['questions'])) {
+            return null;
+        }
+
+        // Validate and sanitize each question
+        $validQuestions = [];
+        foreach ($data['questions'] as $q) {
+            if (!isset($q['question'], $q['options'], $q['correct_answer_index']) ||
+                !is_array($q['options']) || count($q['options']) < 2) {
+                continue;
+            }
+            $validQuestions[] = [
+                'question' => (string)$q['question'],
+                'options'  => array_map('strval', $q['options']),
+                'correct_answer_index' => (int)$q['correct_answer_index'],
+                'explanation' => (string)($q['explanation'] ?? ''),
+            ];
+        }
+
+        if (empty($validQuestions)) {
+            return null;
+        }
+
+        // Store the questions array as a JSON string in instructions — this is what the frontend quiz player expects
+        $activity = new Activity();
+        $activity->setTitle($activityName ?? $data['title'] ?? 'Quiz');
+        $activity->setDescription($data['description'] ?? '');
+        $activity->setDuration($data['duration'] ?? $questionCount * 2);
+        $activity->setType('quiz');
+        $activity->setInstructions(json_encode($validQuestions, JSON_UNESCAPED_UNICODE));
+        $activity->setExpectedOutput($data['expected_output'] ?? 'Answer all questions correctly.');
+        $activity->setHints($data['hints'] ?? '');
+        $activity->setCourse($course);
+        $activity->setLevel($course->getSemester() ?? 'Beginner');
+        $activity->setDifficulty(in_array($difficulty, ['Easy', 'Medium', 'Hard']) ? $difficulty : 'Medium');
+        $activity->setStatus('to do');
+
+        $this->entityManager->persist($activity);
+        $this->entityManager->flush();
+
+        return $activity;
+    }
+
+    /**
+     * Generate a standard (challenge / mini_project) activity.
+     */
+    private function generateStandardActivity(
+        Course $course,
+        string $type,
+        string $difficulty,
+        ?string $activityName
+    ): ?Activity {
+        $titleHint = $activityName ? "Preferred title: \"{$activityName}\"." : '';
+
+        $typeGuidelines = match ($type) {
+            'challenge'    => 'Provide a specific technical challenge with clear constraints and a list of required features.',
+            'mini_project' => 'Include an architecture overview, a set of milestones, and detailed requirements.',
+            default        => 'Provide step-by-step instructions.',
+        };
+
+        $prompt = <<<PROMPT
+Generate a highly professional learning activity for the following course.
+{$titleHint}
+Course Title: {$course->getName()}
+Course Description: {$course->getComment()}
+Level: {$course->getSemester()}
+Difficulty: {$difficulty}
+
+Requirements:
+1. Type: {$type}
+2. Content Guidelines: {$typeGuidelines}
+3. Duration: realistic for the difficulty (in minutes, integer)
+4. Instructions: comprehensive, structured with Markdown, pedagogically sound.
+5. Expected Output: define exactly what success looks like.
+6. Respond ONLY with this JSON structure — no extra text:
+
+{
+    "title": "string",
+    "description": "Professional overview",
+    "duration": 30,
+    "instructions": "Full content here",
+    "expected_output": "Detailed success criteria",
+    "hints": "Helpful tips for students"
+}
+PROMPT;
+
+        $messages = [
+            ['role' => 'system', 'content' => 'You are an educational AI content generator. Respond ONLY with valid JSON, no markdown fences, no explanation.'],
+            ['role' => 'user', 'content' => $prompt],
+        ];
+
+        try {
+            $response = $this->client->chat($messages);
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $content = $response['choices'][0]['message']['content'] ?? null;
+        if (!$content) {
+            return null;
+        }
+
+        $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', trim($content));
+        $cleanJson = preg_replace('/\s*```$/i', '', $cleanJson);
+        $data = json_decode($cleanJson, true);
+
+        if (!$data || !isset($data['title'])) {
+            return null;
+        }
+
+        $activity = new Activity();
+        $activity->setTitle($activityName ?? $data['title']);
+        $activity->setDescription($data['description'] ?? '');
+        $activity->setDuration($data['duration'] ?? 30);
+        $activity->setType($type);
+        $activity->setInstructions($data['instructions'] ?? '');
+        $activity->setExpectedOutput($data['expected_output'] ?? '');
+        $activity->setHints($data['hints'] ?? '');
+        $activity->setCourse($course);
+        $activity->setLevel($course->getSemester() ?? 'Beginner');
+        $activity->setDifficulty(in_array($difficulty, ['Easy', 'Medium', 'Hard']) ? $difficulty : 'Medium');
+        $activity->setStatus('to do');
+
+        $this->entityManager->persist($activity);
+        $this->entityManager->flush();
+
+        return $activity;
+    }
+
+    private function resolveType(string $quizType, string $difficulty): string
+    {
+        if (in_array($quizType, ['quiz', 'challenge', 'mini_project'])) {
+            return $quizType;
+        }
+
+        // For MCQ/true_false/mixed quiz types, the activity type is 'quiz'
+        if (in_array($quizType, ['multiple_choice', 'true_false', 'mixed'])) {
+            return 'quiz';
+        }
+
+        if (stripos($difficulty, 'Easy') !== false) {
+            return 'quiz';
+        }
+        if (stripos($difficulty, 'Hard') !== false) {
+            return 'mini_project';
+        }
+
+        return 'challenge';
+    }
 }

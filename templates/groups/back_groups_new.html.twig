@@ -3,15 +3,15 @@
 {% block title %}New Group{% endblock %}
 
 {% block breadcrumb %}
-    <span style="color: var(--admin-text-muted);">Management</span> / <a href="{{ path('app_admin_groups_index') }}" style="color: var(--admin-text-muted); text-decoration: none;">Groups</a> / <span>New</span>
+    <a href="{{ path('app_admin_groups_index') }}">Groups</a> / <span>New</span>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-content">
 
-    <div style="margin-bottom: 24px;">
+    <div style="margin-bottom: 32px;">
         <h1 class="page-title" style="margin-bottom: 8px;">Create New Group</h1>
-        <p style="color: var(--admin-text-muted); font-size: 0.95rem;">Add a new study group with category and capacity.</p>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Add a new study group with category and capacity.</p>
     </div>
 
     {{ form_start(form, {'attr': {'class': 'admin-form', 'novalidate': true}}) }}
@@ -27,11 +27,11 @@
         </div>
 
         <div class="content-card">
-            <div class="card-body" style="padding: 24px;">
-                <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 12px;">
+            <div class="card-body" style="padding: 32px;">
+                <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; margin-bottom: 12px;">
                     <i class="fas fa-save"></i> Save Group
                 </button>
-                <a href="{{ path('app_admin_groups_index') }}" class="btn-action" style="background: white; color: var(--admin-text-main); border: 1px solid var(--admin-border); width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+                <a href="{{ path('app_admin_groups_index') }}" class="btn-secondary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem;">
                     Cancel
                 </a>
             </div>

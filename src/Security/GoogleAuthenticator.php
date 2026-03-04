@@ -51,7 +51,14 @@ class GoogleAuthenticator extends OAuth2Authenticator
     public function authenticate(Request $request): Passport
     {
         $client = $this->clientRegistry->getClient('google');
-        $accessToken = $this->fetchAccessToken($client);
+        try {
+            $accessToken = $this->fetchAccessToken($client);
+        } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+            // This is likely where "invalid_grant" or "invalid_client" is coming from.
+            $body = $e->getResponseBody();
+            $message = is_array($body) ? json_encode($body) : (string) $body;
+            throw new \Exception("Google OAuth Token Error: " . $message);
+        }
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {
@@ -61,52 +68,74 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 $email = $googleUser->getEmail();
 
                 // 1) have they logged in with Google before?
-                $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['googleId' => $googleUser->getId()]);
+                $user = $this->entityManager->getRepository(User::class)->findOneBy(['googleId' => $googleUser->getId()]);
 
-                if ($existingUser) {
-                    return $existingUser;
+                if (!$user) {
+                    // 2) do we have a matching user by email?
+                    $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+                    if ($user) {
+                        $user->setGoogleId($googleUser->getId());
+                    } else {
+                        // 3) New User
+                        $user = new User();
+                        $user->setEmail($email);
+                        $user->setGoogleId($googleUser->getId());
+                        $user->setFirstName($googleUser->getFirstName());
+                        $user->setLastName($googleUser->getLastName());
+                        // Generate a random password since one is required
+                        $user->setPassword(bin2hex(random_bytes(20)));
+                        $user->setIsVerified(false);
+                        $user->setStatut('Pending');
+                        $this->entityManager->persist($user);
+                    }
                 }
 
-                // 2) do we have a matching user by email?
-                $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+                // Add Google token info (from HEAD branch)
+                $user->setGoogleAccessToken($accessToken->getToken());
+                if ($accessToken->getRefreshToken()) {
+                    $user->setGoogleRefreshToken($accessToken->getRefreshToken());
+                }
+                if ($accessToken->getExpires()) {
+                    $user->setGoogleTokenExpiresAt((new \DateTime())->setTimestamp($accessToken->getExpires()));
+                }
 
-                if ($user) {
-                    $user->setGoogleId($googleUser->getId());
+                // If user is not verified, ensure they have a code and send email
+                if (!$user->isVerified()) {
+                    if (!$user->getVerificationCode()) {
+                        $code = (string) random_int(100000, 999999);
+                        $user->setVerificationCode($code);
+                    } else {
+                        $code = $user->getVerificationCode();
+                    }
+
                     $this->entityManager->flush();
-                    return $user;
+
+                    // Send verification email
+                    $emailMessage = (new Email())
+                        ->from($this->mailerFromAddress)
+                        ->to($user->getEmail())
+                        ->subject('Your Verification Code - Studly')
+                        ->text('Your verification code is: ' . $code);
+
+                    try {
+                        $this->mailer->send($emailMessage);
+                    } catch (\KnpU\OAuth2ClientBundle\Exception\InvalidStateException $e) {
+                        // This happens if the state is invalid - often fixed by clear cookies
+                        throw new \Exception("OAuth state mismatch. Please clear your cookies/cache and try again. " . $e->getMessage());
+                    } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                        // This is likely where "invalid_grant" is coming from.
+                        // We throw a more descriptive error.
+                        $body = $e->getResponseBody();
+                        $message = is_array($body) ? json_encode($body) : (string) $body;
+                        throw new \Exception("Google OAuth Error: " . $message);
+                    } catch (\Exception $e) {
+                        // Re-throw to see the error in dev mode
+                        throw $e;
+                    }
+                } else {
+                    $this->entityManager->flush();
                 }
-
-                // 3) New User
-                $user = new User();
-                $user->setEmail($email);
-                $user->setGoogleId($googleUser->getId());
-                $user->setFirstName($googleUser->getFirstName());
-                $user->setLastName($googleUser->getLastName());
-                // Generate a random password since one is required
-                $user->setPassword(bin2hex(random_bytes(20)));
-                $user->setIsVerified(false);
-                $user->setStatut('Pending');
-
-                // Generate 6-digit code
-                $code = (string) random_int(100000, 999999);
-                $user->setVerificationCode($code);
-
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
-
-                // Send verification email (From must match Gmail account when using Gmail SMTP)
-                $emailMessage = (new Email())
-                    ->from($this->mailerFromAddress)
-                    ->to($user->getEmail())
-                    ->subject('Your Verification Code - Studly')
-                    ->text('Your verification code is: ' . $code);
-
-                try {
-                    $this->mailer->send($emailMessage);
-                } catch (\Exception $e) {
-                    // Log error but allow creation to proceed so user can request a new code
-                }
-
                 return $user;
             })
         );
