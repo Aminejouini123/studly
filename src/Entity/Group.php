@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\GroupRepository;
@@ -18,11 +21,13 @@ class Group
     #[ORM\Column]
     private ?int $id = null;
 
+    // ID is auto-generated, setId removed
+
     #[ORM\Column]
     #[Assert\NotBlank(message: 'La capacité est obligatoire.')]
     #[Assert\Positive(message: 'La capacité doit être un nombre positif.')]
     #[Assert\LessThanOrEqual(value: 200, message: 'La capacité ne peut pas dépasser 200 membres.')]
-    private ?int $capacity = null;
+    private int $capacity;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Url(message: 'La photo du groupe doit être une URL valide.')]
@@ -31,14 +36,14 @@ class Group
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La catégorie du groupe est obligatoire.')]
     #[Assert\Length(min: 2, max: 255, minMessage: 'La catégorie doit faire au moins {{ limit }} caractères.', maxMessage: 'La catégorie ne peut pas dépasser {{ limit }} caractères.')]
-    private ?string $category = null;
+    private string $category;
 
     #[ORM\ManyToOne(inversedBy: 'groups')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $creator = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'memberGroups')]
     private Collection $members;
@@ -46,14 +51,15 @@ class Group
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'group', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private Collection $projects;
 
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Message::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $messages;
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $invitations;
 
     public function __construct()
@@ -71,14 +77,14 @@ class Group
         return $this->id;
     }
 
-    public function getCapacity(): ?int
+    public function getCapacity(): int
     {
         return $this->capacity;
     }
 
-    public function setCapacity(?int $capacity): static
+    public function setCapacity(int $capacity): static
     {
-        $this->capacity = $capacity ?? 1;
+        $this->capacity = $capacity;
 
         return $this;
     }
@@ -93,11 +99,6 @@ class Group
         $this->groupPhoto = $groupPhoto;
 
         return $this;
-    }
-
-    public function getCategory(): ?string
-    {
-        return $this->category;
     }
 
     public function setCategory(string $category): static
@@ -174,16 +175,9 @@ class Group
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
     }
 
     /**

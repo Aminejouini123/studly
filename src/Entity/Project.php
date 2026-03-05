@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
@@ -10,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
+#[ORM\Table(name: '`project`')]
+#[ORM\HasLifecycleCallbacks]
 class Project
 {
     #[ORM\Id]
@@ -17,40 +22,51 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le titre du projet est obligatoire.')]
     #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.')]
-    private ?string $title = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(max: 255, maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.')]
-    private ?string $description = null;
+    private string $description;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
-    private ?string $status = null;
+    private string $status;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $resource = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Assert\GreaterThan('today', message: 'La date limite doit être dans le futur.')]
-    private ?\DateTime $deadline = null;
+    private ?\DateTimeImmutable $deadline = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le type de projet est obligatoire.')]
     #[Assert\Length(max: 255, maxMessage: 'Le type ne peut pas dépasser {{ limit }} caractères.')]
-    private ?string $type = null;
+    private string $type;
 
     #[ORM\ManyToOne(inversedBy: 'projects')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Group $group = null;
 
     /**
      * @var Collection<int, ProjectTask>
      */
-    #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $projectTasks;
 
     public function __construct()
@@ -63,7 +79,7 @@ class Project
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -75,7 +91,7 @@ class Project
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -87,7 +103,7 @@ class Project
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -111,19 +127,19 @@ class Project
         return $this;
     }
 
-    public function getDeadline(): ?\DateTime
+    public function getDeadline(): ?\DateTimeImmutable
     {
         return $this->deadline;
     }
 
-    public function setDeadline(?\DateTime $deadline): static
+    public function setDeadline(?\DateTimeImmutable $deadline): static
     {
         $this->deadline = $deadline;
 
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }

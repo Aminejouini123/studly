@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Course;
@@ -14,7 +17,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 final class ExamenController extends AbstractController
 {
     #[Route('/course/{id}/exams', name: 'app_course_exams', methods: ['GET'])]
@@ -22,6 +27,9 @@ final class ExamenController extends AbstractController
     {
         // specific course exams
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         
         // Security check: Ensure user owns the course OR is admin
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
@@ -54,6 +62,9 @@ final class ExamenController extends AbstractController
     public function new(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to add exams to this course.');
         }

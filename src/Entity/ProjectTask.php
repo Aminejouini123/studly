@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\ProjectTaskRepository;
@@ -8,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProjectTaskRepository::class)]
+#[ORM\Table(name: '`project_task`')]
+#[ORM\HasLifecycleCallbacks]
 class ProjectTask
 {
     public const STATUS_TO_DO = 'TO_DO';
@@ -19,30 +24,41 @@ class ProjectTask
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le titre de la tâche est obligatoire.')]
     #[Assert\Length(min: 2, max: 255, minMessage: 'Le titre doit faire au moins {{ limit }} caractères.', maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.')]
-    private ?string $title = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La description de la tâche est obligatoire.')]
-    private ?string $description = null;
+    private string $description;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status;
 
     #[ORM\ManyToOne(inversedBy: 'projectTasks')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(inversedBy: 'assignedProjectTasks')]
     private ?User $assignedUser = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $deadline = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $deadline = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $completedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $completedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $deliverable = null;
@@ -53,12 +69,15 @@ class ProjectTask
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $attachment = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resourcePath = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -70,7 +89,7 @@ class ProjectTask
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -82,7 +101,7 @@ class ProjectTask
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -118,29 +137,24 @@ class ProjectTask
         return $this;
     }
 
-    public function getDeadline(): ?\DateTimeInterface
+    public function getDeadline(): ?\DateTimeImmutable
     {
         return $this->deadline;
     }
 
-    public function setDeadline(?\DateTimeInterface $deadline): static
+    protected function setDeadline(?\DateTimeImmutable $deadline): static
     {
         $this->deadline = $deadline;
 
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeInterface
+    public function getCompletedAt(): ?\DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeInterface $completedAt): static
-    {
-        $this->completedAt = $completedAt;
-
-        return $this;
-    }
+    // completedAt setter removed
 
     public function getDeliverable(): ?string
     {
@@ -174,6 +188,18 @@ class ProjectTask
     public function setAttachment(?string $attachment): static
     {
         $this->attachment = $attachment;
+
+        return $this;
+    }
+
+    public function getResourcePath(): ?string
+    {
+        return $this->resourcePath;
+    }
+
+    public function setResourcePath(?string $resourcePath): static
+    {
+        $this->resourcePath = $resourcePath;
 
         return $this;
     }

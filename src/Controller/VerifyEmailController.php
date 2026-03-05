@@ -16,9 +16,8 @@ class VerifyEmailController extends AbstractController
     public function verifyEmail(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-
-        if (!$user instanceof User) {
-            return $this->redirectToRoute('app_auth');
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
         }
 
         if ($user->isVerified()) {

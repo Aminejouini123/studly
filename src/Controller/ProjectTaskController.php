@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Project;
@@ -31,8 +33,12 @@ final class ProjectTaskController extends AbstractController
     public function new(Project $project, Request $request, EntityManagerInterface $entityManager): Response
     {
         $group = $project->getGroup();
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         // Only the creator of the group or an admin can add tasks
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can add tasks.');
         }
 
@@ -65,10 +71,14 @@ final class ProjectTaskController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_project_task_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function edit(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $projectTask->getProject()->getGroup();
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can edit tasks.');
         }
 
@@ -81,6 +91,7 @@ final class ProjectTaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $scoreService->updateScoreForProjectTask($projectTask);
             $entityManager->flush();
 
             $this->addFlash('success', 'Task updated successfully!');
@@ -98,21 +109,19 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function patchStatus(ProjectTask $projectTask, string $status, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         // Strict security: Only assigned user or admin
-        if ($projectTask->getAssignedUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($projectTask->getAssignedUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             return $this->json(['error' => 'Seul l\'utilisateur assigné peut changer le statut.'], Response::HTTP_FORBIDDEN);
         }
 
         if (in_array($status, [ProjectTask::STATUS_TO_DO, ProjectTask::STATUS_IN_PROGRESS, ProjectTask::STATUS_DONE])) {
             $projectTask->setStatus($status);
-            
-            // Handle completedAt logic
-            if ($status === ProjectTask::STATUS_DONE) {
-                $projectTask->setCompletedAt(new \DateTime());
-            } else {
-                $projectTask->setCompletedAt(null);
-            }
 
+            // completedAt logic and point calculation is handled within the service
             $scoreService->updateScoreForProjectTask($projectTask);
             $entityManager->flush();
             
@@ -140,8 +149,12 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function delete(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $projectTask->getProject()->getGroup();
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can delete tasks.');
         }
 
@@ -158,8 +171,12 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function uploadDeliverable(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, SluggerInterface $slugger, ScoreService $scoreService): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         // Only assigned user can upload
-        if ($projectTask->getAssignedUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($projectTask->getAssignedUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the assigned user can upload a deliverable.');
         }
 
@@ -177,14 +194,17 @@ final class ProjectTaskController extends AbstractController
 
                 try {
                     $deliverableFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/deliverables',
+                        $this->getParameter('kernel.project_dir').'/public/uploads/tasks',
                         $newFilename
                     );
-                    $projectTask->setDeliverable($newFilename);
-                    $projectTask->setStatus(ProjectTask::STATUS_DONE);
                     
-                    // Clear any previous completedAt just in case
+                    // As requested: file in /public/uploads/tasks, resourcePath filled, status to DONE, completedAt filled
+                    $projectTask->setResourcePath($newFilename);
+                    $projectTask->setStatus(ProjectTask::STATUS_DONE);
                     $projectTask->setCompletedAt(new \DateTime());
+                    
+                    // Backwards compatibility if needed, but resourcePath is the main one now
+                    $projectTask->setDeliverable($newFilename);
                     
                     // updateScoreForProjectTask will update points
                     $scoreService->updateScoreForProjectTask($projectTask);
@@ -213,9 +233,13 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function gradeTask(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $projectTask->getProject()->getGroup();
         // Only creator can grade
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can grade tasks.');
         }
 
@@ -251,10 +275,14 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function uploadAttachment(Request $request, ProjectTask $projectTask, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $projectTask->getProject()->getGroup();
         
         // Security: Only assigned user can upload
-        if ($projectTask->getAssignedUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($projectTask->getAssignedUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Seul l\'utilisateur assigné peut ajouter une pièce jointe.');
         }
 
@@ -304,10 +332,14 @@ final class ProjectTaskController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function downloadAttachment(ProjectTask $projectTask): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $projectTask->getProject()->getGroup();
         
         // Security: Group creator only
-        if ($group->getCreator() !== $this->getUser() && 
+        if ($group->getCreator() !== $user && 
             !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Seul le créateur du groupe peut télécharger ce fichier.');
         }
@@ -324,24 +356,39 @@ final class ProjectTaskController extends AbstractController
 
         return $this->file($filePath, null, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
     }
-    #[Route('/{id}/download-deliverable', name: 'app_project_task_download_deliverable', methods: ['GET'])]
+
+    #[Route('/{id}/download-resource', name: 'app_project_task_download_resource', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function downloadDeliverable(ProjectTask $projectTask): Response
+    public function downloadResource(ProjectTask $projectTask): Response
     {
         $group = $projectTask->getProject()->getGroup();
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
         
-        // Security: Group creator or admin only
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
-            throw $this->createAccessDeniedException('Seul le créateur du groupe peut télécharger ce livrable.');
+        // Security: Group creator, admin, or a member of the group
+        $isCreator = $group->getCreator() === $user;
+        $isMember = $group->getMembers()->contains($user);
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+
+        if (!$isCreator && !$isMember && !$isAdmin) {
+            throw $this->createAccessDeniedException('Seul le créateur du groupe ou ses membres peuvent télécharger cette ressource.');
         }
 
-        if (!$projectTask->getDeliverable()) {
-            throw $this->createNotFoundException('Aucun livrable déposé.');
+        $resourceFilename = $projectTask->getResourcePath() ?? $projectTask->getDeliverable();
+
+        if (!$resourceFilename) {
+            throw $this->createNotFoundException('Aucune ressource déposée.');
         }
 
-        $filePath = $this->getParameter('kernel.project_dir').'/public/uploads/deliverables/'.$projectTask->getDeliverable();
+        // Search in both folders for safety (we save to tasks now, but fallback to deliverables if old)
+        $tasksPath = $this->getParameter('kernel.project_dir').'/public/uploads/tasks/'.$resourceFilename;
+        $deliverablePath = $this->getParameter('kernel.project_dir').'/public/uploads/deliverables/'.$resourceFilename;
         
-        if (!file_exists($filePath)) {
+        if (file_exists($tasksPath)) {
+            $filePath = $tasksPath;
+        } elseif (file_exists($deliverablePath)) {
+            $filePath = $deliverablePath;
+        } else {
             throw $this->createNotFoundException('Fichier physique introuvable.');
         }
 

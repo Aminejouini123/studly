@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Activity;
@@ -13,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ActivityController extends AbstractController
 {
@@ -27,6 +31,9 @@ final class ActivityController extends AbstractController
         }
 
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to view activities for this course.');
         }
@@ -50,6 +57,9 @@ final class ActivityController extends AbstractController
     public function new(Course $course, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($course->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to add activities to this course.');
         }
@@ -136,6 +146,9 @@ final class ActivityController extends AbstractController
     public function show(Activity $activity): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to view this activity.');
         }
@@ -149,6 +162,9 @@ final class ActivityController extends AbstractController
     public function edit(Request $request, Activity $activity, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to edit this activity.');
         }
@@ -227,6 +243,9 @@ final class ActivityController extends AbstractController
     public function delete(Request $request, Activity $activity, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         if ($activity->getCourse()->getUser() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('You do not have permission to delete this activity.');
         }

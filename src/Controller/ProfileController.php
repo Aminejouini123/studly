@@ -28,8 +28,10 @@ class ProfileController extends AbstractController
     #[Route('/edit', name: 'app_user_profile_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
-        /** @var User $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $form = $this->createForm(ProfileType::class, $user);
         $form->handleRequest($request);
 

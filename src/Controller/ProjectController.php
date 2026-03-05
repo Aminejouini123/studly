@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Group;
@@ -24,8 +27,12 @@ final class ProjectController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function new(Group $group, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         // Only the creator of the group or an admin can add projects
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can add projects.');
         }
 
@@ -75,8 +82,12 @@ final class ProjectController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $group = $project->getGroup();
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can edit projects.');
         }
 
@@ -130,8 +141,10 @@ final class ProjectController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
         $group = $project->getGroup();
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can delete projects.');
         }
 

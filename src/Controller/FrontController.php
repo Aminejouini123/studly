@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Repository\CourseRepository;
@@ -19,16 +22,13 @@ final class FrontController extends AbstractController
         EventRepository $eventRepository,
     ): Response {
         $user = $this->getUser();
-
-        $userCoursesCount = 0;
-        $userEventsCount = 0;
-        $topCourse = null;
-
-        if ($user !== null) {
-            $userCoursesCount = $courseRepository->countByUser($user);
-            $userEventsCount = $eventRepository->countByUser($user);
-            $topCourse = $courseRepository->findTopCourseForUser($user);
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
         }
+
+        $userCoursesCount = $courseRepository->countByUser($user);
+        $userEventsCount = $eventRepository->countByUser($user);
+        $topCourse = $courseRepository->findTopCourseForUser($user);
 
         return $this->render('front/front.html.twig', [
             'controller_name' => 'FrontController',

@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\PomodoroSessionRepository;
@@ -7,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PomodoroSessionRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class PomodoroSession
 {
     #[ORM\Id]
@@ -14,24 +18,35 @@ class PomodoroSession
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
+
     #[ORM\ManyToOne(inversedBy: 'pomodoroSessions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Event $event = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null; // 'WORK', 'SHORT_BREAK', 'LONG_BREAK'
+    private string $type; // 'WORK', 'SHORT_BREAK', 'LONG_BREAK'
 
     #[ORM\Column]
-    private ?int $duration = null; // minutes
+    private int $duration; // minutes
 
     #[ORM\Column(length: 255)]
-    private ?string $status = 'PENDING'; // 'PENDING', 'COMPLETED'
+    private string $status = 'PENDING'; // 'PENDING', 'COMPLETED'
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $startedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $endedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $endedAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $focusScore = null;
@@ -56,7 +71,7 @@ class PomodoroSession
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -68,7 +83,7 @@ class PomodoroSession
         return $this;
     }
 
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }
@@ -92,29 +107,19 @@ class PomodoroSession
         return $this;
     }
 
-    public function getStartedAt(): ?\DateTimeInterface
+    public function getStartedAt(): ?\DateTimeImmutable
     {
         return $this->startedAt;
     }
 
-    public function setStartedAt(?\DateTimeInterface $startedAt): static
-    {
-        $this->startedAt = $startedAt;
+    // startedAt setter removed
 
-        return $this;
-    }
-
-    public function getEndedAt(): ?\DateTimeInterface
+    public function getEndedAt(): ?\DateTimeImmutable
     {
         return $this->endedAt;
     }
 
-    public function setEndedAt(?\DateTimeInterface $endedAt): static
-    {
-        $this->endedAt = $endedAt;
-
-        return $this;
-    }
+    // endedAt setter removed
 
     public function getFocusScore(): ?float
     {

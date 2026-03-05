@@ -5,9 +5,11 @@ namespace App\Entity;
 use App\Repository\ObjectiveRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ObjectiveRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Objective
 {
     #[ORM\Id]
@@ -15,31 +17,42 @@ class Objective
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
 
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
-    private ?string $estimatedDuration = null;
+    private string $description;
+
+    #[ORM\Column(length: 255)]
+    private string $estimatedDuration;
 
     #[ORM\Column]
-    private ?int $realDuration = null;
+    private int $realDuration;
 
     #[ORM\Column(length: 255)]
-    private ?string $priority = null;
+    private string $priority;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status;
 
     #[ORM\Column(length: 255)]
-    private ?string $reason = null;
+    private string $reason;
 
     /**
      * @var Collection<int, Task>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'objective')]
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'objective', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
 
     public function __construct()
@@ -52,7 +65,7 @@ class Objective
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -64,7 +77,7 @@ class Objective
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -76,7 +89,7 @@ class Objective
         return $this;
     }
 
-    public function getEstimatedDuration(): ?string
+    public function getEstimatedDuration(): string
     {
         return $this->estimatedDuration;
     }
@@ -88,7 +101,7 @@ class Objective
         return $this;
     }
 
-    public function getRealDuration(): ?int
+    public function getRealDuration(): int
     {
         return $this->realDuration;
     }
@@ -100,7 +113,7 @@ class Objective
         return $this;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): string
     {
         return $this->priority;
     }
@@ -112,7 +125,7 @@ class Objective
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -124,7 +137,7 @@ class Objective
         return $this;
     }
 
-    public function getReason(): ?string
+    public function getReason(): string
     {
         return $this->reason;
     }

@@ -25,8 +25,10 @@ class FaceController extends AbstractController
             return new JsonResponse(['error' => 'Invalid descriptor format. Must be an array of 128 floats.'], 400);
         }
 
-        /** @var User $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
 
         try {
             $result = $faceService->register($user->getId(), $data['descriptor']);

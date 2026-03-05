@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Event;
@@ -70,10 +73,14 @@ final class TempsController extends AbstractController
                 $event->setDifficulty(1);
             }
 
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw new \LogicException('User not found');
+            }
             $event->setUser($user);
             
             // Sync with Google if connected
-            if ($user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            if ($user->getGoogleAccessToken()) {
                 try {
                     $googleId = $calendarService->syncEvent($user, $event);
                     $event->setGoogleEventId($googleId);
@@ -199,12 +206,15 @@ final class TempsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('delete', $event);
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
 
         $token = $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $token)) {
             
             // Delete from Google if linked
-            if ($event->getGoogleEventId() && $user instanceof \App\Entity\User && $user->getGoogleAccessToken()) {
+            if ($event->getGoogleEventId() && $user->getGoogleAccessToken()) {
                 try {
                     $calendarService->deleteEvent($user, $event->getGoogleEventId());
                 } catch (\Exception $e) {
@@ -228,6 +238,9 @@ final class TempsController extends AbstractController
     ): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $energy = (int)$request->request->get('energy', 5);
         $stress = (int)$request->request->get('stress', 5);
         $sleep = (int)$request->request->get('sleep', 5);

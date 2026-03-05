@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller\Admin;
 
 use App\Entity\Event;
@@ -44,7 +47,11 @@ class TempsController extends AbstractController
             
             // Assign current admin user or a specific user if needed? 
             // For now, let's assign the current admin user as the creator/owner
-            $event->setUser($this->getUser());
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw new \LogicException('User not found');
+            }
+            $event->setUser($user);
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -105,7 +112,11 @@ class TempsController extends AbstractController
             
             // If new motivation, set user to event owner or current admin
             if (!$motivation->getId()) {
-                 $motivation->setUser($event->getUser() ?? $this->getUser());
+                 $user = $this->getUser();
+                 if (!$user instanceof \App\Entity\User) {
+                     throw new \LogicException('User not found');
+                 }
+                 $motivation->setUser($event->getUser() ?? $user);
             }
 
             $entityManager->persist($motivation);

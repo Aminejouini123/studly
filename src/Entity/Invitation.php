@@ -1,11 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\InvitationRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvitationRepository::class)]
+#[ORM\Table(name: '`invitation`')]
+#[ORM\HasLifecycleCallbacks]
 class Invitation
 {
     public const STATUS_PENDING = 'PENDING';
@@ -16,6 +22,17 @@ class Invitation
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
 
     #[ORM\ManyToOne(inversedBy: 'sentInvitations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -30,10 +47,10 @@ class Invitation
     private ?Group $group = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $status = self::STATUS_PENDING;
+    private string $status = self::STATUS_PENDING;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
@@ -93,15 +110,8 @@ class Invitation
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
     }
 }

@@ -4,16 +4,22 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    timezone: 'Europe/Paris'
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
     gemini.api_key: '%env(GEMINI_API_KEY)%'
-    gemini.model: '%env(resolve:GEMINI_MODEL)%'
+    gemini.model: '%env(GEMINI_MODEL)%'
     voicerss.api_key: '%env(VOICERSS_API_KEY)%'
+    python_exe: '%env(PYTHON_EXE)%'
+    pythonw_exe: '%env(PYTHONW_EXE)%'
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $pythonExe: '%python_exe%'
+            $pythonw_exe: '%pythonw_exe%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -40,19 +46,15 @@ services:
         arguments:
             $faceApiUrl: '%env(FACE_API_URL)%'
 
-    # Dedicated client for Quiz Generation
-    app.quiz_api_client:
-        class: App\Service\OpenRouterClient
-        arguments:
-            $apiKey: '%env(QUIZ_API_KEY)%'
-            $model: '%env(QUIZ_MODEL)%'
-            $appUrl: '%openrouter.app_url%'
-            $appTitle: "Studly Quiz Generator"
-
     App\Service\AiActivityGeneratorService:
         arguments:
-            $client: '@app.quiz_api_client'
+            $client: '@App\Service\GeminiClient'
+
+    App\Service\AiTaskAssistantService:
+        arguments:
+            $client: '@App\Service\GeminiClient'
 
     App\Service\VoiceRssService:
         arguments:
             $apiKey: '%voicerss.api_key%'
+

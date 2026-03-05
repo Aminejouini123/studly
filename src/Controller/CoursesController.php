@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Course;
@@ -21,8 +24,11 @@ final class CoursesController extends AbstractController
         // Filter courses by the current logged-in user
         // Ensure the user is logged in (handled by firewall usually, but strict typing helps)
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         
-        $courses = $user ? $courseRepository->findBy(['user' => $user]) : [];
+        $courses = $courseRepository->findBy(['user' => $user]);
         
         return $this->render('courses/frontCourses.html.twig', [
             'courses' => $courses,
@@ -38,7 +44,11 @@ final class CoursesController extends AbstractController
 
                 if ($form->isSubmitted() && $form->isValid()) {
                     // Assign the current user to the course
-                    $course->setUser($this->getUser());
+                    $user = $this->getUser();
+                    if (!$user instanceof \App\Entity\User) {
+                        throw new \LogicException('User not found');
+                    }
+                    $course->setUser($user);
 
                     // handle uploaded file
                     /** @var UploadedFile|null $uploadedFile */

@@ -153,7 +153,7 @@ class PomodoroController extends AbstractController
         }
         
         // OpenCV CAP_DSHOW bug is fixed, so we can finally use pythonw.exe safely for a 0% flash execution
-        $pythonExe = 'C:\\Users\\ghali\\anaconda3\\pythonw.exe'; 
+        $pythonExe = $this->getParameter('pythonw_exe'); 
         $scriptPath = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'python_services' . DIRECTORY_SEPARATOR . 'attention_tracking' . DIRECTORY_SEPARATOR . 'tracker.py';
         
         $apiUrl = $this->generateUrl('app_pomodoro_save_stats', [
@@ -169,7 +169,7 @@ class PomodoroController extends AbstractController
         // Use python.exe (console binary) instead of pythonw.exe because pythonw acts dead in WScript.
         // We use WScript.Shell with window style 0 to natively hide the console window.
         // This guarantees 100% stealth (zero flash) AND guarantees the camera starts and the LED lights up.
-        $pythonExe = 'C:\\Users\\ghali\\anaconda3\\python.exe'; 
+        $pythonExe = $this->getParameter('python_exe'); 
         
         $vbsPath = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'stealth_launch.vbs';
         

@@ -7,6 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
+#[ORM\Table(name: '`event`')]
+#[ORM\HasLifecycleCallbacks]
 class Event
 {
     #[ORM\Id]
@@ -14,38 +16,49 @@ class Event
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
 
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $description;
+
+    #[ORM\Column(length: 255)]
+    private string $type;
 
     #[ORM\Column]
-    private ?int $duration = null;
+    private int $duration;
 
     #[ORM\Column(length: 255)]
-    private ?string $location = null;
+    private string $location;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status;
 
     #[ORM\Column(length: 255)]
-    private ?string $priority = null;
+    private string $priority;
 
     #[ORM\Column]
-    private ?int $difficulty = null;
+    private int $difficulty;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private \DateTimeImmutable $date;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $startTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $endTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $color = null;
@@ -65,10 +78,12 @@ class Event
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleEventId = null;
 
-    #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist'])]
+    #[ORM\OneToOne(inversedBy: 'event', targetEntity: Motivation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Motivation $motivation = null;
 
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: PomodoroSession::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private $pomodoroSessions;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
@@ -115,7 +130,7 @@ class Event
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -127,7 +142,7 @@ class Event
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -139,7 +154,7 @@ class Event
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -151,7 +166,7 @@ class Event
         return $this;
     }
 
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }
@@ -163,7 +178,7 @@ class Event
         return $this;
     }
 
-    public function getLocation(): ?string
+    public function getLocation(): string
     {
         return $this->location;
     }
@@ -175,7 +190,7 @@ class Event
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -187,7 +202,7 @@ class Event
         return $this;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): string
     {
         return $this->priority;
     }
@@ -199,7 +214,7 @@ class Event
         return $this;
     }
 
-    public function getDifficulty(): ?int
+    public function getDifficulty(): int
     {
         return $this->difficulty;
     }
@@ -211,12 +226,12 @@ class Event
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): \DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
 
@@ -247,24 +262,24 @@ class Event
         return $this;
     }
 
-    public function getStartTime(): ?\DateTime
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTime $startTime): static
+    protected function setStartTime(?\DateTimeImmutable $startTime): static
     {
         $this->startTime = $startTime;
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTime
+    public function getEndTime(): ?\DateTimeImmutable
     {
         return $this->endTime;
     }
 
-    public function setEndTime(?\DateTime $endTime): static
+    protected function setEndTime(?\DateTimeImmutable $endTime): static
     {
         $this->endTime = $endTime;
 

@@ -41,9 +41,11 @@ class MotivationController extends AbstractController
             $event->setMotivation($motivation);
             $motivation->setEvent($event);
             
-            if ($this->getUser()) {
-                $motivation->setUser($this->getUser());
+            $user = $this->getUser();
+            if (!$user instanceof \App\Entity\User) {
+                throw new \LogicException('User not found');
             }
+            $motivation->setUser($user);
 
             $em->persist($motivation);
             $em->persist($event);

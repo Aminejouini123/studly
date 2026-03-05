@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller\Api;
 
 use App\Entity\Invitation;
@@ -61,7 +64,11 @@ class ApiInvitationController extends AbstractController
         }
 
         $invitation = new Invitation();
-        $invitation->setSender($this->getUser());
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        $invitation->setSender($user);
         $invitation->setReceiver($receiver);
         $invitation->setGroup($group);
         $invitation->setStatus(Invitation::STATUS_PENDING);
@@ -96,7 +103,9 @@ class ApiInvitationController extends AbstractController
         }
 
         // Vérifier que c'est bien le destinataire qui accepte
-        if ($invitation->getReceiver()?->getId() !== $this->getUser()->getId()) {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if ($user === null || ($invitation->getReceiver() !== null && $invitation->getReceiver()->getId() !== $user->getId())) {
             return $this->json(['error' => 'Vous n\'êtes pas autorisé à accepter cette invitation.'], Response::HTTP_FORBIDDEN);
         }
 
@@ -129,7 +138,9 @@ class ApiInvitationController extends AbstractController
         }
 
         // Vérifier que c'est bien le destinataire qui refuse
-        if ($invitation->getReceiver()?->getId() !== $this->getUser()->getId()) {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if ($user === null || ($invitation->getReceiver() !== null && $invitation->getReceiver()->getId() !== $user->getId())) {
             return $this->json(['error' => 'Vous n\'êtes pas autorisé à refuser cette invitation.'], Response::HTTP_FORBIDDEN);
         }
 

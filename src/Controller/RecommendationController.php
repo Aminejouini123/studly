@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Entity\Notification;
@@ -26,8 +29,8 @@ class RecommendationController extends AbstractController
     public function generate(RecommendationService $recommendationService, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
         }
 
         // Call the FastAPI service to get recommendations

@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\TaskRepository;
@@ -7,6 +10,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\Table(name: '`task`')]
+#[ORM\HasLifecycleCallbacks]
 class Task
 {
     #[ORM\Id]
@@ -14,42 +19,54 @@ class Task
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // ID is auto-generated, setId removed
 
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
-
-    #[ORM\Column]
-    private ?int $repeatCount = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $description;
 
     #[ORM\Column]
-    private ?int $difficulty = null;
+    private int $repeatCount;
+
+    #[ORM\Column(length: 255)]
+    private string $status;
 
     #[ORM\Column]
-    private ?float $impact = null;
+    private int $difficulty;
+
+    #[ORM\Column]
+    private float $impact;
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Objective $objective = null;
 
     #[ORM\ManyToOne(inversedBy: 'assignedTasks')]
     private ?User $assignedUser = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $deadline = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $deadline = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $completedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $completedAt = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -61,7 +78,7 @@ class Task
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -73,7 +90,7 @@ class Task
         return $this;
     }
 
-    public function getRepeatCount(): ?int
+    public function getRepeatCount(): int
     {
         return $this->repeatCount;
     }
@@ -85,7 +102,7 @@ class Task
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -97,7 +114,7 @@ class Task
         return $this;
     }
 
-    public function getDifficulty(): ?int
+    public function getDifficulty(): int
     {
         return $this->difficulty;
     }
@@ -109,7 +126,7 @@ class Task
         return $this;
     }
 
-    public function getImpact(): ?float
+    public function getImpact(): float
     {
         return $this->impact;
     }
@@ -145,27 +162,22 @@ class Task
         return $this;
     }
 
-    public function getDeadline(): ?\DateTimeInterface
+    public function getDeadline(): ?\DateTimeImmutable
     {
         return $this->deadline;
     }
 
-    public function setDeadline(?\DateTimeInterface $deadline): static
+    protected function setDeadline(?\DateTimeImmutable $deadline): static
     {
         $this->deadline = $deadline;
 
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeInterface
+    public function getCompletedAt(): ?\DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeInterface $completedAt): static
-    {
-        $this->completedAt = $completedAt;
-
-        return $this;
-    }
+    // completedAt setter removed
 }

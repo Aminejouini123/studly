@@ -13,22 +13,25 @@ class Motivation
     #[ORM\Column]
     private ?int $id = null;
 
+    // ID is auto-generated, setId removed
+
     #[ORM\Column]
-    private ?int $motivationLevel = null;
+    private int $motivationLevel;
 
     #[ORM\Column(length: 255)]
-    private ?string $emotion = null;
+    private string $emotion;
 
     #[ORM\Column(length: 255)]
-    private ?string $preparation = null;
+    private string $preparation;
 
     #[ORM\Column(length: 255)]
-    private ?string $reward = null;
+    private string $reward;
 
     #[ORM\OneToOne(mappedBy: 'motivation', targetEntity: Event::class)]
     private ?Event $event = null;
 
-    #[ORM\ManyToOne(inversedBy: 'motivations')]
+    #[ORM\ManyToOne(inversedBy: 'motivations', cascade: ['remove'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     public function getId(): ?int
@@ -36,7 +39,7 @@ class Motivation
         return $this->id;
     }
 
-    public function getMotivationLevel(): ?int
+    public function getMotivationLevel(): int
     {
         return $this->motivationLevel;
     }
@@ -48,7 +51,7 @@ class Motivation
         return $this;
     }
 
-    public function getEmotion(): ?string
+    public function getEmotion(): string
     {
         return $this->emotion;
     }
@@ -60,7 +63,7 @@ class Motivation
         return $this;
     }
 
-    public function getPreparation(): ?string
+    public function getPreparation(): string
     {
         return $this->preparation;
     }
@@ -72,7 +75,7 @@ class Motivation
         return $this;
     }
 
-    public function getReward(): ?string
+    public function getReward(): string
     {
         return $this->reward;
     }

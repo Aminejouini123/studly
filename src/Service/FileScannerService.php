@@ -107,18 +107,28 @@ class FileScannerService // Service pour extraire le texte de différents types 
 
     private function cleanText(string $text): string // Fonction pour nettoyer le texte extrait
     { // Début de la fonction
-        // Remove non-printable characters except common whitespace (newlines, tabs)
-        $text = preg_replace('/[^\x20-\x7E\s\r\n\t]/u', '', $text); 
+        // Better regex: Keep all printable UTF-8 characters (letters, numbers, punctuation, symbols, whitespace)
+        // \p{L} = Letters, \p{N} = Numbers, \p{P} = Punctuation, \p{S} = Symbols, \s = Whitespace
+        $cleaned = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}\s]/u', '', $text); 
         
+        // If the regex returns null, it means the input string contains invalid UTF-8 sequences for the 'u' modifier.
+        // In this case, we fallback to a simpler ASCII-based cleaning to at least recover the readable parts.
+        if ($cleaned === null) {
+            // Strip control characters but keep basic ASCII printable ones
+            $cleaned = preg_replace('/[[:cntrl:]]/', ' ', $text);
+            // Remove non-ASCII if they still cause issues (fallback level 2)
+            $cleaned = preg_replace('/[^\x20-\x7E\s]/', '', $cleaned);
+        }
+
         // Normalize line endings
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $cleaned = str_replace(["\r\n", "\r"], "\n", $cleaned);
         
         // Collapse multiple spaces but keep newlines
-        $text = preg_replace('/[ \t]+/', ' ', $text);
+        $cleaned = preg_replace('/[ \t]+/', ' ', $cleaned);
         
         // Collapse multiple newlines into max two (single empty line between blocks)
-        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+        $cleaned = preg_replace('/\n{3,}/', "\n\n", $cleaned);
         
-        return trim($text); // Suppression des espaces inutiles au début et à la fin
+        return trim($cleaned); // Suppression des espaces inutiles au début et à la fin
     } // Fin de la fonction de nettoyage
 }

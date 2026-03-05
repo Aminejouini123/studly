@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Service;
 
 use App\Entity\User;
@@ -8,13 +11,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class RecommendationService
 {
-    private HttpClientInterface $client;
-    private ParameterBagInterface $params;
-
-    public function __construct(HttpClientInterface $client, ParameterBagInterface $params)
+    public function __construct(private readonly HttpClientInterface $client)
     {
-        $this->client = $client;
-        $this->params = $params;
     }
 
     public function getRecommendationsForUser(User $user): array

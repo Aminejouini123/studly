@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Controller;
 
 use App\Service\ScoreService;
@@ -22,6 +25,9 @@ class ScoreController extends AbstractController
     public function myScore(): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $score = $this->scoreService->getUserScore($user);
 
         return $this->render('score/my_score.html.twig', [

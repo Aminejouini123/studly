@@ -9,11 +9,12 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class SmartPlanningService
 {
     private string $projectDir;
-    private string $pythonExe = 'C:\Users\ghali\anaconda3\python.exe'; // From verification step
+    private string $pythonExe;
 
-    public function __construct(KernelInterface $kernel)
+    public function __construct(KernelInterface $kernel, string $pythonExe)
     {
         $this->projectDir = $kernel->getProjectDir();
+        $this->pythonExe = $pythonExe;
     }
 
     /**

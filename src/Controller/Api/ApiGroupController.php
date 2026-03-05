@@ -48,7 +48,11 @@ class ApiGroupController extends AbstractController
         $group->setCategory($body['category']);
         $group->setCapacity($body['capacity'] ?? 1);
         $group->setGroupPhoto($body['groupPhoto'] ?? null);
-        $group->setCreator($this->getUser());
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        $group->setCreator($user);
 
         $em->persist($group);
         $em->flush();

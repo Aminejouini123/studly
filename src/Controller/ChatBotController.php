@@ -15,7 +15,7 @@ final class ChatBotController extends AbstractController
     public function chat(
         Request $request, 
         GeminiClient $client,
-        \App\Service\PdfScannerService $pdfScanner
+        \App\Service\FileScannerService $fileScanner
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true) ?? [];
         $userMessage = trim((string)($payload['message'] ?? ''));
@@ -37,7 +37,7 @@ final class ChatBotController extends AbstractController
             
             // If the user wants a summary and a file is available
             if (($action === 'summarize_file' || str_contains(strtolower($userMessage), 'résumer le fichier')) && !empty($context['course_file'])) {
-                $fileContent = $pdfScanner->extractText($context['course_file']);
+                $fileContent = $fileScanner->extractText($context['course_file']);
                 if (!empty($fileContent)) {
                     // Truncate to avoid token limits (OpenRouter handles large context but better safe)
                     $truncatedContent = mb_substr($fileContent, 0, 10000);
@@ -63,11 +63,11 @@ final class ChatBotController extends AbstractController
             return $this->json(['answer' => 'Erreur de l\'API IA : ' . ($data['error']['message'] ?? 'Erreur inconnue')]);
         }
 
-        $answer = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        $answer = $data['choices'][0]['message']['content'] ?? null;
 
         return $this->json([
             'answer' => $answer,
-            'raw' => $data['usageMetadata'] ?? null,
+            'raw' => $data['usage'] ?? null,
         ]);
     }
 

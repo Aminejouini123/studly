@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Service;
 
 use App\Entity\Activity;
@@ -13,7 +16,13 @@ class AiActivityGeneratorService
         private EntityManagerInterface $entityManager
     ) {}
 
-    public function generateActivityForCourse(Course $course): ?Activity
+    public function generateActivityForCourse(
+        Course $course,
+        ?int $questionCount = null,
+        string $quizType = 'multiple_choice',
+        ?string $difficulty = null,
+        ?string $activityName = null
+    ): ?Activity
     {
         $prompt = $this->buildPrompt($course);
 
@@ -28,7 +37,7 @@ class AiActivityGeneratorService
             return null;
         }
 
-        $content = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        $content = $response['choices'][0]['message']['content'] ?? null;
 
         if (!$content) {
             return null;
@@ -76,7 +85,6 @@ class AiActivityGeneratorService
             'quiz' => 'Include 5 multiple-choice questions with 4 options each. Format them clearly in the instructions.',
             'challenge' => 'Provide a specific technical challenge with clear constraints and a list of required features.',
             'mini_project' => 'Include an architecture overview, a set of milestones, and detailed requirements.',
-            default => 'Provide step-by-step instructions.'
         };
 
         return "Generate a highly professional learning activity for the following course:

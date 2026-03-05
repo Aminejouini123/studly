@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Group;
@@ -17,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/groups')]
@@ -30,13 +33,12 @@ final class GroupsController extends AbstractController
     public function index(GroupRepository $groupRepository, Request $request): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $searchTerm = $request->query->get('q');
 
         if ($searchTerm) {
-            // For search, we might want to see all groups OR just ours?
-            // The story says "Un étudiant peut... rechercher et lister des groupes".
-            // Let's assume they search within their own groups first, or globally?
-            // Usually search is global. Let's make it global but filter by creator if no search.
             $groups = $groupRepository->searchByCategory($searchTerm);
         } else {
             $groups = $groupRepository->findUserGroups($user);
@@ -71,8 +73,12 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
             // Set the current user as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
             
             $entityManager->persist($group);
             $entityManager->flush();
@@ -100,8 +106,12 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
             // Set the current admin as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
             
             $entityManager->persist($group);
             $entityManager->flush();
@@ -177,8 +187,12 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
             // Set the current admin as the creator
-            $group->setCreator($this->getUser());
+            $group->setCreator($user);
             
             $entityManager->persist($group);
             $entityManager->flush();
@@ -239,7 +253,11 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function listInvitations(InvitationRepository $invitationRepository): Response
     {
-        $invitations = $invitationRepository->findBy(['receiver' => $this->getUser(), 'status' => Invitation::STATUS_PENDING]);
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        $invitations = $invitationRepository->findBy(['receiver' => $user, 'status' => Invitation::STATUS_PENDING]);
 
         return $this->render('groups/invitations.html.twig', [
             'invitations' => $invitations,
@@ -250,17 +268,21 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function acceptInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
     {
-        if ($invitation->getReceiver() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        if ($invitation->getReceiver() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
         $invitation->setStatus(Invitation::STATUS_ACCEPTED);
         $group = $invitation->getGroup();
-        $group->addMember($this->getUser());
+        $group->addMember($user);
 
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
-        $notification->setContent($this->getUser()->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
+        $notification->setContent($user->getFirstName() . ' accepted your invitation to ' . $group->getCategory());
 
         $entityManager->persist($group);
         $entityManager->persist($notification);
@@ -274,7 +296,11 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function refuseInvitation(Invitation $invitation, EntityManagerInterface $entityManager): Response
     {
-        if ($invitation->getReceiver() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        if ($invitation->getReceiver() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -282,7 +308,7 @@ final class GroupsController extends AbstractController
 
         $notification = new Notification();
         $notification->setUser($invitation->getSender());
-        $notification->setContent($this->getUser()->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
+        $notification->setContent($user->getFirstName() . ' refused your invitation to ' . $invitation->getGroup()->getCategory());
 
         $entityManager->persist($notification);
         $entityManager->flush();
@@ -299,6 +325,9 @@ final class GroupsController extends AbstractController
     public function show(Group $group): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
 
         // Allow admins, the group creator, or members to view the group
         $isMember = $group->getMembers()->contains($user);
@@ -320,6 +349,9 @@ final class GroupsController extends AbstractController
     public function edit(Request $request, Group $group, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
 
         // Ensure student can only edit their own groups
         if ($group->getCreator() !== $user) {
@@ -349,6 +381,10 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminEdit(Request $request, Group $group, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
 
@@ -373,6 +409,9 @@ final class GroupsController extends AbstractController
     public function delete(Request $request, Group $group, EntityManagerInterface $entityManager, ScoreService $scoreService): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
 
         // Ensure student can only delete their own groups
         if ($group->getCreator() !== $user) {
@@ -416,7 +455,11 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_ETUDIANT')]
     public function inviteUser(Request $request, Group $group, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
-        if ($group->getCreator() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        if ($group->getCreator() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -434,7 +477,7 @@ final class GroupsController extends AbstractController
         }
 
         $invitation = new Invitation();
-        $invitation->setSender($this->getUser());
+        $invitation->setSender($user);
         $invitation->setReceiver($userToInvite);
         $invitation->setGroup($group);
 
@@ -455,8 +498,12 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function removeMember(Group $group, int $userId, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
         // Only creator can remove members
-        if ($group->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+        if ($group->getCreator() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Only the group creator can remove members.');
         }
 
@@ -484,7 +531,11 @@ final class GroupsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function sendMessage(Request $request, Group $group, EntityManagerInterface $entityManager): Response
     {
-        if (!$group->getMembers()->contains($this->getUser()) && $group->getCreator() !== $this->getUser()) {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw new \LogicException('User not found');
+        }
+        if (!$group->getMembers()->contains($user) && $group->getCreator() !== $user) {
             throw $this->createAccessDeniedException('You are not a member of this group.');
         }
 
@@ -495,7 +546,7 @@ final class GroupsController extends AbstractController
         }
 
         $message = new \App\Entity\Message();
-        $message->setSender($this->getUser());
+        $message->setSender($user);
         $message->setGroup($group);
         $message->setContent($content);
 

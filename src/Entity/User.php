@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\Entity\Embeddable\EmailAddress;
+use App\Entity\Embeddable\PersonName;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,16 +16,23 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /**
+     * @var int|null
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    // ID is auto-generated, setId removed
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleId = null;
@@ -31,10 +43,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 6, nullable: true)]
     private ?string $verificationCode = null;
 
-    #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: "L'email est obligatoire")]
-    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
-    private ?string $email = null;
+    #[ORM\Embedded(class: EmailAddress::class, columnPrefix: false)]
+    private EmailAddress $email;
 
     #[ORM\Column]
     private array $roles = [];
@@ -43,21 +53,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    private ?string $password = null;
+    #[Ignore]
+    private string $password;
 
     #[Assert\Length(min: 6, minMessage: "Le mot de passe doit faire au moins {{ limit }} caractères.")]
     #[Assert\NotBlank(message: "Le mot de passe est obligatoire", groups: ['create'])]
+    #[Ignore]
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     #[Assert\Length(min: 2, minMessage: "Le prénom doit faire au moins {{ limit }} caractères.")]
-    private ?string $firstName = null;
+    private string $firstName;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(min: 2, minMessage: "Le nom doit faire au moins {{ limit }} caractères.")]
-    private ?string $lastName = null;
+    private string $lastName;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Assert\NotBlank(message: "La date de naissance est obligatoire")]
@@ -74,16 +86,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $address = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     // Legacy fields kept for compatibility or future removal if needed, made nullable
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Event::class)]
     private Collection $events;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Motivation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $motivations;
 
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class, orphanRemoval: true)]
@@ -101,13 +113,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Activity::class)]
     private Collection $assignedActivities;
 
-    #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'sender', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $sentInvitations;
 
-    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Invitation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $receivedInvitations;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $notifications;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -143,12 +155,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Ignore]
     private ?string $googleAccessToken = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Ignore]
     private ?string $googleRefreshToken = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Ignore]
     private ?\DateTimeInterface $googleTokenExpiresAt = null;
 
     public function __construct()
@@ -171,7 +186,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTime();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -179,14 +194,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
-        return $this->email;
+        return $this->email->getEmail();
     }
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = new EmailAddress($email);
 
         return $this;
     }
@@ -198,7 +213,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return $this->getEmail();
     }
 
     /**
@@ -228,7 +243,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(#[\SensitiveParameter] string $password): static
     {
         $this->password = $password;
 
@@ -240,7 +255,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->plainPassword;
     }
 
-    public function setPlainPassword(?string $plainPassword): static
+    public function setPlainPassword(#[\SensitiveParameter] ?string $plainPassword): static
     {
         $this->plainPassword = $plainPassword;
         return $this;
@@ -255,28 +270,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->plainPassword = null;
     }
 
-    public function getFirstName(): ?string
+    public function getName(): PersonName
     {
-        return $this->firstName;
+        return $this->name;
     }
 
-    public function setFirstName(string $firstName): static
+    public function setName(string $firstName, string $lastName): static
     {
-        $this->firstName = $firstName;
+        $this->name = new PersonName($firstName, $lastName);
 
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function getFirstName(): string
     {
-        return $this->lastName;
+        return $this->name->getFirstName();
     }
 
-    public function setLastName(string $lastName): static
+    public function getLastName(): string
     {
-        $this->lastName = $lastName;
-
-        return $this;
+        return $this->name->getLastName();
     }
 
     public function getDateOfBirth(): ?\DateTimeInterface
@@ -315,28 +328,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
+    // setCreatedAt removed
 
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
     }
 
     public function getStatut(): ?string
@@ -666,7 +667,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->googleAccessToken;
     }
 
-    public function setGoogleAccessToken(?string $googleAccessToken): static
+    public function setGoogleAccessToken(#[\SensitiveParameter] ?string $googleAccessToken): static
     {
         $this->googleAccessToken = $googleAccessToken;
         return $this;
@@ -677,7 +678,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->googleRefreshToken;
     }
 
-    public function setGoogleRefreshToken(?string $googleRefreshToken): static
+    public function setGoogleRefreshToken(#[\SensitiveParameter] ?string $googleRefreshToken): static
     {
         $this->googleRefreshToken = $googleRefreshToken;
         return $this;
@@ -688,7 +689,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->googleTokenExpiresAt;
     }
 
-    public function setGoogleTokenExpiresAt(?\DateTimeInterface $googleTokenExpiresAt): static
+    protected function setGoogleTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $googleTokenExpiresAt): static
     {
         $this->googleTokenExpiresAt = $googleTokenExpiresAt;
         return $this;

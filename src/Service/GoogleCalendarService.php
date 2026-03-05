@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Service;
 
 use App\Entity\User;
@@ -95,7 +98,7 @@ class GoogleCalendarService
         if (!empty($data['attendees'])) {
             $attendees = [];
             foreach ($data['attendees'] as $email) {
-                $attendees[] = ['email' => $email];
+                $attendees[] = new \Google\Service\Calendar\EventAttendee(['email' => $email]);
             }
             $event->setAttendees($attendees);
         }
@@ -201,7 +204,9 @@ class GoogleCalendarService
         $request = new \Google\Service\Calendar\FreeBusyRequest();
         $request->setTimeMin((new \DateTime($timeMin))->format(\DateTime::RFC3339));
         $request->setTimeMax((new \DateTime($timeMax))->format(\DateTime::RFC3339));
-        $request->setItems([['id' => 'primary']]);
+        $item = new \Google\Service\Calendar\FreeBusyRequestItem();
+        $item->setId('primary');
+        $request->setItems([$item]);
 
         $query = $service->freebusy->query($request);
         $busySlots = $query->getCalendars()['primary']->getBusy();
